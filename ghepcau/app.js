@@ -1,11 +1,13 @@
 /**
  * Ghép Câu & Luyện AI - Main Client Application Logic
- * Pure client-side static web application with Gemini REST API & SheetJS Excel integration
+ * Pure client-side static web application with Gemini & OpenAI API integration, Excel & History
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // LocalStorage Keys
-    const LS_KEY = 'gemini_api_key';
+    const LS_GEMINI_KEY = 'gemini_api_key';
+    const LS_OPENAI_KEY = 'openai_api_key';
+    const LS_HISTORY_KEY = 'ghepcau_history_list';
 
     // State Variables
     let currentQuestions = [];
@@ -16,13 +18,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
     const apiKeyInput = document.getElementById('api-key-input');
+    const openaiKeyInput = document.getElementById('openai-key-input');
     const btnToggleKeyModal = document.getElementById('btn-toggle-key-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const btnSaveKey = document.getElementById('btn-save-key');
     const btnClearKey = document.getElementById('btn-clear-key');
     const btnToggleShowKey = document.getElementById('btn-toggle-show-key');
+    const btnToggleShowOpenAIKey = document.getElementById('btn-toggle-show-openai-key');
     const keyStatusText = document.getElementById('key-status-text');
     const keyStatusDot = document.getElementById('key-status-dot');
+    const geminiBadgeStatus = document.getElementById('gemini-badge-status');
+    const openaiBadgeStatus = document.getElementById('openai-badge-status');
+
+    // DOM Elements - History Modal
+    const historyModal = document.getElementById('history-modal');
+    const btnOpenHistory = document.getElementById('btn-open-history');
+    const btnCloseHistoryModal = document.getElementById('btn-close-history-modal');
+    const btnCloseHistoryFooter = document.getElementById('btn-close-history-footer');
+    const btnClearHistoryAll = document.getElementById('btn-clear-history-all');
+    const historyListContainer = document.getElementById('history-list-container');
+    const historyCountBadge = document.getElementById('history-count-badge');
+    const btnSaveToHistory = document.getElementById('btn-save-to-history');
 
     // DOM Elements - Excel Export Modal
     const excelExportModal = document.getElementById('excel-export-modal');
@@ -70,22 +86,111 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCreateNew = document.getElementById('btn-create-new');
 
     /* ==========================================================================
-       1. API Key Management
+       1. API Keys & Dynamic Model Select Logic
        ========================================================================== */
-    function getStoredApiKey() {
-        return localStorage.getItem(LS_KEY) || '';
+    function getStoredGeminiKey() {
+        return localStorage.getItem(LS_GEMINI_KEY) || '';
+    }
+
+    function getStoredOpenAIKey() {
+        return localStorage.getItem(LS_OPENAI_KEY) || '';
     }
 
     function updateKeyStatusUI() {
-        const key = getStoredApiKey();
-        if (key && key.trim().length > 10) {
-            keyStatusText.textContent = 'API Key Đã Lưu';
+        const geminiKey = getStoredGeminiKey();
+        const openaiKey = getStoredOpenAIKey();
+
+        const hasGemini = geminiKey && geminiKey.trim().length > 10;
+        const hasOpenAI = openaiKey && openaiKey.trim().length > 10;
+
+        // Update modal badges
+        if (hasGemini) {
+            geminiBadgeStatus.textContent = 'Đã lưu';
+            geminiBadgeStatus.className = 'key-tag-badge valid';
+            apiKeyInput.value = geminiKey;
+        } else {
+            geminiBadgeStatus.textContent = 'Chưa lưu';
+            geminiBadgeStatus.className = 'key-tag-badge invalid';
+            apiKeyInput.value = '';
+        }
+
+        if (hasOpenAI) {
+            openaiBadgeStatus.textContent = 'Đã lưu';
+            openaiBadgeStatus.className = 'key-tag-badge valid';
+            openaiKeyInput.value = openaiKey;
+        } else {
+            openaiBadgeStatus.textContent = 'Chưa lưu';
+            openaiBadgeStatus.className = 'key-tag-badge invalid';
+            openaiKeyInput.value = '';
+        }
+
+        // Update Header Button Status
+        if (hasGemini && hasOpenAI) {
+            keyStatusText.textContent = 'Gemini & OpenAI API';
             keyStatusDot.className = 'dot dot-valid';
-            apiKeyInput.value = key;
+        } else if (hasGemini) {
+            keyStatusText.textContent = 'Gemini API (Đã cài)';
+            keyStatusDot.className = 'dot dot-valid';
+        } else if (hasOpenAI) {
+            keyStatusText.textContent = 'OpenAI API (Đã cài)';
+            keyStatusDot.className = 'dot dot-valid';
         } else {
             keyStatusText.textContent = 'Chưa nhập API Key';
             keyStatusDot.className = 'dot dot-invalid';
-            apiKeyInput.value = '';
+        }
+
+        // Rebuild dynamic Model Select options
+        updateModelSelectOptions(hasGemini, hasOpenAI);
+    }
+
+    function updateModelSelectOptions(hasGemini, hasOpenAI) {
+        modelSelect.innerHTML = '';
+
+        if (!hasGemini && !hasOpenAI) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '⚠️ Chưa nhập API Key (Bấm vào nút Key ở góc phải để nhập)';
+            modelSelect.appendChild(opt);
+            return;
+        }
+
+        if (hasGemini) {
+            const group = document.createElement('optgroup');
+            group.label = 'Google Gemini';
+
+            const opt1 = document.createElement('option');
+            opt1.value = 'gemini-2.5-flash';
+            opt1.textContent = 'Gemini 2.5 Flash (Khuyên dùng - Nhanh & Mới nhất)';
+
+            const opt2 = document.createElement('option');
+            opt2.value = 'gemini-1.5-flash';
+            opt2.textContent = 'Gemini 1.5 Flash (Ổn định)';
+
+            group.appendChild(opt1);
+            group.appendChild(opt2);
+            modelSelect.appendChild(group);
+        }
+
+        if (hasOpenAI) {
+            const group = document.createElement('optgroup');
+            group.label = 'OpenAI';
+
+            const opt1 = document.createElement('option');
+            opt1.value = 'gpt-4o-mini';
+            opt1.textContent = 'GPT-4o Mini (Nhanh & Tiết kiệm)';
+
+            const opt2 = document.createElement('option');
+            opt2.value = 'gpt-4o';
+            opt2.textContent = 'GPT-4o (Thông minh & Chính xác nhất)';
+
+            const opt3 = document.createElement('option');
+            opt3.value = 'gpt-3.5-turbo';
+            opt3.textContent = 'GPT-3.5 Turbo (Cơ bản)';
+
+            group.appendChild(opt1);
+            group.appendChild(opt2);
+            group.appendChild(opt3);
+            modelSelect.appendChild(group);
         }
     }
 
@@ -102,32 +207,37 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCloseModal.addEventListener('click', closeKeyModal);
 
     btnSaveKey.addEventListener('click', () => {
-        const keyVal = apiKeyInput.value.trim();
-        if (!keyVal) {
-            showError('Thiếu thông tin', 'Vui lòng nhập Gemini API Key hợp lệ.');
-            return;
-        }
-        localStorage.setItem(LS_KEY, keyVal);
+        const geminiVal = apiKeyInput.value.trim();
+        const openaiVal = openaiKeyInput.value.trim();
+
+        if (geminiVal) localStorage.setItem(LS_GEMINI_KEY, geminiVal);
+        else localStorage.removeItem(LS_GEMINI_KEY);
+
+        if (openaiVal) localStorage.setItem(LS_OPENAI_KEY, openaiVal);
+        else localStorage.removeItem(LS_OPENAI_KEY);
+
         updateKeyStatusUI();
         closeKeyModal();
         hideError();
     });
 
     btnClearKey.addEventListener('click', () => {
-        localStorage.removeItem(LS_KEY);
+        localStorage.removeItem(LS_GEMINI_KEY);
+        localStorage.removeItem(LS_OPENAI_KEY);
         updateKeyStatusUI();
         closeKeyModal();
     });
 
     btnToggleShowKey.addEventListener('click', () => {
         const currentType = apiKeyInput.getAttribute('type');
-        if (currentType === 'password') {
-            apiKeyInput.setAttribute('type', 'text');
-            btnToggleShowKey.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
-        } else {
-            apiKeyInput.setAttribute('type', 'password');
-            btnToggleShowKey.innerHTML = '<i class="fa-solid fa-eye"></i>';
-        }
+        apiKeyInput.setAttribute('type', currentType === 'password' ? 'text' : 'password');
+        btnToggleShowKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+    });
+
+    btnToggleShowOpenAIKey.addEventListener('click', () => {
+        const currentType = openaiKeyInput.getAttribute('type');
+        openaiKeyInput.setAttribute('type', currentType === 'password' ? 'text' : 'password');
+        btnToggleShowOpenAIKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
     });
 
     /* ==========================================================================
@@ -159,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
        3. Robust JSON Parsing & Repair Helper
        ========================================================================== */
     function parseAIJsonResponse(rawText) {
-        if (!rawText) throw new Error('Không nhận được dữ liệu từ Gemini AI.');
+        if (!rawText) throw new Error('Không nhận được dữ liệu từ AI API.');
 
         let cleaned = rawText.trim();
         if (cleaned.startsWith('```')) {
@@ -239,13 +349,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       4. Gemini API Call Helper with responseSchema
+       4. Unified AI LLM API Call Helper (Gemini / OpenAI Router)
        ========================================================================== */
-    async function callGeminiAPI(systemInstruction, userPrompt, model = 'gemini-2.5-flash', responseSchema = null) {
-        const apiKey = getStoredApiKey();
+    async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null) {
+        if (!model) {
+            openKeyModal();
+            throw new Error('Chưa có API Key nào được cài đặt. Vui lòng nhập Gemini hoặc OpenAI API Key để tiếp tục.');
+        }
+
+        if (model.startsWith('gemini')) {
+            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema);
+        } else if (model.startsWith('gpt')) {
+            return await callOpenAIAPI(systemInstruction, userPrompt, model);
+        } else {
+            throw new Error(`Mô hình "${model}" không được hỗ trợ.`);
+        }
+    }
+
+    // Google Gemini API Call
+    async function callGeminiAPI(systemInstruction, userPrompt, model, responseSchema) {
+        const apiKey = getStoredGeminiKey();
         if (!apiKey) {
             openKeyModal();
-            throw new Error('Bạn chưa cài đặt API Key. Vui lòng nhập Gemini API Key để tiếp tục.');
+            throw new Error('Bạn chưa cài đặt Gemini API Key. Vui lòng mở nút Key để nhập.');
         }
 
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -281,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            const errMsg = errData.error?.message || `Lỗi HTTP ${response.status}: ${response.statusText}`;
+            const errMsg = errData.error?.message || `Lỗi HTTP Gemini API ${response.status}: ${response.statusText}`;
             throw new Error(errMsg);
         }
 
@@ -294,8 +420,52 @@ document.addEventListener('DOMContentLoaded', () => {
         return candidate.content.parts[0].text;
     }
 
+    // OpenAI API Call
+    async function callOpenAIAPI(systemInstruction, userPrompt, model) {
+        const apiKey = getStoredOpenAIKey();
+        if (!apiKey) {
+            openKeyModal();
+            throw new Error('Bạn chưa cài đặt OpenAI API Key. Vui lòng mở nút Key để nhập.');
+        }
+
+        const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+        const payload = {
+            model: model,
+            messages: [
+                { role: 'system', content: systemInstruction },
+                { role: 'user', content: userPrompt }
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.7
+        };
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errMsg = errData.error?.message || `Lỗi OpenAI API HTTP ${response.status}: ${response.statusText}`;
+            throw new Error(errMsg);
+        }
+
+        const data = await response.json();
+        const contentText = data.choices?.[0]?.message?.content;
+        if (!contentText) {
+            throw new Error('Phản hồi từ OpenAI API rỗng.');
+        }
+
+        return contentText;
+    }
+
     /* ==========================================================================
-       5. Generate Questions Flow (Trắc nghiệm ABCD & Tự luận)
+       5. Generate Questions Flow
        ========================================================================== */
     const questionGenerationSchema = {
         type: "OBJECT",
@@ -337,22 +507,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const selectedModel = modelSelect.value || 'gemini-2.5-flash';
+        const selectedModel = modelSelect.value;
+        if (!selectedModel) {
+            openKeyModal();
+            showError('Thiếu API Key', 'Bạn chưa cài đặt API Key nào. Vui lòng nhập Gemini hoặc OpenAI API Key.');
+            return;
+        }
+
         lastPrompt = promptText;
 
         const systemPrompt = `Bạn là một chuyên gia giáo dục xuất sắc. Nhiệm vụ của bạn là dựa theo yêu cầu người dùng để tạo ra danh sách câu hỏi.
 Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi nên là loại TRẮC NGHIỆM ("multiple_choice") hay TỰ LUẬN/GHÉP CÂU ("essay").
 
 Định dạng trả về BẮT BUỘC tuân thủ cấu trúc JSON:
-- "topic": tên chủ đề
-- "questions": mảng danh sách các câu hỏi.
-Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương án {"A": "...", "B": "...", "C": "...", "D": "..."}.`;
+{
+  "topic": "Tên chủ đề câu hỏi ngắn gọn",
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "Nội dung câu hỏi...",
+      "options": {
+        "A": "Đáp án A",
+        "B": "Đáp án B",
+        "C": "Đáp án C",
+        "D": "Đáp án D"
+      },
+      "hint": "Gợi ý định hướng (nếu có)"
+    }
+  ]
+}`;
 
         try {
-            showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang phân tích prompt và tạo trắc nghiệm / tự luận...`);
+            showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang xử lý yêu cầu với mô hình ${selectedModel}...`);
             btnGenerate.disabled = true;
 
-            const rawResponse = await callGeminiAPI(systemPrompt, `Yêu cầu tạo câu hỏi: ${promptText}`, selectedModel, questionGenerationSchema);
+            const rawResponse = await callLLMAPI(systemPrompt, `Yêu cầu tạo câu hỏi: ${promptText}`, selectedModel, questionGenerationSchema);
             const parsedData = parseAIJsonResponse(rawResponse);
 
             if (!parsedData.questions || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {
@@ -360,7 +550,7 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
             }
 
             currentQuestions = parsedData.questions;
-            userAnswers = {}; // Clear previous answers for new prompt
+            userAnswers = {};
             renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions);
 
             // Switch view
@@ -378,7 +568,7 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
         }
     });
 
-    /* Render UI câu hỏi (Trắc nghiệm ABCD & Tự luận với nút Nút Gợi Ý) */
+    /* Render UI câu hỏi */
     function renderQuestionsUI(topic, questions) {
         quizTopicTitle.textContent = topic;
         quizQuestionCount.textContent = `${questions.length} câu hỏi`;
@@ -389,7 +579,6 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
             qCard.className = 'question-card';
             const isMC = q.type === 'multiple_choice' && q.options;
 
-            // Existing user answer or imported answer
             const existingAnswer = userAnswers[q.id] || q.importedAnswer || '';
 
             let bodyHtml = '';
@@ -441,7 +630,6 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
                 `;
             }
 
-            // Hint HTML with Toggle Button
             let hintHtml = '';
             if (q.hint && q.hint.trim() !== '') {
                 hintHtml = `
@@ -471,7 +659,7 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
             questionsContainer.appendChild(qCard);
         });
 
-        // Add visual click listener for MC Radio buttons
+        // Event listeners for radio option cards
         questionsContainer.querySelectorAll('.mc-option-card').forEach(card => {
             card.addEventListener('click', () => {
                 const radio = card.querySelector('input[type="radio"]');
@@ -484,7 +672,7 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
             });
         });
 
-        // Add Hint Toggle click listeners
+        // Event listeners for Hint Toggle Buttons
         questionsContainer.querySelectorAll('.btn-hint-toggle').forEach(btn => {
             btn.addEventListener('click', (evt) => {
                 evt.preventDefault();
@@ -506,7 +694,6 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
         });
     }
 
-    /* Helper: Capture Current User Inputs into userAnswers object */
     function captureUserAnswers() {
         currentQuestions.forEach(q => {
             if (q.type === 'multiple_choice' && q.options) {
@@ -567,7 +754,12 @@ Nút "multiple_choice" bắt buộc đi kèm object "options" gồm 4 phương �
             return;
         }
 
-        const selectedModel = modelSelect.value || 'gemini-2.5-flash';
+        const selectedModel = modelSelect.value;
+        if (!selectedModel) {
+            openKeyModal();
+            showError('Thiếu API Key', 'Vui lòng chọn mô hình và cài đặt API Key.');
+            return;
+        }
 
         const qaList = currentQuestions.map(q => ({
             id: q.id,
@@ -583,15 +775,27 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
 YÊU CẦU CHẤM ĐIỂM:
 1. Với câu trắc nghiệm ABCD: Đối chiếu đáp án. Nếu đúng -> 10 điểm, giải thích tại sao đúng. Nếu sai -> 0 điểm, chỉ rõ đáp án đúng.
 2. Với câu tự luận: Chấm trên thang điểm 10, giải thích NGẮN GỌN và đưa ra gợi ý cách sửa/đáp án gợi ý tốt nhất.
-3. Giải thích và gợi ý phải viết NGẮN GỌN, DỄ HỂU, tránh dài dòng.`;
+3. Trả về đúng định dạng JSON:
+{
+  "overall_feedback": "Nhận xét tổng quan ngắn gọn 1-2 câu",
+  "average_score": 8.5,
+  "evaluations": [
+    {
+      "id": 1,
+      "score": 10.0,
+      "explanation": "Giải thích ngắn...",
+      "improvement": "Đáp án chuẩn / Gợi ý ngắn..."
+    }
+  ]
+}`;
 
         const userContent = `Danh sách câu hỏi và bài làm của học viên:\n${JSON.stringify(qaList, null, 2)}`;
 
         try {
-            showLoading('AI Đang Chấm Điểm...', 'Kiểm tra đáp án trắc nghiệm & đánh giá bài tự luận...');
+            showLoading('AI Đang Chấm Điểm...', `Đang phân tích bài làm với mô hình ${selectedModel}...`);
             btnSubmitAnswers.disabled = true;
 
-            const rawResponse = await callGeminiAPI(systemPrompt, userContent, selectedModel, evaluationSchema);
+            const rawResponse = await callLLMAPI(systemPrompt, userContent, selectedModel, evaluationSchema);
             const evalResult = parseAIJsonResponse(rawResponse);
             lastEvaluations = evalResult;
 
@@ -675,7 +879,215 @@ YÊU CẦU CHẤM ĐIỂM:
     }
 
     /* ==========================================================================
-       7. EXCEL IMPORT & EXPORT FEATURES (SheetJS)
+       7. HISTORY FEATURE (Local Storage - User Manual Save)
+       ========================================================================== */
+    function getStoredHistory() {
+        try {
+            const raw = localStorage.getItem(LS_HISTORY_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveStoredHistory(list) {
+        localStorage.setItem(LS_HISTORY_KEY, JSON.stringify(list));
+        updateHistoryBadge();
+    }
+
+    function updateHistoryBadge() {
+        const list = getStoredHistory();
+        if (list.length > 0) {
+            historyCountBadge.textContent = list.length;
+            historyCountBadge.classList.remove('hidden');
+        } else {
+            historyCountBadge.classList.add('hidden');
+        }
+    }
+
+    // Manual Save Button Event
+    btnSaveToHistory.addEventListener('click', () => {
+        if (!currentQuestions || currentQuestions.length === 0 || !lastEvaluations) {
+            showError('Không có dữ liệu', 'Bạn cần hoàn thành và có kết quả chấm điểm trước khi lưu vào lịch sử.');
+            return;
+        }
+
+        const historyList = getStoredHistory();
+        const record = {
+            id: 'hist_' + Date.now(),
+            timestamp: new Date().toLocaleString('vi-VN'),
+            topic: quizTopicTitle.textContent || 'Bộ câu hỏi AI',
+            prompt: lastPrompt,
+            questionCount: currentQuestions.length,
+            averageScore: Number(lastEvaluations.average_score || 0).toFixed(1),
+            overallFeedback: lastEvaluations.overall_feedback || '',
+            questions: currentQuestions,
+            userAnswers: userAnswers,
+            evaluations: lastEvaluations
+        };
+
+        // Add to beginning of array
+        historyList.unshift(record);
+        saveStoredHistory(historyList);
+
+        // Feedback alert button
+        btnSaveToHistory.innerHTML = '<i class="fa-solid fa-check"></i> Đã Lưu Vô Lịch Sử!';
+        btnSaveToHistory.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        setTimeout(() => {
+            btnSaveToHistory.innerHTML = '<i class="fa-solid fa-bookmark"></i> Lưu Vào Lịch Sử';
+            btnSaveToHistory.style.background = '';
+        }, 2000);
+    });
+
+    // Open / Close History Modal
+    btnOpenHistory.addEventListener('click', () => {
+        renderHistoryListUI();
+        historyModal.classList.remove('hidden');
+    });
+
+    btnCloseHistoryModal.addEventListener('click', () => {
+        historyModal.classList.add('hidden');
+    });
+    btnCloseHistoryFooter.addEventListener('click', () => {
+        historyModal.classList.add('hidden');
+    });
+
+    btnClearHistoryAll.addEventListener('click', () => {
+        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử bài làm đã lưu?')) {
+            saveStoredHistory([]);
+            renderHistoryListUI();
+        }
+    });
+
+    function renderHistoryListUI() {
+        const list = getStoredHistory();
+        historyListContainer.innerHTML = '';
+
+        if (list.length === 0) {
+            historyListContainer.innerHTML = `
+                <div class="empty-history-text">
+                    <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5;"></i>
+                    <p>Chưa có lịch sử bài làm nào được lưu.</p>
+                    <small>Sau khi hoàn thành bài làm, bạn có thể tự bấm nút "Lưu Vào Lịch Sử" để lưu trữ.</small>
+                </div>
+            `;
+            return;
+        }
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'history-card';
+
+            const score = Number(item.averageScore || 0).toFixed(1);
+            let scoreClass = 'score-low';
+            if (score >= 8) scoreClass = 'score-high';
+            else if (score >= 6) scoreClass = 'score-med';
+
+            card.innerHTML = `
+                <div class="history-card-header">
+                    <div class="history-topic">${escapeHtml(item.topic)}</div>
+                    <span class="score-tag ${scoreClass}">${score} / 10 Điểm</span>
+                </div>
+                <div class="history-meta-info">
+                    <span><i class="fa-regular fa-calendar"></i> ${item.timestamp}</span>
+                    <span><i class="fa-solid fa-list-check"></i> ${item.questionCount} câu hỏi</span>
+                </div>
+                <div class="history-actions-row">
+                    <button type="button" class="btn btn-outline btn-load-hist" data-id="${item.id}">
+                        <i class="fa-solid fa-eye"></i> Xem Lại Bài Làm
+                    </button>
+                    <button type="button" class="btn btn-excel-outline btn-export-hist" data-id="${item.id}">
+                        <i class="fa-solid fa-file-excel"></i> Excel
+                    </button>
+                    <button type="button" class="btn btn-danger-ghost btn-delete-hist" data-id="${item.id}">
+                        <i class="fa-solid fa-trash-can"></i> Xóa
+                    </button>
+                </div>
+            `;
+
+            historyListContainer.appendChild(card);
+        });
+
+        // Event listener for "Xem Lại Bài Làm"
+        historyListContainer.querySelectorAll('.btn-load-hist').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const list = getStoredHistory();
+                const record = list.find(r => r.id === id);
+                if (record) {
+                    currentQuestions = record.questions || [];
+                    userAnswers = record.userAnswers || {};
+                    lastEvaluations = record.evaluations || null;
+
+                    renderResultsUI(lastEvaluations, currentQuestions.map(q => ({
+                        id: q.id,
+                        type: q.type || 'essay',
+                        question: q.question,
+                        options: q.options || null,
+                        user_answer: userAnswers[q.id] || '(Chưa trả lời)'
+                    })));
+
+                    historyModal.classList.add('hidden');
+                    promptSection.classList.add('hidden');
+                    quizSection.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+
+                    window.scrollTo({ top: resultsSection.offsetTop - 30, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Event listener for "Xóa"
+        historyListContainer.querySelectorAll('.btn-delete-hist').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                let list = getStoredHistory();
+                list = list.filter(r => r.id !== id);
+                saveStoredHistory(list);
+                renderHistoryListUI();
+            });
+        });
+
+        // Event listener for "Xuất Excel" from History
+        historyListContainer.querySelectorAll('.btn-export-hist').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const list = getStoredHistory();
+                const record = list.find(r => r.id === id);
+                if (record && record.questions) {
+                    exportHistoryRecordToExcel(record);
+                }
+            });
+        });
+    }
+
+    function exportHistoryRecordToExcel(record) {
+        const evalsMap = {};
+        if (record.evaluations && record.evaluations.evaluations) {
+            record.evaluations.evaluations.forEach(item => { evalsMap[item.id] = item; });
+        }
+
+        const exportData = record.questions.map((q, idx) => {
+            const ev = evalsMap[q.id] || { score: 0, explanation: '', improvement: '' };
+            return {
+                "STT": idx + 1,
+                "Loại câu hỏi": q.type === 'multiple_choice' ? 'Trắc nghiệm ABCD' : 'Tự luận',
+                "Câu hỏi": q.question,
+                "Bài làm người dùng": record.userAnswers[q.id] || '',
+                "Điểm AI (Thang 10)": Number(ev.score || 0).toFixed(1),
+                "Giải thích ngắn gọn": ev.explanation || '',
+                "Đáp án đúng / Gợi ý": ev.improvement || ''
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Lich_su_bai_lam");
+        XLSX.writeFile(workbook, `Lich_su_${record.topic.replace(/[^a-zA-Z0-9_]/g, '_')}.xlsx`);
+    }
+
+    /* ==========================================================================
+       8. EXCEL IMPORT & EXPORT FEATURES (SheetJS)
        ========================================================================== */
     
     // Open Export Options Modal
@@ -691,13 +1103,11 @@ YÊU CẦU CHẤM ĐIỂM:
         excelExportModal.classList.add('hidden');
     });
 
-    // Option 1: Export WITHOUT Answers
     btnExportNoAnswers.addEventListener('click', () => {
         excelExportModal.classList.add('hidden');
         exportQuestionsToExcel(false);
     });
 
-    // Option 2: Export WITH Answers
     btnExportWithAnswers.addEventListener('click', () => {
         excelExportModal.classList.add('hidden');
         captureUserAnswers();
@@ -756,7 +1166,7 @@ YÊU CẦU CHẤM ĐIỂM:
                     return;
                 }
 
-                userAnswers = {}; // Reset previous user answers
+                userAnswers = {};
 
                 const importedQuestions = jsonData.map((row, idx) => {
                     const typeRaw = String(row['Loại câu hỏi'] || row['Type'] || '').toLowerCase();
@@ -848,7 +1258,7 @@ YÊU CẦU CHẤM ĐIỂM:
     });
 
     /* ==========================================================================
-       8. Navigation & Reset Handlers
+       9. Navigation & Reset Handlers
        ========================================================================== */
     btnResetQuiz.addEventListener('click', () => {
         quizSection.classList.add('hidden');
@@ -857,12 +1267,11 @@ YÊU CẦU CHẤM ĐIỂM:
         hideError();
     });
 
-    // FIX REQUIREMENT 1: Keep user answers when clicking "Làm lại đề này"
     btnRetrySame.addEventListener('click', () => {
-        captureUserAnswers(); // Ensure latest answers are saved
+        captureUserAnswers();
         resultsSection.classList.add('hidden');
         quizSection.classList.remove('hidden');
-        renderQuestionsUI(quizTopicTitle.textContent, currentQuestions); // Re-render preserving answers
+        renderQuestionsUI(quizTopicTitle.textContent, currentQuestions);
         hideError();
         window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
     });
@@ -886,6 +1295,7 @@ YÊU CẦU CHẤM ĐIỂM:
             .replace(/'/g, '&#039;');
     }
 
-    // Initialize UI status
+    // Initialize UI status & History count badge
     updateKeyStatusUI();
+    updateHistoryBadge();
 });

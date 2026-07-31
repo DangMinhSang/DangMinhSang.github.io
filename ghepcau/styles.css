@@ -173,6 +173,22 @@ body {
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.count-badge {
+    background: var(--primary-purple);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 4px;
+}
+
 .dot {
     width: 9px;
     height: 9px;
@@ -229,6 +245,16 @@ body {
 .btn-success:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.btn-history-save {
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+}
+.btn-history-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.55);
 }
 
 /* Excel Special Buttons */
@@ -308,6 +334,31 @@ body {
     border-color: #f59e0b;
     color: #fff;
     transform: translateY(-1px);
+}
+
+/* Label with Badge for API Key Modal */
+.label-with-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.key-tag-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+.key-tag-badge.valid {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.key-tag-badge.invalid {
+    background: rgba(244, 63, 94, 0.18);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
 }
 
 /* ==========================================================================
@@ -440,10 +491,10 @@ body {
     gap: 8px;
     background: rgba(9, 13, 22, 0.7);
     border: 1px solid var(--border-color);
-    padding: 6px 14px;
+    padding: 8px 16px;
     border-radius: 12px;
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
 }
 
 .model-select-wrap select {
@@ -451,9 +502,21 @@ body {
     border: none;
     color: var(--text-main);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 600;
     outline: none;
     cursor: pointer;
+}
+
+.model-select-wrap optgroup {
+    background: #0f172a;
+    color: var(--primary-cyan);
+    font-weight: 700;
+}
+.model-select-wrap option {
+    background: #1e293b;
+    color: #ffffff;
+    font-weight: 500;
 }
 
 /* ==========================================================================
@@ -700,6 +763,72 @@ body {
 .opt-details p {
     font-size: 0.825rem;
     color: var(--text-muted);
+}
+
+/* ==========================================================================
+   History Modal & Cards
+   ========================================================================== */
+.modal-large {
+    max-width: 720px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.history-card {
+    background: rgba(9, 13, 22, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: var(--transition-fast);
+}
+.history-card:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    background: rgba(18, 26, 43, 0.85);
+}
+
+.history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.history-topic {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.history-meta-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.825rem;
+    color: var(--text-muted);
+}
+
+.history-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.empty-history-text {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 0.95rem;
 }
 
 /* ==========================================================================

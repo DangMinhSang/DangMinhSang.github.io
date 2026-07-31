@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghép Câu & Luyện Tập AI - Trắc Nghiệm & Tự Luận AI</title>
     <meta name="description"
-        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD và tự luận AI thông minh. Hỗ trợ nhập xuất Excel, chấm điểm tự động kèm giải thích chi tiết.">
+        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD và tự luận AI thông minh. Hỗ trợ Gemini & OpenAI API, nhập xuất Excel, lưu lịch sử local.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,11 +39,16 @@
                 </div>
                 <div class="logo-text">
                     <h1>Ghép Câu & Luyện AI</h1>
-                    <span class="badge-tag"><i class="fa-solid fa-file-excel"></i> Hỗ Trợ Excel</span>
+                    <span class="badge-tag"><i class="fa-solid fa-robot"></i> Gemini & OpenAI</span>
                 </div>
             </div>
             <div class="header-actions">
-                <button id="btn-toggle-key-modal" class="btn btn-outline" title="Cấu hình API Key">
+                <button id="btn-open-history" class="btn btn-outline" title="Xem lịch sử bài làm đã lưu">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Lịch Sử</span>
+                    <span id="history-count-badge" class="count-badge hidden">0</span>
+                </button>
+                <button id="btn-toggle-key-modal" class="btn btn-outline" title="Cấu hình API Keys">
                     <i class="fa-solid fa-key"></i>
                     <span id="key-status-text">Chưa nhập API Key</span>
                     <span id="key-status-dot" class="dot dot-invalid"></span>
@@ -51,19 +56,24 @@
             </div>
         </header>
 
-        <!-- API Key Modal -->
+        <!-- API Key Modal (Gemini + OpenAI) -->
         <div id="key-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
-                    <h2><i class="fa-solid fa-shield-halved"></i> Cấu Hình Gemini API Key</h2>
+                    <h2><i class="fa-solid fa-shield-halved"></i> Cấu Hình API Keys</h2>
                     <button id="btn-close-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted">
-                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn. Web hoàn toàn không có server trung gian.
+                    <p class="text-muted mb-4">
+                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn (Web không có server trung gian). Hãy nhập ít nhất một API Key để sử dụng.
                     </p>
-                    <div class="form-group">
-                        <label for="api-key-input">Gemini API Key</label>
+                    
+                    <!-- Gemini Key Input -->
+                    <div class="form-group mb-4">
+                        <label for="api-key-input" class="label-with-badge">
+                            <span><i class="fa-brands fa-google text-cyan-400"></i> Gemini API Key</span>
+                            <span id="gemini-badge-status" class="key-tag-badge invalid">Chưa lưu</span>
+                        </label>
                         <div class="input-with-icon">
                             <i class="fa-solid fa-lock input-icon"></i>
                             <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
@@ -72,14 +82,51 @@
                             </button>
                         </div>
                         <small class="help-text">
-                            Chưa có API key?
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Lấy API Key miễn phí tại Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Lấy Gemini Key miễn phí tại Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </small>
+                    </div>
+
+                    <!-- OpenAI Key Input -->
+                    <div class="form-group mb-4">
+                        <label for="openai-key-input" class="label-with-badge">
+                            <span><i class="fa-solid fa-bolt text-green-400"></i> OpenAI API Key</span>
+                            <span id="openai-badge-status" class="key-tag-badge invalid">Chưa lưu</span>
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="openai-key-input" placeholder="sk-proj-..." autocomplete="off">
+                            <button id="btn-toggle-show-openai-key" class="btn-icon-inside" title="Hiện/Ẩn Key">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="help-text">
+                            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">Lấy OpenAI Key tại platform.openai.com <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                         </small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Key</button>
-                    <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API Key</button>
+                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Key</button>
+                    <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API Keys</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div id="history-modal" class="modal-overlay hidden">
+            <div class="modal-content glass-card modal-large">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-clock-rotate-left text-purple-400"></i> Lịch Sử Bài Làm Đã Lưu</h2>
+                    <button id="btn-close-history-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="section-desc mb-3">Danh sách các bộ câu hỏi & kết quả bài làm bạn đã tự bấm "Lưu Vào Lịch Sử".</p>
+                    <div id="history-list-container" class="history-list">
+                        <!-- Dynamic history items -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-clear-history-all" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Lịch Sử</button>
+                    <button id="btn-close-history-footer" class="btn btn-outline">Đóng</button>
                 </div>
             </div>
         </div>
@@ -144,8 +191,7 @@
                         <div class="model-select-wrap">
                             <i class="fa-solid fa-robot"></i>
                             <select id="model-select">
-                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Nhanh & Mới nhất)</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Ổn định)</option>
+                                <!-- Dynamic model options populated based on saved API keys -->
                             </select>
                         </div>
                         <button type="submit" id="btn-generate" class="btn btn-accent">
@@ -213,8 +259,11 @@
                         <h2>Đánh Giá & Chấm Điểm Từ AI</h2>
                     </div>
                     <div class="header-excel-actions">
+                        <button type="button" id="btn-save-to-history" class="btn btn-history-save">
+                            <i class="fa-solid fa-bookmark"></i> Lưu Vào Lịch Sử
+                        </button>
                         <button type="button" id="btn-export-results-excel" class="btn btn-excel">
-                            <i class="fa-solid fa-file-export"></i> Xuất Bảng Điểm Excel (.xlsx)
+                            <i class="fa-solid fa-file-export"></i> Xuất Excel Bảng Điểm (.xlsx)
                         </button>
                     </div>
                 </div>
@@ -248,7 +297,7 @@
         </main>
 
         <footer class="app-footer">
-            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn &bull; Hỗ trợ Excel .xlsx</p>
+            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn &bull; Hỗ trợ Gemini, OpenAI & Excel .xlsx</p>
         </footer>
     </div>
 
