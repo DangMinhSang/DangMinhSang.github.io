@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghép Câu & Luyện Tập AI - Trắc Nghiệm & Tự Luận AI</title>
+    <meta name="description"
+        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD và tự luận AI thông minh. Hỗ trợ nhập xuất Excel, chấm điểm tự động kèm giải thích chi tiết.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- SheetJS CDN for Excel Import/Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-background">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Ghép Câu & Luyện AI</h1>
+                    <span class="badge-tag"><i class="fa-solid fa-file-excel"></i> Hỗ Trợ Excel</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btn-toggle-key-modal" class="btn btn-outline" title="Cấu hình API Key">
+                    <i class="fa-solid fa-key"></i>
+                    <span id="key-status-text">Chưa nhập API Key</span>
+                    <span id="key-status-dot" class="dot dot-invalid"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- API Key Modal -->
+        <div id="key-modal" class="modal-overlay hidden">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-shield-halved"></i> Cấu Hình Gemini API Key</h2>
+                    <button id="btn-close-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">
+                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn. Web hoàn toàn không có server trung gian.
+                    </p>
+                    <div class="form-group">
+                        <label for="api-key-input">Gemini API Key</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="api-key-input" placeholder="AIzaSy..." autocomplete="off">
+                            <button id="btn-toggle-show-key" class="btn-icon-inside" title="Hiện/Ẩn Key">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="help-text">
+                            Chưa có API key?
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Lấy API Key miễn phí tại Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Key</button>
+                    <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API Key</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Excel Export Options Modal -->
+        <div id="excel-export-modal" class="modal-overlay hidden">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-file-excel text-excel"></i> Xuất File Đề Bài Excel</h2>
+                    <button id="btn-close-export-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="section-desc mb-4">Vui lòng chọn tùy chọn lưu file Excel:</p>
+                    <div class="export-options-list">
+                        <button type="button" id="btn-export-no-answers" class="export-option-card">
+                            <div class="opt-icon"><i class="fa-solid fa-file-lines"></i></div>
+                            <div class="opt-details">
+                                <strong>1. Không lưu câu trả lời</strong>
+                                <p>Chỉ xuất danh sách câu hỏi và các lựa chọn ABCD (Đề bài trống).</p>
+                            </div>
+                        </button>
+
+                        <button type="button" id="btn-export-with-answers" class="export-option-card highlight">
+                            <div class="opt-icon"><i class="fa-solid fa-file-signature"></i></div>
+                            <div class="opt-details">
+                                <strong>2. Lưu kèm câu trả lời đang nhập</strong>
+                                <p>Xuất câu hỏi và toàn bộ câu trả lời hiện tại bạn đã nhập vào file Excel.</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <!-- Step 1: Prompt Input Section -->
+            <section id="prompt-section" class="glass-card section-card">
+                <div class="section-header space-between">
+                    <div class="header-left">
+                        <div class="step-badge">Bước 1</div>
+                        <h2>Tạo Hoặc Nhập Bộ Câu Hỏi</h2>
+                    </div>
+                    <div class="header-excel-actions">
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden">
+                        <button type="button" id="btn-import-excel" class="btn btn-excel">
+                            <i class="fa-solid fa-file-import"></i> Nhập Đề Từ Excel
+                        </button>
+                    </div>
+                </div>
+                <p class="section-desc">Nhập yêu cầu để AI tự động tạo trắc nghiệm ABCD / tự luận, hoặc tải file Excel có sẵn lên để làm bài.</p>
+
+                <form id="generator-form">
+                    <div class="form-group">
+                        <label for="prompt-input">Yêu cầu tạo câu hỏi (Prompt)</label>
+                        <div class="textarea-wrapper">
+                            <textarea id="prompt-input" rows="3"
+                                placeholder="Ví dụ: Hãy tạo 2 câu trắc nghiệm ABCD và 1 câu tự luận về Lịch sử Việt Nam thế kỷ 20..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="model-select-wrap">
+                            <i class="fa-solid fa-robot"></i>
+                            <select id="model-select">
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Nhanh & Mới nhất)</option>
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Ổn định)</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="btn-generate" class="btn btn-accent">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Tạo Câu Hỏi
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Loading Indicator -->
+            <div id="loading-spinner" class="glass-card loading-card hidden">
+                <div class="spinner-ring"></div>
+                <h3 id="loading-title">AI Đang Xử Lý...</h3>
+                <p id="loading-sub">Vui lòng chờ trong giây lát</p>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="error-banner" class="error-card hidden">
+                <i class="fa-solid fa-circle-exclamation error-icon"></i>
+                <div class="error-text">
+                    <strong id="error-title">Đã xảy ra lỗi</strong>
+                    <p id="error-msg">Chi tiết lỗi sẽ hiển thị ở đây.</p>
+                </div>
+                <button id="btn-dismiss-error" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Step 2: Answer Form Section -->
+            <section id="quiz-section" class="glass-card section-card hidden">
+                <div class="section-header space-between">
+                    <div class="header-left">
+                        <div class="step-badge">Bước 2</div>
+                        <div>
+                            <h2 id="quiz-topic-title">Danh Sách Câu Hỏi</h2>
+                            <span id="quiz-question-count" class="subtitle-tag">0 câu hỏi</span>
+                        </div>
+                    </div>
+                    <div class="header-excel-actions">
+                        <button type="button" id="btn-export-questions-excel" class="btn btn-excel-outline">
+                            <i class="fa-solid fa-file-excel"></i> Xuất File Đề (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <form id="answers-form">
+                    <div id="questions-container" class="questions-list">
+                        <!-- Questions dynamically rendered here -->
+                    </div>
+
+                    <div class="form-actions right-aligned">
+                        <button type="button" id="btn-reset-quiz" class="btn btn-outline">
+                            <i class="fa-solid fa-rotate-left"></i> Tạo / Nhập Đề Khác
+                        </button>
+                        <button type="submit" id="btn-submit-answers" class="btn btn-success">
+                            <i class="fa-solid fa-paper-plane"></i> Nộp Bài & Chấm Điểm AI
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Step 3: Evaluation Results Section -->
+            <section id="results-section" class="glass-card section-card hidden">
+                <div class="section-header space-between">
+                    <div class="header-left">
+                        <div class="step-badge success">Kết quả</div>
+                        <h2>Đánh Giá & Chấm Điểm Từ AI</h2>
+                    </div>
+                    <div class="header-excel-actions">
+                        <button type="button" id="btn-export-results-excel" class="btn btn-excel">
+                            <i class="fa-solid fa-file-export"></i> Xuất Bảng Điểm Excel (.xlsx)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overall Summary Banner -->
+                <div class="overall-score-card">
+                    <div class="score-badge-circle" id="overall-score-badge">
+                        <span id="overall-score-num">0</span>
+                        <span class="score-max">/10</span>
+                    </div>
+                    <div class="overall-info">
+                        <h3 id="overall-headline">Đang phân tích kết quả...</h3>
+                        <p id="overall-feedback-text">Nhận xét chi tiết sẽ hiện ở đây.</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Evaluated Questions -->
+                <div id="evaluations-container" class="evaluations-list">
+                    <!-- Dynamic evaluation items rendered here -->
+                </div>
+
+                <div class="form-actions right-aligned">
+                    <button type="button" id="btn-retry-same" class="btn btn-outline">
+                        <i class="fa-solid fa-pen-to-square"></i> Làm Lại Đề Này (Giữ bài làm)
+                    </button>
+                    <button type="button" id="btn-create-new" class="btn btn-accent">
+                        <i class="fa-solid fa-plus"></i> Tạo Bộ Câu Hỏi Mới
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn &bull; Hỗ trợ Excel .xlsx</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
