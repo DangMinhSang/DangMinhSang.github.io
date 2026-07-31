@@ -140,6 +140,9 @@ body {
     align-items: center;
     gap: 14px;
 }
+.logo-area a {
+    text-decoration: none;
+}
 
 .logo-icon {
     width: 46px;
@@ -199,6 +202,42 @@ body {
 .dot-valid { background-color: var(--emerald-green); box-shadow: 0 0 10px var(--emerald-green); }
 .dot-invalid { background-color: var(--rose-red); box-shadow: 0 0 10px var(--rose-red); }
 
+/* Advanced Toggle Button & Section */
+.advanced-toggle-wrap {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.btn-advanced-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.btn-advanced-toggle:hover {
+    background: rgba(139, 92, 246, 0.12);
+    border-color: var(--primary-purple);
+    color: #ffffff;
+}
+
+.advanced-section {
+    background: rgba(9, 13, 22, 0.5);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+    animation: fadeIn 0.25s ease-out;
+}
+
 /* ==========================================================================
    Buttons & Inputs
    ========================================================================== */
@@ -215,6 +254,11 @@ body {
     border: none;
     cursor: pointer;
     transition: var(--transition-fast);
+}
+.btn-sm {
+    padding: 7px 14px;
+    font-size: 0.825rem;
+    border-radius: 10px;
 }
 
 .btn-primary {
@@ -313,6 +357,57 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* File Attachment Elements */
+.file-attach-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    animation: fadeIn 0.25s ease-out;
+}
+
+.file-badge-icon {
+    color: var(--primary-cyan);
+}
+
+.file-badge-name {
+    font-weight: 600;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-badge-size {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.btn-icon-inside-badge {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-left: 4px;
+    transition: var(--transition-fast);
+}
+.btn-icon-inside-badge:hover {
+    color: var(--rose-red);
+}
+
 /* Hint Toggle Button */
 .btn-hint-toggle {
     display: inline-flex;
@@ -334,6 +429,43 @@ body {
     border-color: #f59e0b;
     color: #fff;
     transform: translateY(-1px);
+}
+
+/* Quick Prompt Suggestions Chips */
+.quick-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.chip-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.chip-btn:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--primary-purple);
+    color: #ffffff;
+}
+
+/* KaTeX Math Formula Custom Styling */
+.katex {
+    font-size: 1.05em;
+    color: #a7f3d0;
+}
+.katex-display {
+    margin: 1em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 0;
 }
 
 /* Label with Badge for API Key Modal */
@@ -474,6 +606,12 @@ body {
     padding: 6px;
 }
 
+.label-sm {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
 .form-actions {
     display: flex;
     align-items: center;
@@ -517,6 +655,47 @@ body {
     background: #1e293b;
     color: #ffffff;
     font-weight: 500;
+}
+
+/* ==========================================================================
+   Reading Passage Card
+   ========================================================================== */
+.reading-passage-card {
+    background: rgba(18, 26, 43, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.passage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.passage-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.passage-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #f1f5f9;
+    white-space: pre-wrap;
+    background: rgba(9, 13, 22, 0.6);
+    padding: 18px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ==========================================================================

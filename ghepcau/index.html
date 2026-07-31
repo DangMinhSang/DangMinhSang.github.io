@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghép Câu & Luyện Tập AI - Trắc Nghiệm & Tự Luận AI</title>
+    <title>Ghép Câu</title>
     <meta name="description"
-        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD và tự luận AI thông minh. Hỗ trợ Gemini & OpenAI API, nhập xuất Excel, lưu lịch sử local.">
+        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD, Reading Comprehension, công thức Toán học LaTeX và tự luận AI thông minh. Hỗ trợ Gemini & OpenRouter API, đính kèm file Ảnh/PDF/Word/TXT truyền trực tiếp tới AI, nhập xuất Excel, lưu lịch sử local.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +19,17 @@
 
     <!-- SheetJS CDN for Excel Import/Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- PDF.js CDN for Client-side PDF text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- Mammoth.js CDN for Client-side Word (.docx) text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+    <!-- KaTeX Math Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -34,13 +45,16 @@
         <!-- Header -->
         <header class="app-header">
             <div class="logo-area">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-brain"></i>
-                </div>
-                <div class="logo-text">
-                    <h1>Ghép Câu & Luyện AI</h1>
-                    <span class="badge-tag"><i class="fa-solid fa-robot"></i> Gemini & OpenAI</span>
-                </div>
+                <a href="index.html">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                </a>
+                <a href="index.html">
+                    <div class="logo-text">
+                        <h1>Ghép Câu</h1>
+                    </div>
+                </a>
             </div>
             <div class="header-actions">
                 <button id="btn-open-history" class="btn btn-outline" title="Xem lịch sử bài làm đã lưu">
@@ -56,7 +70,7 @@
             </div>
         </header>
 
-        <!-- API Key Modal (Gemini + OpenAI) -->
+        <!-- API Key Modal (Gemini + OpenRouter Advanced) -->
         <div id="key-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
@@ -65,10 +79,11 @@
                 </div>
                 <div class="modal-body">
                     <p class="text-muted mb-4">
-                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn (Web không có server trung gian). Hãy nhập ít nhất một API Key để sử dụng.
+                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn. Hãy nhập ít
+                        nhất một API Key để sử dụng.
                     </p>
-                    
-                    <!-- Gemini Key Input -->
+
+                    <!-- Standard: Gemini Key Input -->
                     <div class="form-group mb-4">
                         <label for="api-key-input" class="label-with-badge">
                             <span><i class="fa-brands fa-google text-cyan-400"></i> Gemini API Key</span>
@@ -82,31 +97,47 @@
                             </button>
                         </div>
                         <small class="help-text">
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Lấy Gemini Key miễn phí tại Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Lấy Gemini
+                                Key miễn phí tại Google AI Studio <i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i></a>
                         </small>
                     </div>
 
-                    <!-- OpenAI Key Input -->
-                    <div class="form-group mb-4">
-                        <label for="openai-key-input" class="label-with-badge">
-                            <span><i class="fa-solid fa-bolt text-green-400"></i> OpenAI API Key</span>
-                            <span id="openai-badge-status" class="key-tag-badge invalid">Chưa lưu</span>
-                        </label>
-                        <div class="input-with-icon">
-                            <i class="fa-solid fa-lock input-icon"></i>
-                            <input type="password" id="openai-key-input" placeholder="sk-proj-..." autocomplete="off">
-                            <button id="btn-toggle-show-openai-key" class="btn-icon-inside" title="Hiện/Ẩn Key">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
+                    <!-- Advanced Toggle Button -->
+                    <div class="advanced-toggle-wrap">
+                        <button type="button" id="btn-toggle-advanced-keys" class="btn-advanced-toggle">
+                            <span><i class="fa-solid fa-sliders text-purple-400"></i> Nâng cao (OpenRouter API)</span>
+                            <i class="fa-solid fa-chevron-down" id="advanced-chevron"></i>
+                        </button>
+                    </div>
+
+                    <!-- Hidden Advanced OpenRouter Section -->
+                    <div id="advanced-key-section" class="advanced-section hidden">
+                        <div class="form-group mb-2">
+                            <label for="openrouter-key-input" class="label-with-badge">
+                                <span><i class="fa-solid fa-globe text-purple-400"></i> OpenRouter API Key</span>
+                                <span id="openrouter-badge-status" class="key-tag-badge invalid">Chưa lưu</span>
+                            </label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="openrouter-key-input" placeholder="sk-or-v1-..."
+                                    autocomplete="off">
+                                <button id="btn-toggle-show-openrouter-key" class="btn-icon-inside" title="Hiện/Ẩn Key">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="help-text">
+                                <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">Lấy OpenRouter Key
+                                    tại openrouter.ai <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            </small>
                         </div>
-                        <small class="help-text">
-                            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">Lấy OpenAI Key tại platform.openai.com <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        </small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Key</button>
-                    <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API Keys</button>
+                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa
+                        Tất Cả Key</button>
+                    <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API
+                        Keys</button>
                 </div>
             </div>
         </div>
@@ -119,13 +150,15 @@
                     <button id="btn-close-history-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
-                    <p class="section-desc mb-3">Danh sách các bộ câu hỏi & kết quả bài làm bạn đã tự bấm "Lưu Vào Lịch Sử".</p>
+                    <p class="section-desc mb-3">Danh sách các bộ câu hỏi & kết quả bài làm bạn đã tự bấm "Lưu Vào Lịch
+                        Sử".</p>
                     <div id="history-list-container" class="history-list">
                         <!-- Dynamic history items -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-clear-history-all" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Lịch Sử</button>
+                    <button id="btn-clear-history-all" class="btn btn-danger-ghost"><i
+                            class="fa-solid fa-trash-can"></i> Xóa Tất Cả Lịch Sử</button>
                     <button id="btn-close-history-footer" class="btn btn-outline">Đóng</button>
                 </div>
             </div>
@@ -145,7 +178,7 @@
                             <div class="opt-icon"><i class="fa-solid fa-file-lines"></i></div>
                             <div class="opt-details">
                                 <strong>1. Không lưu câu trả lời</strong>
-                                <p>Chỉ xuất danh sách câu hỏi và các lựa chọn ABCD (Đề bài trống).</p>
+                                <p>Chỉ xuất bài đọc (nếu có), danh sách câu hỏi và các lựa chọn ABCD.</p>
                             </div>
                         </button>
 
@@ -153,7 +186,7 @@
                             <div class="opt-icon"><i class="fa-solid fa-file-signature"></i></div>
                             <div class="opt-details">
                                 <strong>2. Lưu kèm câu trả lời đang nhập</strong>
-                                <p>Xuất câu hỏi và toàn bộ câu trả lời hiện tại bạn đã nhập vào file Excel.</p>
+                                <p>Xuất bài đọc (nếu có), câu hỏi và toàn bộ câu trả lời hiện tại của bạn.</p>
                             </div>
                         </button>
                     </div>
@@ -176,15 +209,48 @@
                         </button>
                     </div>
                 </div>
-                <p class="section-desc">Nhập yêu cầu để AI tự động tạo trắc nghiệm ABCD / tự luận, hoặc tải file Excel có sẵn lên để làm bài.</p>
+                <p class="section-desc">Nhập yêu cầu để AI tự động tạo trắc nghiệm ABCD, bài đọc hiểu (Reading task),
+                    câu hỏi Toán học, hoặc gửi đính kèm file (Ảnh/PDF/Word) trực tiếp cho AI.</p>
 
                 <form id="generator-form">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="prompt-input">Yêu cầu tạo câu hỏi (Prompt)</label>
                         <div class="textarea-wrapper">
                             <textarea id="prompt-input" rows="3"
-                                placeholder="Ví dụ: Hãy tạo 2 câu trắc nghiệm ABCD và 1 câu tự luận về Lịch sử Việt Nam thế kỷ 20..."></textarea>
+                                placeholder="Ví dụ: Hãy dựa vào file đính kèm này để tạo 3 câu trắc nghiệm trình độ B1..."></textarea>
                         </div>
+                    </div>
+
+                    <!-- File Attachment Section -->
+                    <div class="file-attach-wrapper mb-3">
+                        <input type="file" id="prompt-file-input"
+                            accept=".png, .jpg, .jpeg, .webp, .pdf, .txt, .docx, .doc, .md, .json, .csv" class="hidden">
+                        <button type="button" id="btn-attach-file" class="btn btn-outline btn-sm">
+                            <i class="fa-solid fa-paperclip"></i> Đính Kèm File Gửi AI (Ảnh, PDF, Word, TXT...)
+                        </button>
+                        <div id="attached-file-badge" class="file-badge hidden">
+                            <i class="fa-solid fa-file-lines file-badge-icon"></i>
+                            <span id="attached-file-name" class="file-badge-name">file.pdf</span>
+                            <span id="attached-file-size" class="file-badge-size">(0 KB)</span>
+                            <button type="button" id="btn-remove-attached-file" class="btn-icon-inside-badge"
+                                title="Gỡ file đính kèm">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Prompt Suggestions -->
+                    <div class="quick-prompts">
+                        <span class="label-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý prompt:</span>
+                        <button type="button" class="chip-btn"
+                            data-prompt="Hãy tạo 2 câu trắc nghiệm Toán học có công thức LaTeX về Tích phân và Đạo hàm">📐
+                            2 câu Toán (Công thức LaTeX)</button>
+                        <button type="button" class="chip-btn"
+                            data-prompt="Hãy tạo cho tôi 1 task reading trình độ B1 với 3 câu hỏi trắc nghiệm">📖
+                            Task Reading B1 (Kèm bài đọc)</button>
+                        <button type="button" class="chip-btn"
+                            data-prompt="Hãy tạo cho tôi 5 câu tự luận tiếng anh để tôi dịch sang tiếng việt với trình độ B1">📖
+                            5 câu tự luận tiếng anh (Dịch Việt)</button>
                     </div>
 
                     <div class="form-actions">
@@ -232,6 +298,17 @@
                         <button type="button" id="btn-export-questions-excel" class="btn btn-excel-outline">
                             <i class="fa-solid fa-file-excel"></i> Xuất File Đề (.xlsx)
                         </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Reading Passage Container -->
+                <div id="reading-passage-container" class="reading-passage-card hidden">
+                    <div class="passage-header">
+                        <span class="passage-title"><i class="fa-solid fa-book-open"></i> Bài Đọc / Văn Bản Tham Chiếu
+                            (Reading Passage)</span>
+                    </div>
+                    <div id="reading-passage-content" class="passage-content">
+                        <!-- Reading text paragraphs rendered here -->
                     </div>
                 </div>
 
@@ -297,7 +374,7 @@
         </main>
 
         <footer class="app-footer">
-            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn &bull; Hỗ trợ Gemini, OpenAI & Excel .xlsx</p>
+            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn</p>
         </footer>
     </div>
 

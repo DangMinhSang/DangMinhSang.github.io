@@ -1,34 +1,46 @@
 /**
  * Ghép Câu & Luyện AI - Main Client Application Logic
- * Pure client-side static web application with Gemini & OpenAI API integration, Excel & History
+ * Pure client-side static web application with Gemini & OpenRouter API integration, File Attachments (Images, PDF, Word, TXT) sent directly to AI, Reading Passages, KaTeX Math & Excel
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // LocalStorage Keys
     const LS_GEMINI_KEY = 'gemini_api_key';
-    const LS_OPENAI_KEY = 'openai_api_key';
+    const LS_OPENROUTER_KEY = 'openrouter_api_key';
     const LS_HISTORY_KEY = 'ghepcau_history_list';
+
+    // Configure PDF.js worker URL
+    if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
 
     // State Variables
     let currentQuestions = [];
+    let currentReadingPassage = '';
     let userAnswers = {};
     let lastPrompt = '';
     let lastEvaluations = null;
+    let attachedFile = null;
 
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
     const apiKeyInput = document.getElementById('api-key-input');
-    const openaiKeyInput = document.getElementById('openai-key-input');
+    const openrouterKeyInput = document.getElementById('openrouter-key-input');
     const btnToggleKeyModal = document.getElementById('btn-toggle-key-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const btnSaveKey = document.getElementById('btn-save-key');
     const btnClearKey = document.getElementById('btn-clear-key');
     const btnToggleShowKey = document.getElementById('btn-toggle-show-key');
-    const btnToggleShowOpenAIKey = document.getElementById('btn-toggle-show-openai-key');
+    const btnToggleShowOpenRouterKey = document.getElementById('btn-toggle-show-openrouter-key');
     const keyStatusText = document.getElementById('key-status-text');
     const keyStatusDot = document.getElementById('key-status-dot');
     const geminiBadgeStatus = document.getElementById('gemini-badge-status');
-    const openaiBadgeStatus = document.getElementById('openai-badge-status');
+    const openrouterBadgeStatus = document.getElementById('openrouter-badge-status');
+
+    // DOM Elements - Advanced Key Toggle
+    const btnToggleAdvancedKeys = document.getElementById('btn-toggle-advanced-keys');
+    const advancedKeySection = document.getElementById('advanced-key-section');
+    const advancedChevron = document.getElementById('advanced-chevron');
 
     // DOM Elements - History Modal
     const historyModal = document.getElementById('history-modal');
@@ -46,6 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnExportNoAnswers = document.getElementById('btn-export-no-answers');
     const btnExportWithAnswers = document.getElementById('btn-export-with-answers');
 
+    // DOM Elements - File Attachment
+    const promptFileInput = document.getElementById('prompt-file-input');
+    const btnAttachFile = document.getElementById('btn-attach-file');
+    const attachedFileBadge = document.getElementById('attached-file-badge');
+    const attachedFileName = document.getElementById('attached-file-name');
+    const attachedFileSize = document.getElementById('attached-file-size');
+    const btnRemoveAttachedFile = document.getElementById('btn-remove-attached-file');
+
     // DOM Elements - Sections
     const promptSection = document.getElementById('prompt-section');
     const quizSection = document.getElementById('quiz-section');
@@ -58,11 +78,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorMsg = document.getElementById('error-msg');
     const btnDismissError = document.getElementById('btn-dismiss-error');
 
-    // DOM Elements - Generator & Excel
+    // DOM Elements - Reading Passage
+    const readingPassageContainer = document.getElementById('reading-passage-container');
+    const readingPassageContent = document.getElementById('reading-passage-content');
+
+    // DOM Elements - Generator & Excel & Chips
     const generatorForm = document.getElementById('generator-form');
     const promptInput = document.getElementById('prompt-input');
     const modelSelect = document.getElementById('model-select');
     const btnGenerate = document.getElementById('btn-generate');
+    const chipBtns = document.querySelectorAll('.chip-btn');
     const btnImportExcel = document.getElementById('btn-import-excel');
     const excelFileInput = document.getElementById('excel-file-input');
     const btnExportQuestionsExcel = document.getElementById('btn-export-questions-excel');
@@ -86,24 +111,140 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCreateNew = document.getElementById('btn-create-new');
 
     /* ==========================================================================
-       1. API Keys & Dynamic Model Select Logic
+       KaTeX Math Rendering Helper
+       ========================================================================== */
+    function renderMathInContainer(container) {
+        if (window.renderMathInElement && container) {
+            try {
+                window.renderMathInElement(container, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false },
+                        { left: "\\[", right: "\\]", display: true }
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) {
+                console.warn("KaTeX Math Rendering warning:", e);
+            }
+        }
+    }
+
+    /* ==========================================================================
+       File Attachment & Base64 Data URL Convertor
+       ========================================================================== */
+    btnAttachFile.addEventListener('click', () => {
+        promptFileInput.click();
+    });
+
+    promptFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        attachedFile = file;
+        attachedFileName.textContent = file.name;
+        attachedFileSize.textContent = `(${formatFileSize(file.size)})`;
+        attachedFileBadge.classList.remove('hidden');
+        btnAttachFile.classList.add('hidden');
+    });
+
+    btnRemoveAttachedFile.addEventListener('click', () => {
+        attachedFile = null;
+        promptFileInput.value = '';
+        attachedFileBadge.classList.add('hidden');
+        btnAttachFile.classList.remove('hidden');
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const base64 = dataUrl.split(',')[1];
+                let mime = file.type;
+                if (!mime) {
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    if (ext === 'pdf') mime = 'application/pdf';
+                    else if (ext === 'png') mime = 'image/png';
+                    else if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
+                    else if (ext === 'webp') mime = 'image/webp';
+                    else mime = 'application/octet-stream';
+                }
+                resolve({
+                    dataUrl: dataUrl,
+                    base64: base64,
+                    mimeType: mime
+                });
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function extractTextFromFile(file) {
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        // PDF Text Extraction
+        if (ext === 'pdf') {
+            if (!window.pdfjsLib) return '';
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += `[Trang ${i}]\n${pageText}\n\n`;
+            }
+            return fullText.trim();
+        }
+
+        // Word (.docx) Extraction
+        if (ext === 'docx' || ext === 'doc') {
+            if (!window.mammoth) return '';
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            return result.value.trim();
+        }
+
+        // Text files
+        if (['txt', 'md', 'json', 'csv'].includes(ext)) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => resolve('');
+                reader.readAsText(file);
+            });
+        }
+
+        return '';
+    }
+
+    /* ==========================================================================
+       1. API Keys & Advanced Toggle Logic
        ========================================================================== */
     function getStoredGeminiKey() {
         return localStorage.getItem(LS_GEMINI_KEY) || '';
     }
 
-    function getStoredOpenAIKey() {
-        return localStorage.getItem(LS_OPENAI_KEY) || '';
+    function getStoredOpenRouterKey() {
+        return localStorage.getItem(LS_OPENROUTER_KEY) || '';
     }
 
     function updateKeyStatusUI() {
         const geminiKey = getStoredGeminiKey();
-        const openaiKey = getStoredOpenAIKey();
+        const openrouterKey = getStoredOpenRouterKey();
 
         const hasGemini = geminiKey && geminiKey.trim().length > 10;
-        const hasOpenAI = openaiKey && openaiKey.trim().length > 10;
+        const hasOpenRouter = openrouterKey && openrouterKey.trim().length > 10;
 
-        // Update modal badges
         if (hasGemini) {
             geminiBadgeStatus.textContent = 'Đã lưu';
             geminiBadgeStatus.className = 'key-tag-badge valid';
@@ -114,39 +255,39 @@ document.addEventListener('DOMContentLoaded', () => {
             apiKeyInput.value = '';
         }
 
-        if (hasOpenAI) {
-            openaiBadgeStatus.textContent = 'Đã lưu';
-            openaiBadgeStatus.className = 'key-tag-badge valid';
-            openaiKeyInput.value = openaiKey;
+        if (hasOpenRouter) {
+            openrouterBadgeStatus.textContent = 'Đã lưu';
+            openrouterBadgeStatus.className = 'key-tag-badge valid';
+            openrouterKeyInput.value = openrouterKey;
+            advancedKeySection.classList.remove('hidden');
+            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-up';
         } else {
-            openaiBadgeStatus.textContent = 'Chưa lưu';
-            openaiBadgeStatus.className = 'key-tag-badge invalid';
-            openaiKeyInput.value = '';
+            openrouterBadgeStatus.textContent = 'Chưa lưu';
+            openrouterBadgeStatus.className = 'key-tag-badge invalid';
+            openrouterKeyInput.value = '';
         }
 
-        // Update Header Button Status
-        if (hasGemini && hasOpenAI) {
-            keyStatusText.textContent = 'Gemini & OpenAI API';
+        if (hasGemini && hasOpenRouter) {
+            keyStatusText.textContent = 'Gemini & OpenRouter API';
             keyStatusDot.className = 'dot dot-valid';
         } else if (hasGemini) {
             keyStatusText.textContent = 'Gemini API (Đã cài)';
             keyStatusDot.className = 'dot dot-valid';
-        } else if (hasOpenAI) {
-            keyStatusText.textContent = 'OpenAI API (Đã cài)';
+        } else if (hasOpenRouter) {
+            keyStatusText.textContent = 'OpenRouter API (Đã cài)';
             keyStatusDot.className = 'dot dot-valid';
         } else {
             keyStatusText.textContent = 'Chưa nhập API Key';
             keyStatusDot.className = 'dot dot-invalid';
         }
 
-        // Rebuild dynamic Model Select options
-        updateModelSelectOptions(hasGemini, hasOpenAI);
+        updateModelSelectOptions(hasGemini, hasOpenRouter);
     }
 
-    function updateModelSelectOptions(hasGemini, hasOpenAI) {
+    function updateModelSelectOptions(hasGemini, hasOpenRouter) {
         modelSelect.innerHTML = '';
 
-        if (!hasGemini && !hasOpenAI) {
+        if (!hasGemini && !hasOpenRouter) {
             const opt = document.createElement('option');
             opt.value = '';
             opt.textContent = '⚠️ Chưa nhập API Key (Bấm vào nút Key ở góc phải để nhập)';
@@ -171,28 +312,35 @@ document.addEventListener('DOMContentLoaded', () => {
             modelSelect.appendChild(group);
         }
 
-        if (hasOpenAI) {
+        if (hasOpenRouter) {
             const group = document.createElement('optgroup');
-            group.label = 'OpenAI';
+            group.label = 'OpenRouter (Nâng cao)';
 
-            const opt1 = document.createElement('option');
-            opt1.value = 'gpt-4o-mini';
-            opt1.textContent = 'GPT-4o Mini (Nhanh & Tiết kiệm)';
+            const opt4 = document.createElement('option');
+            opt4.value = 'deepseek/deepseek-chat';
+            opt4.textContent = 'DeepSeek V3 / Chat (OpenRouter)';
 
-            const opt2 = document.createElement('option');
-            opt2.value = 'gpt-4o';
-            opt2.textContent = 'GPT-4o (Thông minh & Chính xác nhất)';
+            const opt5 = document.createElement('option');
+            opt5.value = 'meta-llama/llama-3.3-70b-instruct';
+            opt5.textContent = 'Llama 3.3 70B (OpenRouter)';
 
-            const opt3 = document.createElement('option');
-            opt3.value = 'gpt-3.5-turbo';
-            opt3.textContent = 'GPT-3.5 Turbo (Cơ bản)';
-
-            group.appendChild(opt1);
-            group.appendChild(opt2);
-            group.appendChild(opt3);
+            group.appendChild(opt4);
+            group.appendChild(opt5);
             modelSelect.appendChild(group);
         }
     }
+
+    // Toggle Advanced Section
+    btnToggleAdvancedKeys.addEventListener('click', () => {
+        const isHidden = advancedKeySection.classList.contains('hidden');
+        if (isHidden) {
+            advancedKeySection.classList.remove('hidden');
+            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-up';
+        } else {
+            advancedKeySection.classList.add('hidden');
+            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-down';
+        }
+    });
 
     function openKeyModal() {
         keyModal.classList.remove('hidden');
@@ -208,13 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnSaveKey.addEventListener('click', () => {
         const geminiVal = apiKeyInput.value.trim();
-        const openaiVal = openaiKeyInput.value.trim();
+        const openrouterVal = openrouterKeyInput.value.trim();
 
         if (geminiVal) localStorage.setItem(LS_GEMINI_KEY, geminiVal);
         else localStorage.removeItem(LS_GEMINI_KEY);
 
-        if (openaiVal) localStorage.setItem(LS_OPENAI_KEY, openaiVal);
-        else localStorage.removeItem(LS_OPENAI_KEY);
+        if (openrouterVal) localStorage.setItem(LS_OPENROUTER_KEY, openrouterVal);
+        else localStorage.removeItem(LS_OPENROUTER_KEY);
 
         updateKeyStatusUI();
         closeKeyModal();
@@ -223,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnClearKey.addEventListener('click', () => {
         localStorage.removeItem(LS_GEMINI_KEY);
-        localStorage.removeItem(LS_OPENAI_KEY);
+        localStorage.removeItem(LS_OPENROUTER_KEY);
         updateKeyStatusUI();
         closeKeyModal();
     });
@@ -234,10 +382,20 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToggleShowKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
     });
 
-    btnToggleShowOpenAIKey.addEventListener('click', () => {
-        const currentType = openaiKeyInput.getAttribute('type');
-        openaiKeyInput.setAttribute('type', currentType === 'password' ? 'text' : 'password');
-        btnToggleShowOpenAIKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+    btnToggleShowOpenRouterKey.addEventListener('click', () => {
+        const currentType = openrouterKeyInput.getAttribute('type');
+        openrouterKeyInput.setAttribute('type', currentType === 'password' ? 'text' : 'password');
+        btnToggleShowOpenRouterKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+    });
+
+    chipBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const promptText = btn.getAttribute('data-prompt');
+            if (promptText) {
+                promptInput.value = promptText;
+                promptInput.focus();
+            }
+        });
     });
 
     /* ==========================================================================
@@ -283,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (match) {
                 try {
                     return JSON.parse(match[0]);
-                } catch (e2) {}
+                } catch (e2) { }
             }
 
             let sanitized = cleaned.replace(/[\u0000-\u001F]+/g, (char) => {
@@ -349,25 +507,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       4. Unified AI LLM API Call Helper (Gemini / OpenAI Router)
+       4. Unified AI LLM API Call Helper (Gemini / OpenRouter Router)
        ========================================================================== */
-    async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null) {
+    async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null, fileInlineData = null) {
         if (!model) {
             openKeyModal();
-            throw new Error('Chưa có API Key nào được cài đặt. Vui lòng nhập Gemini hoặc OpenAI API Key để tiếp tục.');
+            throw new Error('Chưa có API Key nào được cài đặt. Vui lòng nhập Gemini Key để bắt đầu sử dụng.');
         }
 
         if (model.startsWith('gemini')) {
-            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema);
-        } else if (model.startsWith('gpt')) {
-            return await callOpenAIAPI(systemInstruction, userPrompt, model);
+            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, fileInlineData);
         } else {
-            throw new Error(`Mô hình "${model}" không được hỗ trợ.`);
+            return await callOpenRouterAPI(systemInstruction, userPrompt, model, fileInlineData);
         }
     }
 
-    // Google Gemini API Call
-    async function callGeminiAPI(systemInstruction, userPrompt, model, responseSchema) {
+    // Google Gemini API Call (Direct Multimodal inlineData support)
+    async function callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, fileInlineData) {
         const apiKey = getStoredGeminiKey();
         if (!apiKey) {
             openKeyModal();
@@ -387,13 +543,25 @@ document.addEventListener('DOMContentLoaded', () => {
             generationConfig.responseSchema = responseSchema;
         }
 
+        const parts = [
+            { text: systemInstruction + '\n\n' + userPrompt }
+        ];
+
+        // Directly attach Base64 file as Gemini inlineData!
+        if (fileInlineData && fileInlineData.base64) {
+            parts.push({
+                inlineData: {
+                    mimeType: fileInlineData.mimeType,
+                    data: fileInlineData.base64
+                }
+            });
+        }
+
         const payload = {
             contents: [
                 {
                     role: 'user',
-                    parts: [
-                        { text: systemInstruction + '\n\n' + userPrompt }
-                    ]
+                    parts: parts
                 }
             ],
             generationConfig: generationConfig
@@ -420,21 +588,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return candidate.content.parts[0].text;
     }
 
-    // OpenAI API Call
-    async function callOpenAIAPI(systemInstruction, userPrompt, model) {
-        const apiKey = getStoredOpenAIKey();
+    // OpenRouter API Call (Multimodal Vision / Image URL support)
+    async function callOpenRouterAPI(systemInstruction, userPrompt, model, fileInlineData) {
+        const apiKey = getStoredOpenRouterKey();
         if (!apiKey) {
             openKeyModal();
-            throw new Error('Bạn chưa cài đặt OpenAI API Key. Vui lòng mở nút Key để nhập.');
+            advancedKeySection.classList.remove('hidden');
+            throw new Error('Bạn chưa cài đặt OpenRouter API Key. Vui lòng mở Cấu Hình Key -> Nâng Cao để nhập.');
         }
 
-        const endpoint = 'https://api.openai.com/v1/chat/completions';
+        const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+
+        let userMessageContent = userPrompt;
+        if (fileInlineData && fileInlineData.dataUrl && fileInlineData.mimeType.startsWith('image/')) {
+            userMessageContent = [
+                { type: "text", text: userPrompt },
+                { type: "image_url", image_url: { url: fileInlineData.dataUrl } }
+            ];
+        }
 
         const payload = {
             model: model,
             messages: [
                 { role: 'system', content: systemInstruction },
-                { role: 'user', content: userPrompt }
+                { role: 'user', content: userMessageContent }
             ],
             response_format: { type: 'json_object' },
             temperature: 0.7
@@ -444,33 +621,36 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://DangMinhSang.github.io/ghepcau',
+                'X-Title': 'GhepCau AI'
             },
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            const errMsg = errData.error?.message || `Lỗi OpenAI API HTTP ${response.status}: ${response.statusText}`;
+            const errMsg = errData.error?.message || `Lỗi OpenRouter API HTTP ${response.status}: ${response.statusText}`;
             throw new Error(errMsg);
         }
 
         const data = await response.json();
         const contentText = data.choices?.[0]?.message?.content;
         if (!contentText) {
-            throw new Error('Phản hồi từ OpenAI API rỗng.');
+            throw new Error('Phản hồi từ OpenRouter API rỗng.');
         }
 
         return contentText;
     }
 
     /* ==========================================================================
-       5. Generate Questions Flow
+       5. Generate Questions Flow (Direct File Payload + Text Extractor)
        ========================================================================== */
     const questionGenerationSchema = {
         type: "OBJECT",
         properties: {
             topic: { type: "STRING" },
+            reading_passage: { type: "STRING" },
             questions: {
                 type: "ARRAY",
                 items: {
@@ -502,47 +682,77 @@ document.addEventListener('DOMContentLoaded', () => {
         hideError();
 
         const promptText = promptInput.value.trim();
-        if (!promptText) {
-            showError('Thiếu câu lệnh', 'Vui lòng nhập yêu cầu (prompt) để AI tạo câu hỏi.');
+        if (!promptText && !attachedFile) {
+            showError('Thiếu thông tin', 'Vui lòng nhập yêu cầu (prompt) hoặc đính kèm file tài liệu.');
             return;
         }
 
         const selectedModel = modelSelect.value;
         if (!selectedModel) {
             openKeyModal();
-            showError('Thiếu API Key', 'Bạn chưa cài đặt API Key nào. Vui lòng nhập Gemini hoặc OpenAI API Key.');
+            showError('Thiếu API Key', 'Bạn chưa cài đặt API Key nào. Vui lòng nhập Gemini Key để bắt đầu sử dụng.');
             return;
         }
 
         lastPrompt = promptText;
+        let finalUserPrompt = promptText || "Hãy phân tích file đính kèm và tạo bài tập phù hợp.";
+        let fileInlineData = null;
 
-        const systemPrompt = `Bạn là một chuyên gia giáo dục xuất sắc. Nhiệm vụ của bạn là dựa theo yêu cầu người dùng để tạo ra danh sách câu hỏi.
-Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi nên là loại TRẮC NGHIỆM ("multiple_choice") hay TỰ LUẬN/GHÉP CÂU ("essay").
+        if (attachedFile) {
+            try {
+                showLoading('Đang Chuẩn Bị File...', `Nạp dữ liệu file ${attachedFile.name} cho AI...`);
+                fileInlineData = await fileToBase64(attachedFile);
+
+                // Extract text if document file
+                const isDoc = !attachedFile.type.startsWith('image/');
+                if (isDoc) {
+                    const text = await extractTextFromFile(attachedFile);
+                    if (text && text.length > 0) {
+                        finalUserPrompt += `\n\nNỘI DUNG VĂN BẢN TRÍCH XUẤT TỪ FILE "${attachedFile.name}":\n"""\n${text.substring(0, 15000)}\n"""`;
+                    }
+                }
+            } catch (fileErr) {
+                hideLoading();
+                showError('Lỗi Đọc File', fileErr.message);
+                return;
+            }
+        }
+
+        const systemPrompt = `Bạn là một chuyên gia giáo dục xuất sắc. Nhiệm vụ của bạn là dựa theo yêu cầu người dùng và file đính kèm (ảnh, PDF, tài liệu...) để tạo bộ câu hỏi phù hợp.
+
+QUY TẮC CÔNG THỨC TOÁN HỌC (LaTeX):
+- Nếu bài tập liên quan đến Toán học, Vật lý, Hóa học: Hãy sử dụng cú pháp LaTeX trong cặp dấu $...$ (inline) hoặc $$...$$ (display) cho mọi công thức, căn thức, tích phân, phân số... Ví dụ: $\\sqrt{x^2+1}$, $\\int_0^1 f(x)dx$, $\\frac{a}{b}$.
+
+QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
+- Hãy TỰ ĐỘNG PHÂN TÍCH xem prompt hoặc file đính kèm có chứa bài đọc/đoạn văn tham chiếu (ví dụ: task reading B1, bài đọc hiểu, văn bản dịch thuật, bài tập đọc phân tích...) hay không.
+- Nếu CẦN BÀI ĐỌC hoặc có tệp bài đọc: Hãy điền nội dung bài đọc vào trường "reading_passage".
+- Nếu KHÔNG CẦN BÀI ĐỌC: Đặt "reading_passage" là rỗng "".
 
 Định dạng trả về BẮT BUỘC tuân thủ cấu trúc JSON:
 {
-  "topic": "Tên chủ đề câu hỏi ngắn gọn",
+  "topic": "Tên chủ đề bài làm",
+  "reading_passage": "Nội dung bài đọc (nếu có, hoặc rỗng nếu không cần)",
   "questions": [
     {
       "id": 1,
       "type": "multiple_choice",
       "question": "Nội dung câu hỏi...",
       "options": {
-        "A": "Đáp án A",
-        "B": "Đáp án B",
-        "C": "Đáp án C",
-        "D": "Đáp án D"
+        "A": "Phương án A",
+        "B": "Phương án B",
+        "C": "Phương án C",
+        "D": "Phương án D"
       },
-      "hint": "Gợi ý định hướng (nếu có)"
+      "hint": "Gợi ý (nếu có)"
     }
   ]
 }`;
 
         try {
-            showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang xử lý yêu cầu với mô hình ${selectedModel}...`);
+            showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang truyền dữ liệu file và xử lý prompt với ${selectedModel}...`);
             btnGenerate.disabled = true;
 
-            const rawResponse = await callLLMAPI(systemPrompt, `Yêu cầu tạo câu hỏi: ${promptText}`, selectedModel, questionGenerationSchema);
+            const rawResponse = await callLLMAPI(systemPrompt, finalUserPrompt, selectedModel, questionGenerationSchema, fileInlineData);
             const parsedData = parseAIJsonResponse(rawResponse);
 
             if (!parsedData.questions || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {
@@ -550,8 +760,10 @@ Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi n�
             }
 
             currentQuestions = parsedData.questions;
+            currentReadingPassage = parsedData.reading_passage || '';
             userAnswers = {};
-            renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions);
+
+            renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions, currentReadingPassage);
 
             // Switch view
             promptSection.classList.add('hidden');
@@ -568,10 +780,19 @@ Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi n�
         }
     });
 
-    /* Render UI câu hỏi */
-    function renderQuestionsUI(topic, questions) {
+    /* Render UI câu hỏi & Bài đọc hiểu (nếu có) & Trigger KaTeX */
+    function renderQuestionsUI(topic, questions, readingPassage = '') {
         quizTopicTitle.textContent = topic;
         quizQuestionCount.textContent = `${questions.length} câu hỏi`;
+
+        if (readingPassage && readingPassage.trim() !== '') {
+            readingPassageContent.innerHTML = escapeHtml(readingPassage);
+            readingPassageContainer.classList.remove('hidden');
+        } else {
+            readingPassageContent.innerHTML = '';
+            readingPassageContainer.classList.add('hidden');
+        }
+
         questionsContainer.innerHTML = '';
 
         questions.forEach((q, index) => {
@@ -692,6 +913,9 @@ Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi n�
                 }
             });
         });
+
+        // Render KaTeX Math Formulas
+        renderMathInContainer(quizSection);
     }
 
     function captureUserAnswers() {
@@ -769,13 +993,18 @@ Bạn hãy TỰ ĐỘNG PHÂN TÍCH và quyết định xem từng câu hỏi n�
             user_answer: userAnswers[q.id] || '(Chưa trả lời)'
         }));
 
-        const systemPrompt = `Bạn là một giáo viên chấm bài AI cực kỳ công bằng và chu đáo.
-Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận sau đây trên thang điểm 10.
+        let systemPrompt = `Bạn là một giáo viên chấm bài AI cực kỳ công bằng và chu đáo.
+Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận sau đây trên thang điểm 10.`;
 
-YÊU CẦU CHẤM ĐIỂM:
-1. Với câu trắc nghiệm ABCD: Đối chiếu đáp án. Nếu đúng -> 10 điểm, giải thích tại sao đúng. Nếu sai -> 0 điểm, chỉ rõ đáp án đúng.
-2. Với câu tự luận: Chấm trên thang điểm 10, giải thích NGẮN GỌN và đưa ra gợi ý cách sửa/đáp án gợi ý tốt nhất.
-3. Trả về đúng định dạng JSON:
+        if (currentReadingPassage) {
+            systemPrompt += `\nĐÂY LÀ BÀI ĐỌC HỂU THAM CHIẾU (READING PASSAGE):\n"""\n${currentReadingPassage}\n"""\nHãy chấm điểm dựa trên nội dung đoạn văn bài đọc này.`;
+        }
+
+        systemPrompt += `\n\nYÊU CẦU CHẤM ĐIỂM & TOÁN HỌC:
+1. Nếu có công thức Toán học/Lý/Hóa: Viết công thức trong cặp dấu $...$ theo chuẩn LaTeX.
+2. Với câu trắc nghiệm ABCD: Đối chiếu đáp án. Nếu đúng -> 10 điểm, giải thích tại sao đúng. Nếu sai -> 0 điểm, chỉ rõ đáp án đúng.
+3. Với câu tự luận: Chấm trên thang điểm 10, giải thích NGẮN GỌN và đưa ra gợi ý cách sửa/đáp án gợi ý tốt nhất.
+4. Trả về đúng định dạng JSON:
 {
   "overall_feedback": "Nhận xét tổng quan ngắn gọn 1-2 câu",
   "average_score": 8.5,
@@ -876,6 +1105,9 @@ YÊU CẦU CHẤM ĐIỂM:
             `;
             evaluationsContainer.appendChild(evalCard);
         });
+
+        // Trigger KaTeX Math formulas on results page
+        renderMathInContainer(resultsSection);
     }
 
     /* ==========================================================================
@@ -905,7 +1137,6 @@ YÊU CẦU CHẤM ĐIỂM:
         }
     }
 
-    // Manual Save Button Event
     btnSaveToHistory.addEventListener('click', () => {
         if (!currentQuestions || currentQuestions.length === 0 || !lastEvaluations) {
             showError('Không có dữ liệu', 'Bạn cần hoàn thành và có kết quả chấm điểm trước khi lưu vào lịch sử.');
@@ -918,6 +1149,7 @@ YÊU CẦU CHẤM ĐIỂM:
             timestamp: new Date().toLocaleString('vi-VN'),
             topic: quizTopicTitle.textContent || 'Bộ câu hỏi AI',
             prompt: lastPrompt,
+            readingPassage: currentReadingPassage,
             questionCount: currentQuestions.length,
             averageScore: Number(lastEvaluations.average_score || 0).toFixed(1),
             overallFeedback: lastEvaluations.overall_feedback || '',
@@ -926,11 +1158,9 @@ YÊU CẦU CHẤM ĐIỂM:
             evaluations: lastEvaluations
         };
 
-        // Add to beginning of array
         historyList.unshift(record);
         saveStoredHistory(historyList);
 
-        // Feedback alert button
         btnSaveToHistory.innerHTML = '<i class="fa-solid fa-check"></i> Đã Lưu Vô Lịch Sử!';
         btnSaveToHistory.style.background = 'linear-gradient(135deg, #10b981, #059669)';
         setTimeout(() => {
@@ -939,7 +1169,6 @@ YÊU CẦU CHẤM ĐIỂM:
         }, 2000);
     });
 
-    // Open / Close History Modal
     btnOpenHistory.addEventListener('click', () => {
         renderHistoryListUI();
         historyModal.classList.remove('hidden');
@@ -983,9 +1212,11 @@ YÊU CẦU CHẤM ĐIỂM:
             if (score >= 8) scoreClass = 'score-high';
             else if (score >= 6) scoreClass = 'score-med';
 
+            const hasPassage = item.readingPassage && item.readingPassage.trim() !== '';
+
             card.innerHTML = `
                 <div class="history-card-header">
-                    <div class="history-topic">${escapeHtml(item.topic)}</div>
+                    <div class="history-topic">${escapeHtml(item.topic)} ${hasPassage ? '<span class="type-badge mc" style="font-size:0.7rem; margin-left:6px;"><i class="fa-solid fa-book-open"></i> Bài đọc</span>' : ''}</div>
                     <span class="score-tag ${scoreClass}">${score} / 10 Điểm</span>
                 </div>
                 <div class="history-meta-info">
@@ -1008,7 +1239,6 @@ YÊU CẦU CHẤM ĐIỂM:
             historyListContainer.appendChild(card);
         });
 
-        // Event listener for "Xem Lại Bài Làm"
         historyListContainer.querySelectorAll('.btn-load-hist').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
@@ -1016,6 +1246,7 @@ YÊU CẦU CHẤM ĐIỂM:
                 const record = list.find(r => r.id === id);
                 if (record) {
                     currentQuestions = record.questions || [];
+                    currentReadingPassage = record.readingPassage || '';
                     userAnswers = record.userAnswers || {};
                     lastEvaluations = record.evaluations || null;
 
@@ -1037,7 +1268,6 @@ YÊU CẦU CHẤM ĐIỂM:
             });
         });
 
-        // Event listener for "Xóa"
         historyListContainer.querySelectorAll('.btn-delete-hist').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
@@ -1048,7 +1278,6 @@ YÊU CẦU CHẤM ĐIỂM:
             });
         });
 
-        // Event listener for "Xuất Excel" from History
         historyListContainer.querySelectorAll('.btn-export-hist').forEach(btn => {
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
@@ -1069,7 +1298,7 @@ YÊU CẦU CHẤM ĐIỂM:
 
         const exportData = record.questions.map((q, idx) => {
             const ev = evalsMap[q.id] || { score: 0, explanation: '', improvement: '' };
-            return {
+            const row = {
                 "STT": idx + 1,
                 "Loại câu hỏi": q.type === 'multiple_choice' ? 'Trắc nghiệm ABCD' : 'Tự luận',
                 "Câu hỏi": q.question,
@@ -1078,6 +1307,12 @@ YÊU CẦU CHẤM ĐIỂM:
                 "Giải thích ngắn gọn": ev.explanation || '',
                 "Đáp án đúng / Gợi ý": ev.improvement || ''
             };
+
+            if (idx === 0 && record.readingPassage) {
+                row["Đoạn văn bài đọc (Reading Passage)"] = record.readingPassage;
+            }
+
+            return row;
         });
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -1089,8 +1324,7 @@ YÊU CẦU CHẤM ĐIỂM:
     /* ==========================================================================
        8. EXCEL IMPORT & EXPORT FEATURES (SheetJS)
        ========================================================================== */
-    
-    // Open Export Options Modal
+
     btnExportQuestionsExcel.addEventListener('click', () => {
         if (!currentQuestions || currentQuestions.length === 0) {
             showError('Không có dữ liệu', 'Chưa có câu hỏi nào để xuất Excel.');
@@ -1126,6 +1360,10 @@ YÊU CẦU CHẤM ĐIỂM:
                 "Phương án D": q.options ? q.options.D || '' : '',
                 "Gợi ý": q.hint || ''
             };
+
+            if (idx === 0 && currentReadingPassage) {
+                row["Đoạn văn bài đọc (Reading Passage)"] = currentReadingPassage;
+            }
 
             if (includeAnswers) {
                 row["Bài làm / Câu trả lời"] = userAnswers[q.id] || '';
@@ -1167,6 +1405,11 @@ YÊU CẦU CHẤM ĐIỂM:
                 }
 
                 userAnswers = {};
+                currentReadingPassage = '';
+
+                if (jsonData[0] && (jsonData[0]['Đoạn văn bài đọc (Reading Passage)'] || jsonData[0]['Reading Passage'] || jsonData[0]['Bài đọc'])) {
+                    currentReadingPassage = String(jsonData[0]['Đoạn văn bài đọc (Reading Passage)'] || jsonData[0]['Reading Passage'] || jsonData[0]['Bài đọc']);
+                }
 
                 const importedQuestions = jsonData.map((row, idx) => {
                     const typeRaw = String(row['Loại câu hỏi'] || row['Type'] || '').toLowerCase();
@@ -1183,11 +1426,11 @@ YÊU CẦU CHẤM ĐIỂM:
                     }
 
                     const importedAnswer = String(
-                        row['Bài làm / Câu trả lời'] || 
-                        row['Bài làm'] || 
-                        row['Câu trả lời'] || 
-                        row['User Answer'] || 
-                        row['Answer'] || 
+                        row['Bài làm / Câu trả lời'] ||
+                        row['Bài làm'] ||
+                        row['Câu trả lời'] ||
+                        row['User Answer'] ||
+                        row['Answer'] ||
                         ''
                     ).trim();
 
@@ -1206,7 +1449,7 @@ YÊU CẦU CHẤM ĐIỂM:
                 });
 
                 currentQuestions = importedQuestions;
-                renderQuestionsUI(`Bộ Câu Hỏi Nhập Từ Excel (${file.name})`, currentQuestions);
+                renderQuestionsUI(`Bộ Câu Hỏi Nhập Từ Excel (${file.name})`, currentQuestions, currentReadingPassage);
 
                 // Switch UI to quiz
                 promptSection.classList.add('hidden');
@@ -1240,7 +1483,7 @@ YÊU CẦU CHẤM ĐIỂM:
 
         const exportData = currentQuestions.map((q, idx) => {
             const ev = evalsMap[q.id] || { score: 0, explanation: '', improvement: '' };
-            return {
+            const row = {
                 "STT": idx + 1,
                 "Loại câu hỏi": q.type === 'multiple_choice' ? 'Trắc nghiệm ABCD' : 'Tự luận',
                 "Câu hỏi": q.question,
@@ -1249,6 +1492,12 @@ YÊU CẦU CHẤM ĐIỂM:
                 "Giải thích ngắn gọn": ev.explanation || '',
                 "Đáp án đúng / Gợi ý": ev.improvement || ''
             };
+
+            if (idx === 0 && currentReadingPassage) {
+                row["Đoạn văn bài đọc (Reading Passage)"] = currentReadingPassage;
+            }
+
+            return row;
         });
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -1271,7 +1520,7 @@ YÊU CẦU CHẤM ĐIỂM:
         captureUserAnswers();
         resultsSection.classList.add('hidden');
         quizSection.classList.remove('hidden');
-        renderQuestionsUI(quizTopicTitle.textContent, currentQuestions);
+        renderQuestionsUI(quizTopicTitle.textContent, currentQuestions, currentReadingPassage);
         hideError();
         window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
     });
