@@ -644,6 +644,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
+       4b. Public Google Translate API (Free / Unauthenticated)
+       ========================================================================== */
+    /**
+     * Translate text using public Google Translate endpoint (no API key required).
+     * @param {string} text - Source text to translate.
+     * @param {string} targetLang - BCP-47 language code, default 'vi' (Vietnamese).
+     * @param {string} sourceLang - BCP-47 source language code, default 'auto'.
+     * @returns {Promise<string>} Translated text.
+     */
+    async function translateWithGoogleAPI(text, targetLang = 'vi', sourceLang = 'auto') {
+        const endpoint = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            throw new Error(`Lỗi kết nối Google Translate (${response.status})`);
+        }
+
+        const data = await response.json();
+        if (data && data[0] && Array.isArray(data[0])) {
+            const translatedText = data[0].map(item => item[0]).filter(Boolean).join('');
+            if (translatedText) return translatedText;
+        }
+
+        throw new Error('Google Translate không trả về kết quả.');
+    }
+
+    /* ==========================================================================
        5. Generate Questions Flow (Direct File Payload + Text Extractor)
        ========================================================================== */
     const questionGenerationSchema = {
@@ -785,12 +812,19 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
         quizTopicTitle.textContent = topic;
         quizQuestionCount.textContent = `${questions.length} câu hỏi`;
 
+        const quizColumnsLayout = document.querySelector('.quiz-columns-layout');
+        const passageColumn = document.querySelector('.passage-column');
+
         if (readingPassage && readingPassage.trim() !== '') {
             readingPassageContent.innerHTML = escapeHtml(readingPassage);
             readingPassageContainer.classList.remove('hidden');
+            if (passageColumn) passageColumn.classList.remove('hidden');
+            if (quizColumnsLayout) quizColumnsLayout.classList.remove('no-passage');
         } else {
             readingPassageContent.innerHTML = '';
             readingPassageContainer.classList.add('hidden');
+            if (passageColumn) passageColumn.classList.add('hidden');
+            if (quizColumnsLayout) quizColumnsLayout.classList.add('no-passage');
         }
 
         questionsContainer.innerHTML = '';
@@ -1543,6 +1577,300 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
+
+    /* ==========================================================================
+       10. TEXT ANNOTATION & TRANSLATION FEATURE (Reading Passage)
+           - Highlight (yellow background)
+           - Underline (blue underline)
+           - Remove: if text has both → remove both
+           - Translate to Vietnamese via AI API
+       ========================================================================== */
+    (function initPassageAnnotations() {
+        const passageContent  = document.getElementById('reading-passage-content');
+        const toolbar         = document.getElementById('annotation-toolbar');
+        const hlBtn           = document.getElementById('btn-annotate-highlight');
+        const ulBtn           = document.getElementById('btn-annotate-underline');
+        const rmBtn           = document.getElementById('btn-annotate-remove');
+        const rmDivider       = document.getElementById('annot-remove-divider');
+        const trBtn           = document.getElementById('btn-annotate-translate');
+        const popup           = document.getElementById('translate-popup');
+        const popupText       = document.getElementById('translate-popup-text');
+        const popupSource     = document.getElementById('translate-source-text');
+        const popupCloseBtn   = document.getElementById('btn-translate-close');
+
+        if (!toolbar || !passageContent) return;
+
+        let savedRange    = null;
+        let selectedText  = '';
+        let toolbarVisible = false;
+
+        /* ---- Helpers ---- */
+        function hideToolbar() {
+            toolbar.classList.add('hidden');
+            toolbarVisible = false;
+        }
+
+        function hidePopup() {
+            popup.classList.add('hidden');
+        }
+
+        /** Find the nearest .hl-annotation ancestor within passageContent */
+        function getAnnotationAncestor(node) {
+            let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+            while (el && el !== passageContent) {
+                if (el.classList && el.classList.contains('hl-annotation')) return el;
+                el = el.parentElement;
+            }
+            return null;
+        }
+
+        /**
+         * Check if the entire range is within ONE annotation span.
+         * Returns that span or null.
+         */
+        function getEnclosingAnnotation(range) {
+            const startSpan = getAnnotationAncestor(range.startContainer);
+            const endSpan   = getAnnotationAncestor(range.endContainer);
+            if (startSpan && startSpan === endSpan) return startSpan;
+            return null;
+        }
+
+        /** Collect all .hl-annotation spans that overlap with the given range */
+        function getOverlappingAnnotations(range) {
+            const spans = Array.from(passageContent.querySelectorAll('.hl-annotation'));
+            return spans.filter(span => {
+                const spanRange = document.createRange();
+                spanRange.selectNodeContents(span);
+                return range.compareBoundaryPoints(Range.END_TO_START, spanRange) < 0 &&
+                       range.compareBoundaryPoints(Range.START_TO_END, spanRange) > 0;
+            });
+        }
+
+        /** Unwrap a span: move its children before it, then remove it */
+        function unwrapSpan(span) {
+            const parent = span.parentNode;
+            if (!parent) return;
+            while (span.firstChild) parent.insertBefore(span.firstChild, span);
+            parent.removeChild(span);
+            parent.normalize();
+        }
+
+        /** Wrap the current savedRange with a span bearing the given className(s) */
+        function applyAnnotation(classes) {
+            if (!savedRange) return;
+            // Restore selection
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+
+            const range = sel.getRangeAt(0);
+            if (!passageContent.contains(range.commonAncestorContainer)) return;
+
+            const span = document.createElement('span');
+            span.className = 'hl-annotation ' + classes.join(' ');
+
+            try {
+                // surroundContents works when range doesn't split existing elements
+                range.surroundContents(span);
+            } catch (_) {
+                // Fallback for complex selections (e.g. crossing multiple nodes)
+                const fragment = range.extractContents();
+                span.appendChild(fragment);
+                range.insertNode(span);
+            }
+
+            sel.removeAllRanges();
+        }
+
+        /* ---- Show toolbar above selection ---- */
+        function positionAndShowToolbar(rect, hasAnnotation, hasHL, hasUL) {
+            // Update button states
+            hlBtn.classList.toggle('active', hasHL);
+            ulBtn.classList.toggle('active', hasUL);
+
+            const showRemove = hasAnnotation && (hasHL || hasUL);
+            rmBtn.classList.toggle('hidden', !showRemove);
+            rmDivider.classList.toggle('hidden', !showRemove);
+
+            toolbar.classList.remove('hidden');
+            toolbarVisible = true;
+
+            // Force layout to get real width
+            const tbW = toolbar.offsetWidth || 270;
+            const tbH = toolbar.offsetHeight || 44;
+
+            let left = rect.left + rect.width / 2 - tbW / 2;
+            let top  = rect.top - tbH - 12;
+
+            // Clamp horizontally
+            left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8));
+            // If not enough space above, show below
+            if (top < 8) top = rect.bottom + 12;
+
+            toolbar.style.left = left + 'px';
+            toolbar.style.top  = top  + 'px';
+        }
+
+        /* ---- Detect selection on mouseup ---- */
+        document.addEventListener('mouseup', (e) => {
+            // Ignore clicks inside toolbar or popup
+            if (toolbar.contains(e.target) || popup.contains(e.target)) return;
+
+            // Small delay so browser finalises the selection
+            setTimeout(() => {
+                const sel = window.getSelection();
+                if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+                    hideToolbar();
+                    return;
+                }
+
+                const range = sel.getRangeAt(0);
+                selectedText = sel.toString().trim();
+
+                // Only activate for text inside the reading passage
+                if (!passageContent.contains(range.commonAncestorContainer)) {
+                    hideToolbar();
+                    return;
+                }
+
+                savedRange = range.cloneRange();
+
+                const enclosing = getEnclosingAnnotation(range);
+                const hasHL = !!(enclosing && enclosing.classList.contains('hl-highlight'));
+                const hasUL = !!(enclosing && enclosing.classList.contains('hl-underline'));
+
+                positionAndShowToolbar(range.getBoundingClientRect(), !!enclosing, hasHL, hasUL);
+            }, 10);
+        });
+
+        /* ---- Hide when clicking completely outside ---- */
+        document.addEventListener('mousedown', (e) => {
+            if (!toolbar.contains(e.target) &&
+                !popup.contains(e.target) &&
+                !passageContent.contains(e.target)) {
+                hideToolbar();
+                hidePopup();
+                savedRange = null;
+            }
+        });
+
+        /* ---- Highlight button ---- */
+        hlBtn.addEventListener('mousedown', (e) => e.preventDefault()); // keep selection
+        hlBtn.addEventListener('click', () => {
+            if (!savedRange) return;
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+            const range = sel.getRangeAt(0);
+
+            const enclosing = getEnclosingAnnotation(range);
+            if (enclosing) {
+                if (enclosing.classList.contains('hl-highlight')) {
+                    // Toggle off highlight
+                    enclosing.classList.remove('hl-highlight');
+                    if (!enclosing.classList.contains('hl-underline')) unwrapSpan(enclosing);
+                } else {
+                    enclosing.classList.add('hl-highlight');
+                }
+            } else {
+                applyAnnotation(['hl-highlight']);
+            }
+            sel.removeAllRanges();
+            hideToolbar();
+            hidePopup();
+        });
+
+        /* ---- Underline button ---- */
+        ulBtn.addEventListener('mousedown', (e) => e.preventDefault());
+        ulBtn.addEventListener('click', () => {
+            if (!savedRange) return;
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+            const range = sel.getRangeAt(0);
+
+            const enclosing = getEnclosingAnnotation(range);
+            if (enclosing) {
+                if (enclosing.classList.contains('hl-underline')) {
+                    // Toggle off underline
+                    enclosing.classList.remove('hl-underline');
+                    if (!enclosing.classList.contains('hl-highlight')) unwrapSpan(enclosing);
+                } else {
+                    enclosing.classList.add('hl-underline');
+                }
+            } else {
+                applyAnnotation(['hl-underline']);
+            }
+            sel.removeAllRanges();
+            hideToolbar();
+            hidePopup();
+        });
+
+        /* ---- Remove button (shown only when annotation exists) ---- */
+        rmBtn.addEventListener('mousedown', (e) => e.preventDefault());
+        rmBtn.addEventListener('click', () => {
+            if (!savedRange) return;
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+            const range = sel.getRangeAt(0);
+
+            // Remove the enclosing annotation span
+            const enclosing = getEnclosingAnnotation(range);
+            if (enclosing) unwrapSpan(enclosing);
+
+            // Also remove any other overlapping spans (multi-span removal)
+            getOverlappingAnnotations(range).forEach(unwrapSpan);
+
+            sel.removeAllRanges();
+            hideToolbar();
+            hidePopup();
+        });
+
+        /* ---- Translate button ---- */
+        trBtn.addEventListener('mousedown', (e) => e.preventDefault());
+        trBtn.addEventListener('click', async () => {
+            if (!selectedText) return;
+
+            // Show popup in loading state immediately
+            popupText.className = 'translate-popup-text loading';
+            popupText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang dịch...';
+            popupSource.textContent = '"' + selectedText.substring(0, 120) + (selectedText.length > 120 ? '…' : '') + '"';
+            popup.classList.remove('hidden');
+
+            // Position popup below toolbar
+            const tbRect = toolbar.getBoundingClientRect();
+            const popW   = popup.offsetWidth || 320;
+            let pLeft = tbRect.left + tbRect.width / 2 - popW / 2;
+            let pTop  = tbRect.bottom + 10;
+            pLeft = Math.max(8, Math.min(pLeft, window.innerWidth - popW - 8));
+            popup.style.left = pLeft + 'px';
+            popup.style.top  = pTop  + 'px';
+
+            trBtn.disabled = true;
+
+            try {
+                // Use Google Cloud Translation API v2 (dedicated, fast, accurate)
+                const translation = await translateWithGoogleAPI(selectedText, 'vi');
+                popupText.className = 'translate-popup-text';
+                popupText.textContent = translation;
+
+            } catch (err) {
+                popupText.className = 'translate-popup-text';
+                popupText.innerHTML = `<span style="color:#dc3545"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.message)}</span>`;
+            } finally {
+                trBtn.disabled = false;
+            }
+        });
+
+        /* ---- Close translate popup ---- */
+        if (popupCloseBtn) {
+            popupCloseBtn.addEventListener('click', () => {
+                hidePopup();
+            });
+        }
+
+    })(); // end initPassageAnnotations
 
     // Initialize UI status & History count badge
     updateKeyStatusUI();

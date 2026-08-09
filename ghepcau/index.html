@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghép Câu</title>
+    <title>Ghép Câu – Luyện Thi AI</title>
     <meta name="description"
         content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD, Reading Comprehension, công thức Toán học LaTeX và tự luận AI thông minh. Hỗ trợ Gemini & OpenRouter API, đính kèm file Ảnh/PDF/Word/TXT truyền trực tiếp tới AI, nhập xuất Excel, lưu lịch sử local.">
 
@@ -35,14 +35,9 @@
 </head>
 
 <body>
-    <div class="app-background">
-        <div class="gradient-sphere sphere-1"></div>
-        <div class="gradient-sphere sphere-2"></div>
-        <div class="grid-overlay"></div>
-    </div>
-
     <div class="app-container">
-        <!-- Header -->
+
+        <!-- ========== HEADER ========== -->
         <header class="app-header">
             <div class="logo-area">
                 <a href="index.html">
@@ -70,7 +65,7 @@
             </div>
         </header>
 
-        <!-- API Key Modal (Gemini + OpenRouter Advanced) -->
+        <!-- ========== API Key Modal ========== -->
         <div id="key-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
@@ -111,8 +106,9 @@
                         </button>
                     </div>
 
-                    <!-- Hidden Advanced OpenRouter Section -->
+                    <!-- Hidden Advanced Section: OpenRouter -->
                     <div id="advanced-key-section" class="advanced-section hidden">
+                        <!-- OpenRouter -->
                         <div class="form-group mb-2">
                             <label for="openrouter-key-input" class="label-with-badge">
                                 <span><i class="fa-solid fa-globe text-purple-400"></i> OpenRouter API Key</span>
@@ -122,7 +118,8 @@
                                 <i class="fa-solid fa-lock input-icon"></i>
                                 <input type="password" id="openrouter-key-input" placeholder="sk-or-v1-..."
                                     autocomplete="off">
-                                <button id="btn-toggle-show-openrouter-key" class="btn-icon-inside" title="Hiện/Ẩn Key">
+                                <button id="btn-toggle-show-openrouter-key" class="btn-icon-inside"
+                                    title="Hiện/Ẩn Key">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
@@ -132,21 +129,21 @@
                             </small>
                         </div>
                     </div>
-                </div>
+                </div> <!-- End modal-body -->
                 <div class="modal-footer">
                     <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa
                         Tất Cả Key</button>
                     <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API
                         Keys</button>
                 </div>
-            </div>
-        </div>
+            </div> <!-- End modal-content -->
+        </div> <!-- End key-modal -->
 
-        <!-- History Modal -->
+        <!-- ========== History Modal ========== -->
         <div id="history-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card modal-large">
                 <div class="modal-header">
-                    <h2><i class="fa-solid fa-clock-rotate-left text-purple-400"></i> Lịch Sử Bài Làm Đã Lưu</h2>
+                    <h2><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Bài Làm Đã Lưu</h2>
                     <button id="btn-close-history-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
@@ -164,7 +161,7 @@
             </div>
         </div>
 
-        <!-- Excel Export Options Modal -->
+        <!-- ========== Excel Export Options Modal ========== -->
         <div id="excel-export-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
@@ -194,7 +191,9 @@
             </div>
         </div>
 
+        <!-- ========== MAIN CONTENT ========== -->
         <main class="main-content">
+
             <!-- Step 1: Prompt Input Section -->
             <section id="prompt-section" class="glass-card section-card">
                 <div class="section-header space-between">
@@ -224,7 +223,8 @@
                     <!-- File Attachment Section -->
                     <div class="file-attach-wrapper mb-3">
                         <input type="file" id="prompt-file-input"
-                            accept=".png, .jpg, .jpeg, .webp, .pdf, .txt, .docx, .doc, .md, .json, .csv" class="hidden">
+                            accept=".png, .jpg, .jpeg, .webp, .pdf, .txt, .docx, .doc, .md, .json, .csv"
+                            class="hidden">
                         <button type="button" id="btn-attach-file" class="btn btn-outline btn-sm">
                             <i class="fa-solid fa-paperclip"></i> Đính Kèm File Gửi AI (Ảnh, PDF, Word, TXT...)
                         </button>
@@ -268,7 +268,7 @@
             </section>
 
             <!-- Loading Indicator -->
-            <div id="loading-spinner" class="glass-card loading-card hidden">
+            <div id="loading-spinner" class="loading-card hidden">
                 <div class="spinner-ring"></div>
                 <h3 id="loading-title">AI Đang Xử Lý...</h3>
                 <p id="loading-sub">Vui lòng chờ trong giây lát</p>
@@ -284,13 +284,15 @@
                 <button id="btn-dismiss-error" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- Step 2: Answer Form Section -->
-            <section id="quiz-section" class="glass-card section-card hidden">
-                <div class="section-header space-between">
+            <!-- Step 2: Answer Form Section — 2-column IELTS layout -->
+            <section id="quiz-section" class="hidden">
+
+                <!-- Header bar above 2 columns -->
+                <div class="quiz-header-bar">
                     <div class="header-left">
                         <div class="step-badge">Bước 2</div>
                         <div>
-                            <h2 id="quiz-topic-title">Danh Sách Câu Hỏi</h2>
+                            <h2 id="quiz-topic-title" style="font-size:1.05rem; font-weight:700;">Danh Sách Câu Hỏi</h2>
                             <span id="quiz-question-count" class="subtitle-tag">0 câu hỏi</span>
                         </div>
                     </div>
@@ -298,38 +300,45 @@
                         <button type="button" id="btn-export-questions-excel" class="btn btn-excel-outline">
                             <i class="fa-solid fa-file-excel"></i> Xuất File Đề (.xlsx)
                         </button>
-                    </div>
-                </div>
-
-                <!-- Dynamic Reading Passage Container -->
-                <div id="reading-passage-container" class="reading-passage-card hidden">
-                    <div class="passage-header">
-                        <span class="passage-title"><i class="fa-solid fa-book-open"></i> Bài Đọc / Văn Bản Tham Chiếu
-                            (Reading Passage)</span>
-                    </div>
-                    <div id="reading-passage-content" class="passage-content">
-                        <!-- Reading text paragraphs rendered here -->
+                        <button type="button" id="btn-reset-quiz" class="btn btn-outline">
+                            <i class="fa-solid fa-rotate-left"></i> Tạo / Nhập Đề Khác
+                        </button>
                     </div>
                 </div>
 
                 <form id="answers-form">
-                    <div id="questions-container" class="questions-list">
-                        <!-- Questions dynamically rendered here -->
-                    </div>
+                    <!-- 2-column layout: left = passage, right = questions -->
+                    <div class="quiz-columns-layout">
 
-                    <div class="form-actions right-aligned">
-                        <button type="button" id="btn-reset-quiz" class="btn btn-outline">
-                            <i class="fa-solid fa-rotate-left"></i> Tạo / Nhập Đề Khác
-                        </button>
-                        <button type="submit" id="btn-submit-answers" class="btn btn-success">
-                            <i class="fa-solid fa-paper-plane"></i> Nộp Bài & Chấm Điểm AI
-                        </button>
+                        <!-- LEFT COLUMN — Reading Passage -->
+                        <div class="passage-column">
+                            <!-- Dynamic Reading Passage Container -->
+                            <div id="reading-passage-container" class="reading-passage-card hidden">
+                                <div id="reading-passage-content" class="passage-content">
+                                    <!-- Reading text paragraphs rendered here -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN — Questions -->
+                        <div class="questions-column">
+                            <div id="questions-container" class="questions-list">
+                                <!-- Questions dynamically rendered here -->
+                            </div>
+
+                            <div class="form-actions right-aligned" style="margin-top: 8px;">
+                                <button type="submit" id="btn-submit-answers" class="btn btn-success">
+                                    <i class="fa-solid fa-paper-plane"></i> Nộp Bài & Chấm Điểm AI
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </section>
 
             <!-- Step 3: Evaluation Results Section -->
-            <section id="results-section" class="glass-card section-card hidden">
+            <section id="results-section" class="hidden">
                 <div class="section-header space-between">
                     <div class="header-left">
                         <div class="step-badge success">Kết quả</div>
@@ -371,11 +380,45 @@
                     </button>
                 </div>
             </section>
-        </main>
 
-        <footer class="app-footer">
-            <p>Trang web tĩnh không có server &bull; Dữ liệu lưu tại Local Storage máy của bạn</p>
-        </footer>
+        </main>
+    </div>
+
+    <!-- ========== ANNOTATION FLOATING TOOLBAR ========== -->
+    <div id="annotation-toolbar" class="annotation-toolbar hidden" role="toolbar" aria-label="Công cụ chú thích">
+        <button id="btn-annotate-highlight" class="annot-btn" title="Highlight (Tô màu)">
+            <i class="fa-solid fa-highlighter"></i>
+            <span>Highlight</span>
+        </button>
+        <div class="annot-divider"></div>
+        <button id="btn-annotate-underline" class="annot-btn" title="Gạch chân (Underline)">
+            <i class="fa-solid fa-underline"></i>
+            <span>Gạch chân</span>
+        </button>
+        <div class="annot-divider"></div>
+        <button id="btn-annotate-remove" class="annot-btn annot-btn-danger hidden" title="Xóa định dạng">
+            <i class="fa-solid fa-eraser"></i>
+            <span>Xóa</span>
+        </button>
+        <div id="annot-remove-divider" class="annot-divider hidden"></div>
+        <button id="btn-annotate-translate" class="annot-btn annot-btn-primary" title="Dịch sang tiếng Việt">
+            <i class="fa-solid fa-language"></i>
+            <span>Dịch</span>
+        </button>
+    </div>
+
+    <!-- ========== TRANSLATE RESULT POPUP ========== -->
+    <div id="translate-popup" class="translate-popup hidden" role="dialog" aria-label="Kết quả dịch">
+        <div class="translate-popup-header">
+            <span><i class="fa-solid fa-language"></i> Bản dịch tiếng Việt</span>
+            <button id="btn-translate-close" class="btn-icon translate-close-btn" title="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="translate-popup-text" class="translate-popup-text">Đang dịch...</div>
+        <div class="translate-popup-source">
+            <span id="translate-source-text" class="translate-source"></span>
+        </div>
     </div>
 
     <script src="app.js"></script>
