@@ -1,0 +1,639 @@
+/* UIT Timetable Application - Screenshot-matching Modern UI System */
+
+:root {
+  --bg-app: #f4f6f8;
+  --bg-sidebar: #fafafa;
+  --bg-card: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --border-dark: #d1d5db;
+  --accent-blue: #0284c7;
+  --accent-blue-hover: #0369a1;
+  --accent-blue-light: #e0f2fe;
+  --accent-red: #e11d48;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.4;
+  overflow-x: hidden;
+  font-size: 13px;
+}
+
+/* App Main Layout: Fixed Left Sidebar + Dynamic Content Area */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* Leftmost Sidebar */
+.app-sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem 0;
+  z-index: 50;
+  user-select: none;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Collapsed Sidebar Styles */
+.app-sidebar.collapsed {
+  width: 64px;
+  min-width: 64px;
+}
+
+.app-sidebar.collapsed .sidebar-header {
+  padding: 0 0.5rem 1rem 0.5rem;
+}
+
+.app-sidebar.collapsed .sidebar-logo {
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+}
+
+.app-sidebar.collapsed .sidebar-nav-item {
+  padding: 0.75rem;
+  justify-content: center;
+}
+
+.app-sidebar.collapsed .sidebar-nav-item span {
+  display: none;
+}
+
+.app-sidebar.collapsed .sidebar-footer {
+  padding: 1rem 0.5rem;
+  align-items: center;
+}
+
+.app-sidebar.collapsed .github-star-btn span {
+  display: none;
+}
+
+.sidebar-header {
+  padding: 0 1.25rem 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn {
+  color: var(--accent-blue);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--accent-blue-light);
+}
+
+.sidebar-nav {
+  padding: 1rem 0;
+  flex-grow: 1;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #4b5563;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.sidebar-nav-item:hover {
+  background: #f3f4f6;
+  color: var(--text-main);
+}
+
+.sidebar-nav-item.active {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-left-color: #0284c7;
+}
+
+.sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.github-star-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  border: 1px solid var(--border-dark);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.github-star-btn:hover {
+  background: #f9fafb;
+}
+
+/* Main Workspace Area */
+.main-workspace {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+
+/* Header Action Toolbar */
+.top-workspace-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Dual Column Content Body (Step 2 Interface) */
+.workspace-body {
+  display: flex;
+  flex-grow: 1;
+  height: calc(100vh - 55px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Containment for high-performance panel rendering */
+.center-table-panel, .right-timetable-panel {
+  contain: layout paint;
+}
+
+.class-table-container, .timetable-scroll-area {
+  contain: layout paint;
+}
+
+/* Ghost Line Indicator for 0ms Latency Hardware Accelerated Dragging */
+.resizer-ghost-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #0284c7;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.7);
+  z-index: 10000;
+  pointer-events: none;
+  display: none;
+}
+
+.resizer-ghost-line.active {
+  display: block;
+}
+
+/* Global Drag Active Overlay */
+.drag-active-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  cursor: col-resize;
+  display: none;
+}
+
+.drag-active-overlay.active {
+  display: block;
+}
+
+/* Center Table Panel */
+.center-table-panel {
+  flex: 0 0 58%;
+  min-width: 300px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Middle Drag Resizer Handle Bar */
+.panel-resizer {
+  width: 8px;
+  min-width: 8px;
+  background: #e2e8f0;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  cursor: col-resize;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+  z-index: 30;
+}
+
+.panel-resizer:hover, .panel-resizer.dragging {
+  background: #0284c7;
+}
+
+.resizer-line {
+  width: 2px;
+  height: 24px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.panel-resizer:hover .resizer-line, .panel-resizer.dragging .resizer-line {
+  background: #ffffff;
+}
+
+/* Filter Inputs embedded directly inside <thead> */
+.filter-input-box {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: normal;
+  color: var(--text-main);
+  outline: none;
+}
+
+.filter-input-box:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+/* Classes List Data Table */
+.class-table-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.class-data-table {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.class-data-table th {
+  background: #f8fafc;
+  color: #374151;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.class-data-table tr.table-filter-row th {
+  background: #f1f5f9;
+  padding: 0.3rem 0.4rem;
+  top: 29px;
+}
+
+.class-data-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.class-data-table tr {
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.class-data-table tr:hover {
+  background: #f8fafc;
+}
+
+.class-data-table tr.selected-row {
+  background: #e0f2fe !important;
+  font-weight: 600;
+}
+
+.class-data-table tr.conflicted-row {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+.class-data-table tr.conflicted-row td {
+  color: #b91c1c !important;
+}
+
+.checkbox-col {
+  width: 32px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.checkbox-input {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: var(--accent-blue);
+}
+
+/* Table Footer Status Bar */
+.table-footer-bar {
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.credit-sum-label {
+  color: var(--accent-red);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.rows-status-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Right Timetable Panel */
+.right-timetable-panel {
+  flex: 1 1 0%;
+  min-width: 350px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Rightmost Vertical Toolbar Tab */
+.right-sidebar-toolbar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  background: #ffffff;
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+  gap: 1.5rem;
+  z-index: 20;
+}
+
+.toolbar-vertical-btn {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.toolbar-vertical-btn:hover {
+  color: var(--accent-blue);
+}
+
+/* Timetable Grid View Area */
+.timetable-scroll-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 0.5rem 2.2rem 0.5rem 0.5rem;
+}
+
+.grid-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+}
+
+.grid-table th, .grid-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.3rem;
+  text-align: center;
+  vertical-align: top;
+}
+
+.grid-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  padding: 0.4rem;
+  white-space: nowrap;
+}
+
+.grid-table .time-cell {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  width: 95px;
+  min-width: 95px;
+  font-size: 0.7rem;
+}
+
+.grid-table .time-cell .p-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.75rem;
+}
+
+/* Timetable Grid Cards */
+.timetable-card {
+  background: #ffffff;
+  border: 1px solid var(--border-dark);
+  border-radius: 4px;
+  padding: 0.35rem;
+  font-size: 0.7rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  word-break: normal;
+  overflow-wrap: normal;
+  overflow: hidden;
+  transition: transform 0.1s ease;
+}
+
+.timetable-card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: var(--shadow-md);
+}
+
+.timetable-card .card-code {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.timetable-card .card-name {
+  color: #334155;
+  font-weight: 600;
+  margin: 0.15rem 0;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: normal;
+}
+
+.timetable-card .card-teacher {
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.timetable-card .card-room {
+  color: #475569;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timetable-card .card-dates {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+}
+
+.warning-icon {
+  color: var(--accent-red);
+  font-weight: bold;
+  margin-left: 0.2rem;
+}
+
+/* Unscheduled Star * Classes Grid below Timetable */
+.unscheduled-star-container {
+  margin-top: 1rem;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.unscheduled-star-title {
+  font-weight: 700;
+  color: #b45309;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-container {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem;
+  color: var(--text-main);
+}

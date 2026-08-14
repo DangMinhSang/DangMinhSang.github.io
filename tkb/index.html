@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Xếp Thời Khóa Biểu UIT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- SheetJS CDN for parsing XLSX -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- html2canvas CDN for PNG Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Sample Data File -->
+    <script src="sampleData.js"></script>
+</head>
+<body>
+
+    <!-- Main Layout Container -->
+    <div class="app-layout">
+
+        <!-- Leftmost Sidebar -->
+        <aside class="app-sidebar">
+            <div>
+                <!-- Sidebar Header -->
+                <div class="sidebar-header">
+                    <div class="sidebar-logo-container">
+                        <div class="sidebar-logo">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <span class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng menu"><i class="fa-solid fa-angles-left"></i></span>
+                    </div>
+                </div>
+
+                <!-- Navigation Steps -->
+                <nav class="sidebar-nav">
+                    <div id="step-nav-1" class="sidebar-nav-item active" onclick="goToStep(1)">
+                        <i class="fa-solid fa-file-excel w-5"></i>
+                        <span>1. Chọn file excel</span>
+                    </div>
+                    <div id="step-nav-2" class="sidebar-nav-item" onclick="goToStep(2)">
+                        <i class="fa-solid fa-table-list w-5"></i>
+                        <span>2. Xếp lớp</span>
+                    </div>
+                    <div id="step-nav-3" class="sidebar-nav-item" onclick="goToStep(3)">
+                        <i class="fa-solid fa-calendar-check w-5"></i>
+                        <span>3. TKB và script</span>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <button onclick="openModal('explanation-modal')" class="text-blue-600 hover:text-blue-800 text-lg text-left" title="Giải thích ký hiệu">
+                    <i class="fa-regular fa-comment-dots"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <a href="https://github.com/DangMinhSang" target="_blank" class="github-star-btn">
+                        <i class="fa-regular fa-star text-amber-500"></i> Star <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-700">502</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+
+        <!-- Main Workspace Area -->
+        <div class="main-workspace">
+
+            <!-- Top Action Header -->
+            <header class="top-workspace-header">
+                <div class="flex items-center gap-3">
+                    <a href="../index.html" class="text-slate-500 hover:text-blue-600 font-semibold text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-house"></i> Trang chủ
+                    </a>
+                    <span class="text-slate-300">|</span>
+                    <span class="font-bold text-slate-800 text-sm">Công Cụ Xếp Thời Khóa Biểu UIT</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="openModal('explanation-modal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 border border-slate-300">
+                        <i class="fa-solid fa-circle-question text-blue-600"></i> Hướng Dẫn Ký Hiệu
+                    </button>
+                    <button onclick="openAutoScheduler()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Gợi Ý Xếp Lớp Tự Động
+                    </button>
+                    <button onclick="exportTimetableAsImage()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-camera"></i> Xuất Ảnh PNG
+                    </button>
+                    <button onclick="clearAllSelected()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg font-semibold text-xs border border-rose-200 flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Xóa Đã Chọn
+                    </button>
+                </div>
+            </header>
+
+
+            <!-- STEP 1: CHỌN FILE EXCEL -->
+            <section id="step-1-view" class="p-6 overflow-y-auto space-y-6">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">Bước 1: Chọn File Thời Khóa Biểu</h2>
+                    <p class="text-slate-600 text-sm max-w-xl mx-auto">
+                        Tải lên file Excel danh sách lớp học mở rộng của UIT hoặc bấm <strong>HK1 2026</strong> để xếp TKB trực tiếp.
+                    </p>
+
+                    <!-- Dropzone -->
+                    <div id="dropzone" class="border-2 border-dashed border-blue-300 rounded-2xl p-8 bg-blue-50/50 hover:bg-blue-50 transition-colors cursor-pointer my-6" onclick="document.getElementById('excel-file-input').click()">
+                        <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls" onchange="handleFileSelect(event)">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-blue-500 mb-3 block"></i>
+                        <p class="font-bold text-slate-800 mb-1">Kéo & thả file Excel TKB vào đây</p>
+                        <p class="text-xs text-slate-500 mb-4">Hỗ trợ các file định dạng .xlsx, .xls</p>
+                        <div class="flex justify-center gap-3">
+                            <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl text-sm shadow-md">
+                                <i class="fa-solid fa-folder-open"></i> Chọn file từ máy
+                            </button>
+                            <button type="button" onclick="loadSampleData(event)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl text-sm shadow-md">
+                                <i class="fa-solid fa-bolt"></i> HK1 2026 (1,171 Lớp)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview / Imported Data Summary -->
+                <div id="import-summary-container" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hidden">
+                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-200">
+                        <div>
+                            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">✅ Đã nạp thành công</span>
+                            <h3 class="text-lg font-bold text-slate-900 mt-1" id="imported-filename">TKB_KHDT_14-08-2026.xlsx</h3>
+                        </div>
+                        <button onclick="goToStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-md flex items-center gap-2">
+                            Tiếp theo: Xếp lớp <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Stat Summary Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                            <p class="text-xl font-extrabold text-blue-600" id="stat-total-subjects">0</p>
+                            <p class="text-[11px] text-slate-500 font-semibold uppercase">Số Môn học</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                            <p class="text-xl font-extrabold text-emerald-600" id="stat-total-classes">0</p>
+                            <p class="text-[11px] text-slate-500 font-semibold uppercase">Số Lớp học</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                            <p class="text-xl font-extrabold text-indigo-600" id="stat-lt-classes">0</p>
+                            <p class="text-[11px] text-slate-500 font-semibold uppercase">Lớp Lý Thuyết (LT)</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                            <p class="text-xl font-extrabold text-amber-600" id="stat-th-classes">0</p>
+                            <p class="text-[11px] text-slate-500 font-semibold uppercase">Lớp Thực Hành (TH)</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- STEP 2: XẾP LỚP (WITH ALIGNED TABLE HEADERS & RESIZER BAR) -->
+            <section id="step-2-view" class="workspace-body hidden">
+
+                <!-- CENTER PANEL: FILTERABLE CLASS DATA TABLE -->
+                <div class="center-table-panel" id="center-table-panel">
+
+                    <!-- Classes List Table with Embedded Filter Inputs in <thead> -->
+                    <div class="class-table-container">
+                        <table class="class-data-table" id="class-data-table">
+                            <thead>
+                                <!-- Row 1: Header Titles -->
+                                <tr class="table-title-row">
+                                    <th class="checkbox-col"><i class="fa-regular fa-square"></i></th>
+                                    <th style="width: 32%;">MÔN HỌC <i class="fa-solid fa-filter text-slate-400 text-[10px]"></i></th>
+                                    <th style="width: 18%;">MÃ LỚP</th>
+                                    <th style="width: 25%;">TÊN GIẢNG VIÊN</th>
+                                    <th style="width: 10%; text-align: center;">THỨ</th>
+                                    <th style="width: 15%; text-align: center;">TIẾT</th>
+                                </tr>
+                                <!-- Row 2: Embedded Search/Filter Input Boxes -->
+                                <tr class="table-filter-row">
+                                    <th class="checkbox-col"></th>
+                                    <th>
+                                        <input type="text" id="filter-subject-input" oninput="filterClassTable()" placeholder="Lọc môn học..." class="filter-input-box">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="filter-class-input" oninput="filterClassTable()" placeholder="Mã lớp..." class="filter-input-box">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="filter-teacher-input" oninput="filterClassTable()" placeholder="Giảng viên..." class="filter-input-box">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="filter-day-input" oninput="filterClassTable()" placeholder="Thứ..." class="filter-input-box text-center">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="filter-tiet-input" oninput="filterClassTable()" placeholder="Tiết..." class="filter-input-box text-center">
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="class-table-tbody">
+                                <!-- Rendered dynamically by script.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer Status Bar -->
+                    <div class="table-footer-bar">
+                        <div class="credit-sum-label">
+                            Số tín chỉ: <span id="footer-credit-count">0</span>
+                        </div>
+                        <div class="rows-status-label">
+                            Selected: <span id="footer-selected-count" class="font-bold text-slate-800">0</span> | Rows: <span id="footer-rows-count" class="font-bold text-slate-800">0</span> of <span id="footer-total-rows">1,171</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- MIDDLE RESIZER DRAG HANDLE BAR -->
+                <div class="panel-resizer" id="panel-resizer" title="Nhấp giữ & kéo để chỉnh độ rộng 2 bên">
+                    <div class="resizer-line"></div>
+                </div>
+
+
+                <!-- RIGHT PANEL: VISUAL TIMETABLE GRID -->
+                <div class="right-timetable-panel" id="right-timetable-panel">
+
+                    <!-- Far Right Toolbar (Preview, Columns, Filters) -->
+                    <div class="right-sidebar-toolbar">
+                        <div class="toolbar-vertical-btn"><i class="fa-solid fa-eye"></i> Preview</div>
+                        <div class="toolbar-vertical-btn"><i class="fa-solid fa-table-columns"></i> Columns</div>
+                        <div class="toolbar-vertical-btn"><i class="fa-solid fa-filter"></i> Filters</div>
+                    </div>
+
+                    <!-- Timetable Scrollable Grid -->
+                    <div class="timetable-scroll-area" id="timetable-capture-area">
+                        <table class="grid-table" id="tkb-grid-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-cell">Thứ / Tiết</th>
+                                    <th>Thứ 2</th>
+                                    <th>Thứ 3</th>
+                                    <th>Thứ 4</th>
+                                    <th>Thứ 5</th>
+                                    <th>Thứ 6</th>
+                                    <th>Thứ 7</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tkb-table-body">
+                                <!-- Generated dynamically by script.js -->
+                            </tbody>
+                        </table>
+
+                        <!-- Unscheduled Star * Classes Container matching Screenshot -->
+                        <div class="unscheduled-star-container" id="unscheduled-container">
+                            <div class="unscheduled-star-title">
+                                <i class="fa-solid fa-asterisk text-amber-500"></i> Các môn không xếp lịch cố định (Tiết / Phòng *)
+                            </div>
+                            <div id="unscheduled-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <p class="text-slate-400 italic text-xs">Chưa có môn * nào được chọn.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- STEP 3: TKB VÀ SCRIPT SUMMARY -->
+            <section id="step-3-view" class="p-6 overflow-y-auto space-y-6 hidden">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-blue-600"></i> Tổng Kết Thời Khóa Biểu & Script Đăng Ký
+                        </h2>
+                        <button onclick="goToStep(2)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại Xếp Lớp
+                        </button>
+                    </div>
+
+                    <!-- Selected Classes Summary Table -->
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-xs text-left text-slate-700">
+                            <thead class="bg-slate-100 uppercase font-bold text-slate-600">
+                                <tr>
+                                    <th class="p-2.5">STT</th>
+                                    <th class="p-2.5">Mã Lớp</th>
+                                    <th class="p-2.5">Tên Môn Học</th>
+                                    <th class="p-2.5">Giảng Viên</th>
+                                    <th class="p-2.5">Thứ</th>
+                                    <th class="p-2.5">Tiết</th>
+                                    <th class="p-2.5">Phòng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-step3-tbody" class="divide-y divide-slate-100">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Copy Script Text Area -->
+                    <div class="pt-2">
+                        <label class="block font-bold text-xs text-slate-800 mb-1">Mã Lớp Đã Chọn (Dùng để Đăng ký học phần):</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="script-code-input" readonly class="flex-grow bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-xs text-blue-600 font-bold" value="">
+                            <button onclick="copyClassListScript()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs">
+                                <i class="fa-regular fa-copy"></i> Sao Chép
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: EXCEL SYMBOLS EXPLANATION -->
+    <div id="explanation-modal" class="modal-overlay" onclick="closeModalOnOutside(event, 'explanation-modal')">
+        <div class="modal-container space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-blue-600"></i> Hướng Dẫn Ký Hiệu File Excel Thời Khóa Biểu
+                </h3>
+                <button onclick="closeModal('explanation-modal')" class="text-slate-400 hover:text-slate-700 text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-600">
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <h4 class="font-bold text-emerald-700 text-xs mb-1">1. Thực hành [0, 1]</h4>
+                    <p>• <strong>0</strong>: Môn lý thuyết, KHÔNG có tiết thực hành tại phòng máy.<br>• <strong>1</strong>: Môn CÓ tiết thực hành (cần chọn 1 Lớp Lý thuyết LT và 1 Nhóm Thực hành TH).</p>
+                </div>
+
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <h4 class="font-bold text-blue-700 text-xs mb-1">2. HTGD (Hình thức giảng dạy)</h4>
+                    <p>• <strong>LT</strong>: Lớp Lý thuyết.<br>• <strong>TH / HT1 / HT2</strong>: Lớp Thực hành / Hướng dẫn.</p>
+                </div>
+
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <h4 class="font-bold text-amber-700 text-xs mb-1">3. Khung Giờ Các Tiết Học</h4>
+                    <ul class="grid grid-cols-2 gap-1 text-[11px] font-mono mt-1">
+                        <li>Tiết 1: 07:30 - 08:15</li>
+                        <li>Tiết 6: 13:00 - 13:45</li>
+                        <li>Tiết 2: 08:15 - 09:00</li>
+                        <li>Tiết 7: 13:45 - 14:30</li>
+                        <li>Tiết 3: 09:00 - 09:45</li>
+                        <li>Tiết 8: 14:30 - 15:15</li>
+                        <li>Tiết 4: 10:00 - 10:45</li>
+                        <li>Tiết 9: 15:30 - 16:15</li>
+                        <li>Tiết 5: 10:45 - 11:30</li>
+                        <li>Tiết 10: 16:15 - 17:00</li>
+                    </ul>
+                </div>
+
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <h4 class="font-bold text-purple-700 text-xs mb-1">4. Tiết học dấu * hoặc Phòng học *</h4>
+                    <p>Các môn học không có giờ tập trung cố định (Đồ án, Khóa luận, Thực tập) sẽ hiển thị ở bảng **Môn không xếp lịch cố định (*)** bên dưới Thời khóa biểu.</p>
+                </div>
+            </div>
+
+            <div class="pt-2 text-right border-t border-slate-200">
+                <button onclick="closeModal('explanation-modal')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Đã hiểu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 2: AUTO SCHEDULER -->
+    <div id="auto-scheduler-modal" class="modal-overlay" onclick="closeModalOnOutside(event, 'auto-scheduler-modal')">
+        <div class="modal-container space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> Gợi Ý Xếp Lớp Tự Động Không Trùng Lịch
+                </h3>
+                <button onclick="closeModal('auto-scheduler-modal')" class="text-slate-400 hover:text-slate-700 text-lg px-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600">Tích chọn các môn muốn học, hệ thống sẽ tự động tính toán các phương án xếp lớp không trùng giờ:</p>
+
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-48 overflow-y-auto space-y-1.5 text-xs" id="auto-scheduler-subjects-list">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+                <span class="text-xs text-slate-500" id="auto-scheduler-results-count">Sẵn sàng tính toán...</span>
+                <button onclick="runAutoSchedulerAlgorithm()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg">
+                    <i class="fa-solid fa-gears"></i> Tìm Phương Án Xếp Lớp
+                </button>
+            </div>
+
+            <!-- Combination Navigator -->
+            <div id="auto-scheduler-navigator" class="hidden p-3 bg-slate-100 rounded-xl border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-xs text-emerald-700" id="combo-nav-label">Phương án 1 / 10</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="prevCombo()" class="bg-white border border-slate-300 text-xs px-2.5 py-1 rounded font-bold"><i class="fa-solid fa-chevron-left"></i> Trước</button>
+                        <button onclick="nextCombo()" class="bg-white border border-slate-300 text-xs px-2.5 py-1 rounded font-bold">Sau <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="combo-preview-details" class="text-xs space-y-1"></div>
+                <button onclick="applyCurrentCombo()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs w-full py-2 rounded-lg">
+                    <i class="fa-solid fa-check"></i> Áp Dụng Phương Án Này Vào TKB
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>
