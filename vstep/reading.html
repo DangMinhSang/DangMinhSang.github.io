@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading – VSTEP Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vstep-page">
+    <header class="vstep-header">
+        <div class="header-left">
+            <a href="index.html" class="logo-wrap">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <span class="logo-title">VSTEP</span>
+                    <span class="logo-sub">Tự Luyện Thi B1-B2-C1</span>
+                </div>
+            </a>
+        </div>
+        <nav class="header-nav">
+            <a href="listening.html" class="nav-link"><i class="fa-solid fa-headphones"></i><span>Listening</span></a>
+            <a href="reading.html" class="nav-link active"><i class="fa-solid fa-book-open"></i><span>Reading</span></a>
+            <a href="writing.html" class="nav-link"><i class="fa-solid fa-pen-nib"></i><span>Writing</span></a>
+            <a href="speaking.html" class="nav-link"><i class="fa-solid fa-microphone"></i><span>Speaking</span></a>
+        </nav>
+        <div class="header-right">
+            <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i><span>Trang Chủ</span></a>
+        </div>
+    </header>
+
+    <div class="exam-layout">
+        <aside class="exam-sidebar">
+            <div class="sidebar-inner">
+                <div class="skill-badge skill-reading">
+                    <i class="fa-solid fa-book-open"></i> PHẦN I: ĐỌC HIỂU (READING)
+                </div>
+
+                <div class="timer-section">
+                    <div class="timer-label"><i class="fa-regular fa-clock"></i> Thời gian còn lại</div>
+                    <div class="timer-display" id="timer">60:00</div>
+                    <div class="timer-actions">
+                        <button id="btn-timer-toggle" class="btn-timer" onclick="toggleTimer()"><i class="fa-solid fa-pause"></i> Tạm dừng</button>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">Tiến độ làm bài: <span id="answered-count">0</span> / 40 câu</div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Palette of 40 questions -->
+                <div class="palette-container">
+                    <div class="palette-title">Bảng câu hỏi:</div>
+                    <div class="palette-grid">
+                        <button class="palette-btn" id="pal-btn-1" onclick="scrollToQuestion(1)">1</button>
+                        <button class="palette-btn" id="pal-btn-2" onclick="scrollToQuestion(2)">2</button>
+                        <button class="palette-btn" id="pal-btn-3" onclick="scrollToQuestion(3)">3</button>
+                        <button class="palette-btn" id="pal-btn-4" onclick="scrollToQuestion(4)">4</button>
+                        <button class="palette-btn" id="pal-btn-5" onclick="scrollToQuestion(5)">5</button>
+                        <button class="palette-btn" id="pal-btn-6" onclick="scrollToQuestion(6)">6</button>
+                        <button class="palette-btn" id="pal-btn-7" onclick="scrollToQuestion(7)">7</button>
+                        <button class="palette-btn" id="pal-btn-8" onclick="scrollToQuestion(8)">8</button>
+                        <button class="palette-btn" id="pal-btn-9" onclick="scrollToQuestion(9)">9</button>
+                        <button class="palette-btn" id="pal-btn-10" onclick="scrollToQuestion(10)">10</button>
+                        <button class="palette-btn" id="pal-btn-11" onclick="scrollToQuestion(11)">11</button>
+                        <button class="palette-btn" id="pal-btn-12" onclick="scrollToQuestion(12)">12</button>
+                        <button class="palette-btn" id="pal-btn-13" onclick="scrollToQuestion(13)">13</button>
+                        <button class="palette-btn" id="pal-btn-14" onclick="scrollToQuestion(14)">14</button>
+                        <button class="palette-btn" id="pal-btn-15" onclick="scrollToQuestion(15)">15</button>
+                        <button class="palette-btn" id="pal-btn-16" onclick="scrollToQuestion(16)">16</button>
+                        <button class="palette-btn" id="pal-btn-17" onclick="scrollToQuestion(17)">17</button>
+                        <button class="palette-btn" id="pal-btn-18" onclick="scrollToQuestion(18)">18</button>
+                        <button class="palette-btn" id="pal-btn-19" onclick="scrollToQuestion(19)">19</button>
+                        <button class="palette-btn" id="pal-btn-20" onclick="scrollToQuestion(20)">20</button>
+                        <button class="palette-btn" id="pal-btn-21" onclick="scrollToQuestion(21)">21</button>
+                        <button class="palette-btn" id="pal-btn-22" onclick="scrollToQuestion(22)">22</button>
+                        <button class="palette-btn" id="pal-btn-23" onclick="scrollToQuestion(23)">23</button>
+                        <button class="palette-btn" id="pal-btn-24" onclick="scrollToQuestion(24)">24</button>
+                        <button class="palette-btn" id="pal-btn-25" onclick="scrollToQuestion(25)">25</button>
+                        <button class="palette-btn" id="pal-btn-26" onclick="scrollToQuestion(26)">26</button>
+                        <button class="palette-btn" id="pal-btn-27" onclick="scrollToQuestion(27)">27</button>
+                        <button class="palette-btn" id="pal-btn-28" onclick="scrollToQuestion(28)">28</button>
+                        <button class="palette-btn" id="pal-btn-29" onclick="scrollToQuestion(29)">29</button>
+                        <button class="palette-btn" id="pal-btn-30" onclick="scrollToQuestion(30)">30</button>
+                        <button class="palette-btn" id="pal-btn-31" onclick="scrollToQuestion(31)">31</button>
+                        <button class="palette-btn" id="pal-btn-32" onclick="scrollToQuestion(32)">32</button>
+                        <button class="palette-btn" id="pal-btn-33" onclick="scrollToQuestion(33)">33</button>
+                        <button class="palette-btn" id="pal-btn-34" onclick="scrollToQuestion(34)">34</button>
+                        <button class="palette-btn" id="pal-btn-35" onclick="scrollToQuestion(35)">35</button>
+                        <button class="palette-btn" id="pal-btn-36" onclick="scrollToQuestion(36)">36</button>
+                        <button class="palette-btn" id="pal-btn-37" onclick="scrollToQuestion(37)">37</button>
+                        <button class="palette-btn" id="pal-btn-38" onclick="scrollToQuestion(38)">38</button>
+                        <button class="palette-btn" id="pal-btn-39" onclick="scrollToQuestion(39)">39</button>
+                        <button class="palette-btn" id="pal-btn-40" onclick="scrollToQuestion(40)">40</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-submit-wrap">
+                    <button class="btn-submit-exam" onclick="submitExam()"><i class="fa-solid fa-check"></i> Chấm điểm bài thi</button>
+                    <button class="btn-clear-exam" onclick="resetExam()"><i class="fa-solid fa-rotate-right"></i> Làm lại từ đầu</button>
+                </div>
+
+                <div class="score-card-modal" id="score-result-card" style="display:none;">
+                    <div class="score-card-header">Kết quả bài thi</div>
+                    <div class="score-big" id="score-number">0 / 40</div>
+                    <div class="score-level-badge" id="score-level-text">Đang chấm...</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="exam-main">
+            <div class="exam-header-banner">
+                <div class="test-tag">PHẦN I: READING PAPER – CODE 1</div>
+                <h1 class="test-title">Reading Paper – CODE 1</h1>
+                <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 40 câu trắc nghiệm (4 Passages)</p>
+            </div>
+
+            <!-- ===================== PASSAGE 1 – Questions 1-10 ===================== -->
+            <div class="reading-passage-card" id="p1">
+                <div class="passage-header">
+                    <h2>PASSAGE 1 – Questions 1-10</h2>
+                </div>
+                <div class="passage-text-box">
+                    The modern comic strip started out as ammunition in a newspaper war between giants of the American press in the late nineteenth century. The first full-color comic strip appeared in January 1894 in the New York World, owned by Joseph Pulitzer. The first regular weekly full-color comic supplement, similar to today's Sunday funnies, appeared two years later, in William Randolph Hearst's rival New York paper, the Morning Journal.</p><p>Both were immensely popular, and publishers realized that supplementing the news with comic relief boosted the sale of papers. The Morning Journal started another feature in 1896, the "Yellow Kid," the first continuous comic character in the United States, whose creator, Richard Outcault, had been lured away from the World by the ambitious Hearst. The "Yellow Kid" was in many ways a pioneer. Its comic dialogue was the strictly urban farce that came to characterize later strips, and it introduced the speech balloon inside the strip, usually placed above the characters' heads.</p><p>The first strip to incorporate all the elements of later comics was Rudolph Dirks's "Katzenjammer Kids," based on Wilhelm Busch's Max and Moritz, a European satire of the nineteenth century. The "Kids" strip, first published in 1897, served as the prototype for future American strips. It contained not only speech balloons, but a continuous cast of characters, and was divided into small regular panels that did away with the larger panoramic scenes of earlier comics.</p><p>Newspaper syndication played a major role in spreading the popularity of comic strips throughout the country. Though weekly colored comics came first, daily black-and-white strips were not far behind. They first appeared in the Chicago American in 1904. It was followed by many imitators, and by 1915 black-and-white comic strips had become a staple of daily newspapers around the country.
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-1">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">1</span>
+                            <span class="q-text-content">What does the passage mainly discuss?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-1-A">
+                                <input type="radio" name="q1" value="A" onchange="recordAnswer(1, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">A comparison of two popular comic strips</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-B">
+                                <input type="radio" name="q1" value="B" onchange="recordAnswer(1, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">The differences between early and modern comic strips</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-C">
+                                <input type="radio" name="q1" value="C" onchange="recordAnswer(1, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">The effects of newspapers on comic strip stories</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-D">
+                                <input type="radio" name="q1" value="D" onchange="recordAnswer(1, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Features of early comic strips in the United States</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-1" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-2">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">2</span>
+                            <span class="q-text-content">Why does the author mention Joseph Pulitzer and William Randolph Hearst?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-2-A">
+                                <input type="radio" name="q2" value="A" onchange="recordAnswer(2, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">They established New York's first newspaper.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-B">
+                                <input type="radio" name="q2" value="B" onchange="recordAnswer(2, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">They published comic strips about the newspaper war.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-C">
+                                <input type="radio" name="q2" value="C" onchange="recordAnswer(2, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Their comic strips are still published today.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-D">
+                                <input type="radio" name="q2" value="D" onchange="recordAnswer(2, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">They owned major competitive newspapers.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-2" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-3">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">3</span>
+                            <span class="q-text-content">The passage suggests that comic strips were popular for which of the following reasons?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-3-A">
+                                <input type="radio" name="q3" value="A" onchange="recordAnswer(3, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">They provided a break from serious news stories.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-B">
+                                <input type="radio" name="q3" value="B" onchange="recordAnswer(3, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Readers enjoyed the unusual drawings.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-C">
+                                <input type="radio" name="q3" value="C" onchange="recordAnswer(3, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Readers could identify with the characters.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-D">
+                                <input type="radio" name="q3" value="D" onchange="recordAnswer(3, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">They were about real-life situations.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-3" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-4">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">4</span>
+                            <span class="q-text-content">To say that Richard Outcault had been "lured away from" the World by Hearst means which of the following?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-4-A">
+                                <input type="radio" name="q4" value="A" onchange="recordAnswer(4, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Hearst convinced Outcault to leave the World.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-B">
+                                <input type="radio" name="q4" value="B" onchange="recordAnswer(4, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Hearst fired Outcault from the World.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-C">
+                                <input type="radio" name="q4" value="C" onchange="recordAnswer(4, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Hearst warned Outcault to leave the World.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-D">
+                                <input type="radio" name="q4" value="D" onchange="recordAnswer(4, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Hearst wanted Outcault to work for the World.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-4" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-5">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">5</span>
+                            <span class="q-text-content">The word "it" in paragraph 2 refers to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-5-A">
+                                <input type="radio" name="q5" value="A" onchange="recordAnswer(5, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">The "Yellow Kid"</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-B">
+                                <input type="radio" name="q5" value="B" onchange="recordAnswer(5, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">dialogue</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-C">
+                                <input type="radio" name="q5" value="C" onchange="recordAnswer(5, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">farce</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-D">
+                                <input type="radio" name="q5" value="D" onchange="recordAnswer(5, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">balloon</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-5" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-6">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">6</span>
+                            <span class="q-text-content">According to the passage, the "Yellow Kid" was the first comic strip to do all of the following EXCEPT</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-6-A">
+                                <input type="radio" name="q6" value="A" onchange="recordAnswer(6, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">feature the same character in each episode</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-B">
+                                <input type="radio" name="q6" value="B" onchange="recordAnswer(6, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">include dialogue inside a balloon</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-C">
+                                <input type="radio" name="q6" value="C" onchange="recordAnswer(6, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">appear in a Chicago newspaper</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-D">
+                                <input type="radio" name="q6" value="D" onchange="recordAnswer(6, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">characterize city life in a humorous way</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-6" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-7">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">7</span>
+                            <span class="q-text-content">The word "incorporate" is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-7-A">
+                                <input type="radio" name="q7" value="A" onchange="recordAnswer(7, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">affect</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-B">
+                                <input type="radio" name="q7" value="B" onchange="recordAnswer(7, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">create</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-C">
+                                <input type="radio" name="q7" value="C" onchange="recordAnswer(7, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">combine</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-D">
+                                <input type="radio" name="q7" value="D" onchange="recordAnswer(7, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">mention</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-7" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-8">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">8</span>
+                            <span class="q-text-content">The word "prototype" is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-8-A">
+                                <input type="radio" name="q8" value="A" onchange="recordAnswer(8, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">story</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-B">
+                                <input type="radio" name="q8" value="B" onchange="recordAnswer(8, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">humor</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-C">
+                                <input type="radio" name="q8" value="C" onchange="recordAnswer(8, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">drawing</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-D">
+                                <input type="radio" name="q8" value="D" onchange="recordAnswer(8, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">model</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-8" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-9">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">9</span>
+                            <span class="q-text-content">The word "staple" is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-9-A">
+                                <input type="radio" name="q9" value="A" onchange="recordAnswer(9, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">regular feature</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-B">
+                                <input type="radio" name="q9" value="B" onchange="recordAnswer(9, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">popular edition</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-C">
+                                <input type="radio" name="q9" value="C" onchange="recordAnswer(9, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">new version</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-D">
+                                <input type="radio" name="q9" value="D" onchange="recordAnswer(9, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">huge success</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-9" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-10">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">10</span>
+                            <span class="q-text-content">In what order does the author discuss various comic strips in the passage?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-10-A">
+                                <input type="radio" name="q10" value="A" onchange="recordAnswer(10, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">In alphabetical order by title</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-B">
+                                <input type="radio" name="q10" value="B" onchange="recordAnswer(10, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">In the order in which they were created</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-C">
+                                <input type="radio" name="q10" value="C" onchange="recordAnswer(10, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">According to the newspaper in which they appeared</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-D">
+                                <input type="radio" name="q10" value="D" onchange="recordAnswer(10, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">From most popular to least popular</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-10" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== PASSAGE 2 – Questions 11-20 ===================== -->
+            <div class="reading-passage-card" id="p2">
+                <div class="passage-header">
+                    <h2>PASSAGE 2 – Questions 11-20</h2>
+                </div>
+                <div class="passage-text-box">
+                    Every drop of water in the ocean, even in the deepest parts, responds to the forces that create the tides. No other force that affects the sea is so strong. Compared with the tides, the waves created by the wind are surface movements felt no more than a hundred fathoms below the surface. The currents also seldom involve more than the upper several hundred fathoms despite their impressive sweep.</p><p>The tides are a response of the waters of the ocean to the pull of the Moon and the more distant Sun. In theory, there is a gravitational attraction between the water and even the outermost star of the universe. In reality, however, the pull of remote stars is so slight as to be obliterated by the control of the Moon and, to a lesser extent, the Sun. Just as the Moon rises later each day by fifty minutes, on the average, so, in most places, the time of high tide is correspondingly later each day. And as the Moon waxes and wanes in its monthly cycle, so the height of the tide varies. The tidal movements are strongest when the Moon is a sliver in the sky, and when it is full. These are the highest flood tides and the lowest ebb tides of the lunar month and are called the spring tides. At these times the Sun, Moon, and Earth are nearly in line and the pull of the two heavenly bodies is added together to bring the water high on the beaches, to send its surf upward against the sea cliffs, and to draw a high tide into the harbors. Twice each month, at the quarters of the Moon, when the Sun, Moon and Earth lie at the apexes of a triangular configuration and the pull of the Sun and Moon are opposed, the moderate tidal movements called neap tides occur. Then the difference between high and low water is less than at any other time during the month.
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-11">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">11</span>
+                            <span class="q-text-content">What is the main point of the first paragraph?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-11-A">
+                                <input type="radio" name="q11" value="A" onchange="recordAnswer(11, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">The waves created by ocean currents are very large.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-B">
+                                <input type="radio" name="q11" value="B" onchange="recordAnswer(11, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Despite the strength of the wind, it only moves surface water.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-C">
+                                <input type="radio" name="q11" value="C" onchange="recordAnswer(11, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Deep ocean water is seldom affected by forces that move water.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-D">
+                                <input type="radio" name="q11" value="D" onchange="recordAnswer(11, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">The tides are the most powerful force to affect the movement of ocean water.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-11" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-12">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">12</span>
+                            <span class="q-text-content">The word "felt" in paragraph 1 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-12-A">
+                                <input type="radio" name="q12" value="A" onchange="recordAnswer(12, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">based</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-B">
+                                <input type="radio" name="q12" value="B" onchange="recordAnswer(12, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">dropped</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-C">
+                                <input type="radio" name="q12" value="C" onchange="recordAnswer(12, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">detected</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-D">
+                                <input type="radio" name="q12" value="D" onchange="recordAnswer(12, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">explored</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-12" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-13">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">13</span>
+                            <span class="q-text-content">The words "In reality" in paragraph 2 are closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-13-A">
+                                <input type="radio" name="q13" value="A" onchange="recordAnswer(13, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">surprisingly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-B">
+                                <input type="radio" name="q13" value="B" onchange="recordAnswer(13, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">actually</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-C">
+                                <input type="radio" name="q13" value="C" onchange="recordAnswer(13, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">characteristically</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-D">
+                                <input type="radio" name="q13" value="D" onchange="recordAnswer(13, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">similarly</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-13" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-14">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">14</span>
+                            <span class="q-text-content">It can be inferred from the passage that the most important factor in determining how much gravitational effect one object in space has on the tides is</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-14-A">
+                                <input type="radio" name="q14" value="A" onchange="recordAnswer(14, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">size</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-B">
+                                <input type="radio" name="q14" value="B" onchange="recordAnswer(14, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">distance</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-C">
+                                <input type="radio" name="q14" value="C" onchange="recordAnswer(14, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">temperature</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-D">
+                                <input type="radio" name="q14" value="D" onchange="recordAnswer(14, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">density</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-14" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-15">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">15</span>
+                            <span class="q-text-content">The word "correspondingly" in paragraph 2 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-15-A">
+                                <input type="radio" name="q15" value="A" onchange="recordAnswer(15, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">unpredictably</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-B">
+                                <input type="radio" name="q15" value="B" onchange="recordAnswer(15, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">interestingly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-C">
+                                <input type="radio" name="q15" value="C" onchange="recordAnswer(15, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">similarly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-D">
+                                <input type="radio" name="q15" value="D" onchange="recordAnswer(15, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">unusually</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-15" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-16">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">16</span>
+                            <span class="q-text-content">What is the cause of spring tides?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-16-A">
+                                <input type="radio" name="q16" value="A" onchange="recordAnswer(16, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Seasonal changes in the weather</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-16-B">
+                                <input type="radio" name="q16" value="B" onchange="recordAnswer(16, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">The gravitational pull of the Sun and the Moon when nearly in line with the Earth</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-16-C">
+                                <input type="radio" name="q16" value="C" onchange="recordAnswer(16, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">The Earth's movement around the Sun</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-16-D">
+                                <input type="radio" name="q16" value="D" onchange="recordAnswer(16, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">The triangular arrangement of the Earth, Sun, and Moon</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-16" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-17">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">17</span>
+                            <span class="q-text-content">The word "configuration" in paragraph 2 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-17-A">
+                                <input type="radio" name="q17" value="A" onchange="recordAnswer(17, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">unit</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-17-B">
+                                <input type="radio" name="q17" value="B" onchange="recordAnswer(17, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">center</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-17-C">
+                                <input type="radio" name="q17" value="C" onchange="recordAnswer(17, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">surface</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-17-D">
+                                <input type="radio" name="q17" value="D" onchange="recordAnswer(17, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">arrangement</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-17" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-18">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">18</span>
+                            <span class="q-text-content">Neap tides occur when</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-18-A">
+                                <input type="radio" name="q18" value="A" onchange="recordAnswer(18, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">the Sun counteracts the Moon's gravitational attraction</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-18-B">
+                                <input type="radio" name="q18" value="B" onchange="recordAnswer(18, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">the Moon is full</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-18-C">
+                                <input type="radio" name="q18" value="C" onchange="recordAnswer(18, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">the Moon is farthest from the Sun</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-18-D">
+                                <input type="radio" name="q18" value="D" onchange="recordAnswer(18, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">waves created by the wind combine with the Moon's gravitational attraction</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-18" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-19">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">19</span>
+                            <span class="q-text-content">According to the passage, all of the following statements about tides are true EXCEPT:</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-19-A">
+                                <input type="radio" name="q19" value="A" onchange="recordAnswer(19, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">The time of high tide is later each day.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-19-B">
+                                <input type="radio" name="q19" value="B" onchange="recordAnswer(19, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Tides have a greater effect on the sea than waves do.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-19-C">
+                                <input type="radio" name="q19" value="C" onchange="recordAnswer(19, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">The strongest tides occur at the quarters of the Moon.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-19-D">
+                                <input type="radio" name="q19" value="D" onchange="recordAnswer(19, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Neap tides are more moderate than spring tides.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-19" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-20">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">20</span>
+                            <span class="q-text-content">Where in the passage does the author mention movements of ocean water other than those caused by tides?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-20-A">
+                                <input type="radio" name="q20" value="A" onchange="recordAnswer(20, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Paragraph 1, lines 2-5</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-20-B">
+                                <input type="radio" name="q20" value="B" onchange="recordAnswer(20, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Paragraph 2, lines 9-11</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-20-C">
+                                <input type="radio" name="q20" value="C" onchange="recordAnswer(20, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Paragraph 2, lines 12-14</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-20-D">
+                                <input type="radio" name="q20" value="D" onchange="recordAnswer(20, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Paragraph 2, lines 15-19</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-20" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== PASSAGE 3 – Questions 21-30 ===================== -->
+            <div class="reading-passage-card" id="p3">
+                <div class="passage-header">
+                    <h2>PASSAGE 3 – Questions 21-30</h2>
+                </div>
+                <div class="passage-text-box">
+                    Barbed wire, first patented in the United States in 1867, played an important part in the development of American farming, as it enabled the settlers to make effective fencing to enclose their land and keep cattle away from their crops. This had a considerable effect on cattle ranching, since the herds no longer had unrestricted use of the plains for grazing, and the fencing led to conflict between the farmers and the cattle ranchers.</p><p>Before barbed wire came into general use, fencing was often made from serrated wire, which was unsatisfactory because it broke easily when under strain, and could snap in cold weather due to contraction. The first practical machine for producing barbed wire was invented in 1874 by an Illinois farmer, and between then and the end of the century about 400 types of barbed wire were devised, of which only about a dozen were ever put to practical use.</p><p>Modern barbed wire is made from mild steel, high-tensile steel, or aluminum. Mild steel and aluminum barbed wire have two strands twisted together to form a cable that is stronger than single-strand wire and less affected by temperature changes. Single strand wire, round or oval, is made from high-tensile steel with the barbs crimped or welded on. The steel wires used are galvanized – coated with zinc to make them rustproof. The two wires that make up the line wire or cable are fed separately into a machine at one end. They leave it at the other end twisted together and barbed. The wire to make the barbs is fed into the machine from the sides and cut to length by knives that cut diagonally through the wire to produce a sharp point. This process continues automatically, and the finished barbed wire is wound onto reels, usually made of wire, in lengths of 400 meters or in weights of up to 50 kilograms. A variation of barbed wire is also used for military purposes. It is formed into long coils or entanglements called concertina wire.
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-21">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">21</span>
+                            <span class="q-text-content">What is the main topic of the passage?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-21-A">
+                                <input type="radio" name="q21" value="A" onchange="recordAnswer(21, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Cattle ranching in the United States</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-21-B">
+                                <input type="radio" name="q21" value="B" onchange="recordAnswer(21, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">A type of fencing.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-21-C">
+                                <input type="radio" name="q21" value="C" onchange="recordAnswer(21, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Industrial uses of wire.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-21-D">
+                                <input type="radio" name="q21" value="D" onchange="recordAnswer(21, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">A controversy over land use.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-21" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-22">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">22</span>
+                            <span class="q-text-content">The word "unrestricted" in paragraph 1 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-22-A">
+                                <input type="radio" name="q22" value="A" onchange="recordAnswer(22, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">unsatisfactory</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-22-B">
+                                <input type="radio" name="q22" value="B" onchange="recordAnswer(22, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">difficult</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-22-C">
+                                <input type="radio" name="q22" value="C" onchange="recordAnswer(22, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">considerable</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-22-D">
+                                <input type="radio" name="q22" value="D" onchange="recordAnswer(22, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">unlimited</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-22" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-23">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">23</span>
+                            <span class="q-text-content">The word "snap" in paragraph 2 could best be replaced by which of the following?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-23-A">
+                                <input type="radio" name="q23" value="A" onchange="recordAnswer(23, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">freeze</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-23-B">
+                                <input type="radio" name="q23" value="B" onchange="recordAnswer(23, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">click</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-23-C">
+                                <input type="radio" name="q23" value="C" onchange="recordAnswer(23, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">loosen</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-23-D">
+                                <input type="radio" name="q23" value="D" onchange="recordAnswer(23, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">break</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-23" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-24">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">24</span>
+                            <span class="q-text-content">What is the benefit of using two-stranded barbed wire?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-24-A">
+                                <input type="radio" name="q24" value="A" onchange="recordAnswer(24, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Improved rust-resistance</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-24-B">
+                                <input type="radio" name="q24" value="B" onchange="recordAnswer(24, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Increased strength</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-24-C">
+                                <input type="radio" name="q24" value="C" onchange="recordAnswer(24, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">More rapid attachment of barbs</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-24-D">
+                                <input type="radio" name="q24" value="D" onchange="recordAnswer(24, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Easier installation</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-24" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-25">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">25</span>
+                            <span class="q-text-content">According to the author, the steel wires used to make barbed wire are specially processed to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-25-A">
+                                <input type="radio" name="q25" value="A" onchange="recordAnswer(25, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">protect them against rust</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-25-B">
+                                <input type="radio" name="q25" value="B" onchange="recordAnswer(25, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">make them more flexible</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-25-C">
+                                <input type="radio" name="q25" value="C" onchange="recordAnswer(25, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">prevent contraction in cold weather</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-25-D">
+                                <input type="radio" name="q25" value="D" onchange="recordAnswer(25, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">straighten them</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-25" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-26">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">26</span>
+                            <span class="q-text-content">The word "fed" in paragraph 3 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-26-A">
+                                <input type="radio" name="q26" value="A" onchange="recordAnswer(26, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">put</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-26-B">
+                                <input type="radio" name="q26" value="B" onchange="recordAnswer(26, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">eaten</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-26-C">
+                                <input type="radio" name="q26" value="C" onchange="recordAnswer(26, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">bitten</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-26-D">
+                                <input type="radio" name="q26" value="D" onchange="recordAnswer(26, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">nourished</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-26" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-27">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">27</span>
+                            <span class="q-text-content">The knives referred to in paragraph 3 are used to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-27-A">
+                                <input type="radio" name="q27" value="A" onchange="recordAnswer(27, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">separate double-stranded wire</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-27-B">
+                                <input type="radio" name="q27" value="B" onchange="recordAnswer(27, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">prevent the reel from advancing too rapidly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-27-C">
+                                <input type="radio" name="q27" value="C" onchange="recordAnswer(27, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">twist the wire</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-27-D">
+                                <input type="radio" name="q27" value="D" onchange="recordAnswer(27, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">cut the wire that becomes barbs</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-27" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-28">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">28</span>
+                            <span class="q-text-content">What is the author's purpose in the third paragraph?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-28-A">
+                                <input type="radio" name="q28" value="A" onchange="recordAnswer(28, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">To explain the importance of the wire</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-28-B">
+                                <input type="radio" name="q28" value="B" onchange="recordAnswer(28, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">To outline the difficulty of making the wire</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-28-C">
+                                <input type="radio" name="q28" value="C" onchange="recordAnswer(28, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">To describe how the wire is made</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-28-D">
+                                <input type="radio" name="q28" value="D" onchange="recordAnswer(28, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">To suggest several different uses of the wire</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-28" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-29">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">29</span>
+                            <span class="q-text-content">According to the passage, concertina wire is used for</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-29-A">
+                                <input type="radio" name="q29" value="A" onchange="recordAnswer(29, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">livestock management</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-29-B">
+                                <input type="radio" name="q29" value="B" onchange="recordAnswer(29, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">international communications</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-29-C">
+                                <input type="radio" name="q29" value="C" onchange="recordAnswer(29, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">prison enclosures</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-29-D">
+                                <input type="radio" name="q29" value="D" onchange="recordAnswer(29, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">military purposes</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-29" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-30">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">30</span>
+                            <span class="q-text-content">Which type of fencing most closely resembles the fencing described in the passage?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-30-A">
+                                <input type="radio" name="q30" value="A" onchange="recordAnswer(30, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Posts with two horizontal strands of barbed wire</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-30-B">
+                                <input type="radio" name="q30" value="B" onchange="recordAnswer(30, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Solid wooden rail fence</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-30-C">
+                                <input type="radio" name="q30" value="C" onchange="recordAnswer(30, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Single chain-link fence</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-30-D">
+                                <input type="radio" name="q30" value="D" onchange="recordAnswer(30, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Stone wall enclosure</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-30" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== PASSAGE 4 – Questions 31-40 ===================== -->
+            <div class="reading-passage-card" id="p4">
+                <div class="passage-header">
+                    <h2>PASSAGE 4 – Questions 31-40</h2>
+                </div>
+                <div class="passage-text-box">
+                    Each advance in microscopic technique has provided scientists with new perspective, on the function of living organisms and the nature of matter itself. The invention of the visible light microscope late in the sixteenth century introduced a previously unknown realm of single-celled plants and animals. In the twentieth century, electron microscopes have provided direct views of viruses and minuscule surface structures. Now another type of microscope, one that utilizes X rays rather than light or electrons, offers a different way of examining tiny details; it should extend human perception still farther into the natural world.</p><p>The dream of building an X-ray microscope dates to 1895; its development, however, was virtually halted in the 1940's because the development of the electron microscope was progressing rapidly. During the 1940's electron microscopes routinely achieved resolution better than that possible with a visible-light microscope, while the performance of X-ray microscopes resisted improvement. In recent years, however, interest in X-ray microscopes has revived, largely because of advances such as the development of new sources of X-ray illumination. As a result, the brightness available today is millions of times that of X-ray tubes, which, for most of the century, were the only available sources of soft X rays.</p><p>The new X-ray microscopes considerably improve on the resolution provided by optical microscopes. They can also be used to map the distribution of certain chemical elements. Some can form pictures in extremely short times; others hold the promise of special capabilities such as three-dimensional imaging. Unlike conventional electron microscopy, X ray microscopy enables specimens to be kept in air and in water, which means that biological samples can be studied under conditions similar to their natural state. The illumination used, so-called soft X rays in the wavelength range of twenty to forty angstroms (an angstrom is one ten-billionth of a meter), is also sufficiently penetrating to image intact biological cells in many cases. Because of the wavelength of the X rays used, soft X-ray microscopes will never match the highest resolution possible with electron microscopes. Rather, their special properties will make possible investigations that will complement those performed with light- and electron-based instruments.
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-31">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">31</span>
+                            <span class="q-text-content">What does the passage mainly discuss?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-31-A">
+                                <input type="radio" name="q31" value="A" onchange="recordAnswer(31, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">The detail seen through a microscope</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-31-B">
+                                <input type="radio" name="q31" value="B" onchange="recordAnswer(31, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Sources of illumination for microscope</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-31-C">
+                                <input type="radio" name="q31" value="C" onchange="recordAnswer(31, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">A new kind of microscope</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-31-D">
+                                <input type="radio" name="q31" value="D" onchange="recordAnswer(31, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Outdated microscopic techniques</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-31" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-32">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">32</span>
+                            <span class="q-text-content">According to the passage, the invention of the visible-light microscope allowed scientists to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-32-A">
+                                <input type="radio" name="q32" value="A" onchange="recordAnswer(32, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">see viruses directly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-32-B">
+                                <input type="radio" name="q32" value="B" onchange="recordAnswer(32, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">develop the electron microscope later on</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-32-C">
+                                <input type="radio" name="q32" value="C" onchange="recordAnswer(32, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">understand more about the distribution of the chemical elements</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-32-D">
+                                <input type="radio" name="q32" value="D" onchange="recordAnswer(32, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">discover single-celled plants and animals they had never seen before</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-32" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-33">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">33</span>
+                            <span class="q-text-content">The word "minuscule" in paragraph 1 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-33-A">
+                                <input type="radio" name="q33" value="A" onchange="recordAnswer(33, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">circular</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-33-B">
+                                <input type="radio" name="q33" value="B" onchange="recordAnswer(33, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">dangerous</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-33-C">
+                                <input type="radio" name="q33" value="C" onchange="recordAnswer(33, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">complex</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-33-D">
+                                <input type="radio" name="q33" value="D" onchange="recordAnswer(33, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">tiny</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-33" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-34">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">34</span>
+                            <span class="q-text-content">The word "it" in paragraph 1 refers to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-34-A">
+                                <input type="radio" name="q34" value="A" onchange="recordAnswer(34, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">a type of microscope</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-34-B">
+                                <input type="radio" name="q34" value="B" onchange="recordAnswer(34, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">human perception</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-34-C">
+                                <input type="radio" name="q34" value="C" onchange="recordAnswer(34, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">the natural world</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-34-D">
+                                <input type="radio" name="q34" value="D" onchange="recordAnswer(34, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">light</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-34" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-35">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">35</span>
+                            <span class="q-text-content">Why does the author mention the visible-light microscope in the first paragraph?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-35-A">
+                                <input type="radio" name="q35" value="A" onchange="recordAnswer(35, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">To begin a discussion of sixteenth-century discoveries</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-35-B">
+                                <input type="radio" name="q35" value="B" onchange="recordAnswer(35, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">To put the X-ray microscope in a historical perspective</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-35-C">
+                                <input type="radio" name="q35" value="C" onchange="recordAnswer(35, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">To show how limited its uses are</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-35-D">
+                                <input type="radio" name="q35" value="D" onchange="recordAnswer(35, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">To explain how it functioned</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-35" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-36">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">36</span>
+                            <span class="q-text-content">Why did it take so long to develop the X-ray microscope?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-36-A">
+                                <input type="radio" name="q36" value="A" onchange="recordAnswer(36, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Funds for research were insufficient.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-36-B">
+                                <input type="radio" name="q36" value="B" onchange="recordAnswer(36, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">The source of illumination was not bright enough until recently.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-36-C">
+                                <input type="radio" name="q36" value="C" onchange="recordAnswer(36, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Materials used to manufacture X-ray tubes were difficult to obtain.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-36-D">
+                                <input type="radio" name="q36" value="D" onchange="recordAnswer(36, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">X-ray microscopes were too complicated to operate.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-36" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-37">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">37</span>
+                            <span class="q-text-content">The word "enables" in paragraph 3 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-37-A">
+                                <input type="radio" name="q37" value="A" onchange="recordAnswer(37, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">constitutes</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-37-B">
+                                <input type="radio" name="q37" value="B" onchange="recordAnswer(37, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">specifies</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-37-C">
+                                <input type="radio" name="q37" value="C" onchange="recordAnswer(37, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">expands</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-37-D">
+                                <input type="radio" name="q37" value="D" onchange="recordAnswer(37, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">allows</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-37" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-38">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">38</span>
+                            <span class="q-text-content">The word "Rather" in paragraph 3 is closest in meaning to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-38-A">
+                                <input type="radio" name="q38" value="A" onchange="recordAnswer(38, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">significantly</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-38-B">
+                                <input type="radio" name="q38" value="B" onchange="recordAnswer(38, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">preferably</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-38-C">
+                                <input type="radio" name="q38" value="C" onchange="recordAnswer(38, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">somewhat</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-38-D">
+                                <input type="radio" name="q38" value="D" onchange="recordAnswer(38, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">instead</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-38" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-39">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">39</span>
+                            <span class="q-text-content">The word "those" in paragraph 3 refers to</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-39-A">
+                                <input type="radio" name="q39" value="A" onchange="recordAnswer(39, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">properties</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-39-B">
+                                <input type="radio" name="q39" value="B" onchange="recordAnswer(39, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">investigations</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-39-C">
+                                <input type="radio" name="q39" value="C" onchange="recordAnswer(39, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">microscopes</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-39-D">
+                                <input type="radio" name="q39" value="D" onchange="recordAnswer(39, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">X rays</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-39" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-40">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">40</span>
+                            <span class="q-text-content">Based on the information in the passage, what can be inferred about X-ray microscopes in the future?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-40-A">
+                                <input type="radio" name="q40" value="A" onchange="recordAnswer(40, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">They will probably replace electron microscopes altogether.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-40-B">
+                                <input type="radio" name="q40" value="B" onchange="recordAnswer(40, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">They will eventually be much cheaper to produce than they are now.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-40-C">
+                                <input type="radio" name="q40" value="C" onchange="recordAnswer(40, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">They will provide information not available from other kinds of microscopes.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-40-D">
+                                <input type="radio" name="q40" value="D" onchange="recordAnswer(40, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">They will eventually change the illumination range that they now use.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-40" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="reading.js"></script>
+</body>
+</html>

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listening – VSTEP Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vstep-page">
+    <header class="vstep-header">
+        <div class="header-left">
+            <a href="index.html" class="logo-wrap">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <span class="logo-title">VSTEP</span>
+                    <span class="logo-sub">Tự Luyện Thi B1-B2-C1</span>
+                </div>
+            </a>
+        </div>
+        <nav class="header-nav">
+            <a href="listening.html" class="nav-link active"><i class="fa-solid fa-headphones"></i><span>Listening</span></a>
+            <a href="reading.html" class="nav-link"><i class="fa-solid fa-book-open"></i><span>Reading</span></a>
+            <a href="writing.html" class="nav-link"><i class="fa-solid fa-pen-nib"></i><span>Writing</span></a>
+            <a href="speaking.html" class="nav-link"><i class="fa-solid fa-microphone"></i><span>Speaking</span></a>
+        </nav>
+        <div class="header-right">
+            <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i><span>Trang Chủ</span></a>
+        </div>
+    </header>
+
+    <div class="exam-layout">
+        <aside class="exam-sidebar">
+            <div class="sidebar-inner">
+                <div class="skill-badge skill-listening">
+                    <i class="fa-solid fa-headphones"></i> PHẦN IV: NGHE HIỂU (LISTENING)
+                </div>
+
+                <div class="timer-section">
+                    <div class="timer-label"><i class="fa-regular fa-clock"></i> Thời gian còn lại</div>
+                    <div class="timer-display" id="timer">40:00</div>
+                    <div class="timer-actions">
+                        <button id="btn-timer-toggle" class="btn-timer" onclick="toggleTimer()"><i class="fa-solid fa-pause"></i> Tạm dừng</button>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">Tiến độ làm bài: <span id="answered-count">0</span> / 15 câu</div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="palette-container">
+                    <div class="palette-title">Bảng câu hỏi:</div>
+                    <div class="palette-grid">
+                        <button class="palette-btn" id="pal-btn-1" onclick="scrollToQuestion(1)">1</button>
+                        <button class="palette-btn" id="pal-btn-2" onclick="scrollToQuestion(2)">2</button>
+                        <button class="palette-btn" id="pal-btn-3" onclick="scrollToQuestion(3)">3</button>
+                        <button class="palette-btn" id="pal-btn-4" onclick="scrollToQuestion(4)">4</button>
+                        <button class="palette-btn" id="pal-btn-5" onclick="scrollToQuestion(5)">5</button>
+                        <button class="palette-btn" id="pal-btn-6" onclick="scrollToQuestion(6)">6</button>
+                        <button class="palette-btn" id="pal-btn-7" onclick="scrollToQuestion(7)">7</button>
+                        <button class="palette-btn" id="pal-btn-8" onclick="scrollToQuestion(8)">8</button>
+                        <button class="palette-btn" id="pal-btn-9" onclick="scrollToQuestion(9)">9</button>
+                        <button class="palette-btn" id="pal-btn-10" onclick="scrollToQuestion(10)">10</button>
+                        <button class="palette-btn" id="pal-btn-11" onclick="scrollToQuestion(11)">11</button>
+                        <button class="palette-btn" id="pal-btn-12" onclick="scrollToQuestion(12)">12</button>
+                        <button class="palette-btn" id="pal-btn-13" onclick="scrollToQuestion(13)">13</button>
+                        <button class="palette-btn" id="pal-btn-14" onclick="scrollToQuestion(14)">14</button>
+                        <button class="palette-btn" id="pal-btn-15" onclick="scrollToQuestion(15)">15</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-submit-wrap">
+                    <button class="btn-submit-exam" onclick="submitExam()"><i class="fa-solid fa-check"></i> Chấm điểm bài nghe</button>
+                    <button class="btn-clear-exam" onclick="resetExam()"><i class="fa-solid fa-rotate-right"></i> Làm lại</button>
+                </div>
+
+                <div class="score-card-modal" id="score-result-card" style="display:none;">
+                    <div class="score-card-header">Kết quả bài nghe</div>
+                    <div class="score-big" id="score-number">0 / 15</div>
+                    <div class="score-level-badge" id="score-level-text">Đang chấm...</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="exam-main">
+            <div class="exam-header-banner">
+                <div class="test-tag">PHẦN IV: LISTENING – CODE 1</div>
+                <h1 class="test-title">Listening Paper – CODE 1</h1>
+                <p class="test-meta">Thời gian quy định: ~40 phút | 3 bài Talk/Lecture | Trắc nghiệm A/B/C/D</p>
+                <div class="audio-notice-bar">
+                    <i class="fa-solid fa-circle-info text-blue"></i>
+                    <span><strong>Hướng dẫn thêm file nghe:</strong> Bạn chỉ cần sao chép các file âm thanh vào thư mục <code>vstep/audio/</code> (ví dụ <code>code1_lecture1.mp3</code>, <code>code1_lecture2.mp3</code>, <code>code1_lecture3.mp3</code>). Trình phát nhạc sẽ tự động nạp!</span>
+                </div>
+            </div>
+
+            <!-- ===================== Talk / Lecture 1: The Statue of Liberty ===================== -->
+            <div class="listening-talk-card" id="c1-t1">
+                <div class="talk-head-line">
+                    <span class="talk-badge"><i class="fa-solid fa-headphones"></i> BÀI NGHE</span>
+                    <h2>Talk / Lecture 1: The Statue of Liberty</h2>
+                </div>
+                <p class="talk-intro-text">You will hear a man talking about the Statue of Liberty. Listen and choose the best answer A, B, C, or D.</p>
+
+                <!-- Audio player container -->
+                <div class="audio-box-wrap">
+                    <div class="audio-meta">
+                        <i class="fa-solid fa-music text-blue"></i>
+                        <span>File âm thanh: <code>audio/code1_lecture1.mp3</code></span>
+                    </div>
+                    <audio controls class="audio-control-bar" preload="none">
+                        <source src="audio/code1_lecture1.mp3" type="audio/mpeg">
+                        Trình duyệt của bạn không hỗ trợ thẻ audio.
+                    </audio>
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-1">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">1</span>
+                            <span class="q-text-content">Why did France give the statue to the United States?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-1-A">
+                                <input type="radio" name="q1" value="A" onchange="recordAnswer(1, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">To remember the war between France and America</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-B">
+                                <input type="radio" name="q1" value="B" onchange="recordAnswer(1, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">To remember the friendship between France and America</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-C">
+                                <input type="radio" name="q1" value="C" onchange="recordAnswer(1, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">To remember Gustave Eiffel</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-1-D">
+                                <input type="radio" name="q1" value="D" onchange="recordAnswer(1, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">To remember the soldiers in the war against Britain</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-1" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-2">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">2</span>
+                            <span class="q-text-content">Which is NOT TRUE about the construction of the Statue?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-2-A">
+                                <input type="radio" name="q2" value="A" onchange="recordAnswer(2, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">The statue's skin was made of copper.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-B">
+                                <input type="radio" name="q2" value="B" onchange="recordAnswer(2, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Gustave Eiffel was the main sculptor who conceived the design.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-C">
+                                <input type="radio" name="q2" value="C" onchange="recordAnswer(2, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">It was disassembled into 350 pieces and shipped to America.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-2-D">
+                                <input type="radio" name="q2" value="D" onchange="recordAnswer(2, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">The statue itself is 46 meters high.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-2" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-3">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">3</span>
+                            <span class="q-text-content">What needed to be built in the United States?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-3-A">
+                                <input type="radio" name="q3" value="A" onchange="recordAnswer(3, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">A base (pedestal)</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-B">
+                                <input type="radio" name="q3" value="B" onchange="recordAnswer(3, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">An ice cream cone</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-C">
+                                <input type="radio" name="q3" value="C" onchange="recordAnswer(3, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">A torch</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-3-D">
+                                <input type="radio" name="q3" value="D" onchange="recordAnswer(3, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">A huge metal frame</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-3" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-4">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">4</span>
+                            <span class="q-text-content">How did the statue get to the United States?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-4-A">
+                                <input type="radio" name="q4" value="A" onchange="recordAnswer(4, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">It was assembled in France and flown by cargo plane.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-B">
+                                <input type="radio" name="q4" value="B" onchange="recordAnswer(4, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">It was reduced to 46 pieces.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-C">
+                                <input type="radio" name="q4" value="C" onchange="recordAnswer(4, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">It came in many parts in many crates by ship.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-4-D">
+                                <input type="radio" name="q4" value="D" onchange="recordAnswer(4, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">It was towed across the ocean on a barge.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-4" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-5">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">5</span>
+                            <span class="q-text-content">Which is TRUE about the statue?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-5-A">
+                                <input type="radio" name="q5" value="A" onchange="recordAnswer(5, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">It serves as a lighthouse today.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-B">
+                                <input type="radio" name="q5" value="B" onchange="recordAnswer(5, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Visitors can only view the statue from ferry boats.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-C">
+                                <input type="radio" name="q5" value="C" onchange="recordAnswer(5, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">There are 354 steps to the top crown.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-5-D">
+                                <input type="radio" name="q5" value="D" onchange="recordAnswer(5, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">It is the tallest structure in America.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-5" style="display:none;"></div>
+                    </div>
+
+                </div>
+
+                <div class="transcript-toggle-bar">
+                    <button class="btn-toggle-transcript" onclick="toggleTranscript('c1-t1-transcript')">
+                        <i class="fa-solid fa-file-lines"></i> Xem / Ẩn Transcript Lời Thoại
+                    </button>
+                    <div class="transcript-content-box" id="c1-t1-transcript" style="display:none;">
+                        <h4><i class="fa-solid fa-quote-left text-amber"></i> Lời thoại (Transcript):</h4>
+                        <p class="transcript-text">The Statue of Liberty was a gift of friendship from the people of France to the United States and is recognized as a universal symbol of freedom and democracy. The statue was designed by French sculptor Frédéric-Auguste Bartholdi, while Alexandre-Gustave Eiffel, the designer of the Eiffel Tower, was chosen to engineer the interior metal framework. The statue was constructed in France, finished in 1884, and disassembled into 350 individual pieces packed in 214 crates for transport across the Atlantic Ocean by ship. In the United States, funds were raised to construct a massive granite pedestal base on Bedloe's Island in New York Harbor. The statue rises to 46 meters, and visitors who climb the 354 steps to the crown can enjoy a panoramic view of the harbor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== Talk / Lecture 2: The Incredible Bamboo ===================== -->
+            <div class="listening-talk-card" id="c1-t2">
+                <div class="talk-head-line">
+                    <span class="talk-badge"><i class="fa-solid fa-headphones"></i> BÀI NGHE</span>
+                    <h2>Talk / Lecture 2: The Incredible Bamboo</h2>
+                </div>
+                <p class="talk-intro-text">Listen to a woman talking about bamboo and its surprising uses.</p>
+
+                <!-- Audio player container -->
+                <div class="audio-box-wrap">
+                    <div class="audio-meta">
+                        <i class="fa-solid fa-music text-blue"></i>
+                        <span>File âm thanh: <code>audio/code1_lecture2.mp3</code></span>
+                    </div>
+                    <audio controls class="audio-control-bar" preload="none">
+                        <source src="audio/code1_lecture2.mp3" type="audio/mpeg">
+                        Trình duyệt của bạn không hỗ trợ thẻ audio.
+                    </audio>
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-6">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">6</span>
+                            <span class="q-text-content">Which of the following is NOT mentioned as a use for bamboo?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-6-A">
+                                <input type="radio" name="q6" value="A" onchange="recordAnswer(6, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Building houses</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-B">
+                                <input type="radio" name="q6" value="B" onchange="recordAnswer(6, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Making clothes</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-C">
+                                <input type="radio" name="q6" value="C" onchange="recordAnswer(6, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Making cars</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-6-D">
+                                <input type="radio" name="q6" value="D" onchange="recordAnswer(6, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Making bicycles</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-6" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-7">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">7</span>
+                            <span class="q-text-content">Bamboo...</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-7-A">
+                                <input type="radio" name="q7" value="A" onchange="recordAnswer(7, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">can grow on any kind of soil without water</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-B">
+                                <input type="radio" name="q7" value="B" onchange="recordAnswer(7, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">reaches a useful size in 3 to 7 years</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-C">
+                                <input type="radio" name="q7" value="C" onchange="recordAnswer(7, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">is biologically a member of the oak tree family</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-7-D">
+                                <input type="radio" name="q7" value="D" onchange="recordAnswer(7, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">is used only for food and animal feeding</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-7" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-8">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">8</span>
+                            <span class="q-text-content">People build houses with bamboo because...</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-8-A">
+                                <input type="radio" name="q8" value="A" onchange="recordAnswer(8, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">It is remarkably strong and resilient.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-B">
+                                <input type="radio" name="q8" value="B" onchange="recordAnswer(8, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">It can be easily melted into different shapes.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-C">
+                                <input type="radio" name="q8" value="C" onchange="recordAnswer(8, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">It repels bad smells and insects.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-8-D">
+                                <input type="radio" name="q8" value="D" onchange="recordAnswer(8, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">It is heavier than metal tubes.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-8" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-9">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">9</span>
+                            <span class="q-text-content">Why is growing bamboo more efficient than growing trees?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-9-A">
+                                <input type="radio" name="q9" value="A" onchange="recordAnswer(9, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">It requires no care or irrigation.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-B">
+                                <input type="radio" name="q9" value="B" onchange="recordAnswer(9, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">It grows much faster than timber trees.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-C">
+                                <input type="radio" name="q9" value="C" onchange="recordAnswer(9, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">It can only be used in construction.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-9-D">
+                                <input type="radio" name="q9" value="D" onchange="recordAnswer(9, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">It sells at a cheaper price than gravel.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-9" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-10">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">10</span>
+                            <span class="q-text-content">According to the speaker, how will bamboo help the world in the future?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-10-A">
+                                <input type="radio" name="q10" value="A" onchange="recordAnswer(10, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">It will feed all livestock in drought areas.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-B">
+                                <input type="radio" name="q10" value="B" onchange="recordAnswer(10, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Using bamboo as timber alternative will help save forests.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-C">
+                                <input type="radio" name="q10" value="C" onchange="recordAnswer(10, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Planting bamboo will scent urban streets.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-10-D">
+                                <input type="radio" name="q10" value="D" onchange="recordAnswer(10, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">It will replace all plastics entirely.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-10" style="display:none;"></div>
+                    </div>
+
+                </div>
+
+                <div class="transcript-toggle-bar">
+                    <button class="btn-toggle-transcript" onclick="toggleTranscript('c1-t2-transcript')">
+                        <i class="fa-solid fa-file-lines"></i> Xem / Ẩn Transcript Lời Thoại
+                    </button>
+                    <div class="transcript-content-box" id="c1-t2-transcript" style="display:none;">
+                        <h4><i class="fa-solid fa-quote-left text-amber"></i> Lời thoại (Transcript):</h4>
+                        <p class="transcript-text">Bamboo is one of the fastest growing plants on Earth and an extraordinary natural resource. Although it looks like a tree, bamboo actually belongs to the grass family. Unlike hardwood trees that take decades to mature, bamboo reaches a harvestable size in just 3 to 7 years. Because of its incredible tensile strength—stronger than steel in some tension tests—people in many parts of Asia have traditionally built entire houses, bridges, and scaffolding out of bamboo poles. Modern innovators are now turning bamboo into eco-friendly fabrics, flooring, furniture, and even lightweight bicycle frames. Expanding the commercial cultivation of bamboo could help save millions of trees from deforestation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===================== Talk / Lecture 3: The Historic BBC Micro Computer ===================== -->
+            <div class="listening-talk-card" id="c1-t3">
+                <div class="talk-head-line">
+                    <span class="talk-badge"><i class="fa-solid fa-headphones"></i> BÀI NGHE</span>
+                    <h2>Talk / Lecture 3: The Historic BBC Micro Computer</h2>
+                </div>
+                <p class="talk-intro-text">Listen to a museum tour guide talking to visitors about the BBC Micro computer.</p>
+
+                <!-- Audio player container -->
+                <div class="audio-box-wrap">
+                    <div class="audio-meta">
+                        <i class="fa-solid fa-music text-blue"></i>
+                        <span>File âm thanh: <code>audio/code1_lecture3.mp3</code></span>
+                    </div>
+                    <audio controls class="audio-control-bar" preload="none">
+                        <source src="audio/code1_lecture3.mp3" type="audio/mpeg">
+                        Trình duyệt của bạn không hỗ trợ thẻ audio.
+                    </audio>
+                </div>
+
+                <div class="questions-block-container">
+
+                    <div class="question-item-card" id="q-card-11">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">11</span>
+                            <span class="q-text-content">Which is TRUE about computers in 1980?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-11-A">
+                                <input type="radio" name="q11" value="A" onchange="recordAnswer(11, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">They were common in almost every family living room.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-B">
+                                <input type="radio" name="q11" value="B" onchange="recordAnswer(11, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">They were portable and carried in backpacks.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-C">
+                                <input type="radio" name="q11" value="C" onchange="recordAnswer(11, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">They were prohibitively expensive for common citizens.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-11-D">
+                                <input type="radio" name="q11" value="D" onchange="recordAnswer(11, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">They could only perform basic arithmetic addition.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-11" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-12">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">12</span>
+                            <span class="q-text-content">After the BBC broadcast the program 'The Mighty Micro'...</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-12-A">
+                                <input type="radio" name="q12" value="A" onchange="recordAnswer(12, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">television ratings plummeted.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-B">
+                                <input type="radio" name="q12" value="B" onchange="recordAnswer(12, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">the general public developed intense curiosity about computers.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-C">
+                                <input type="radio" name="q12" value="C" onchange="recordAnswer(12, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">viewers protested against computer technology.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-12-D">
+                                <input type="radio" name="q12" value="D" onchange="recordAnswer(12, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">the British government banned computer imports.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-12" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-13">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">13</span>
+                            <span class="q-text-content">Why did the BBC decide to commission its own computer?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-13-A">
+                                <input type="radio" name="q13" value="A" onchange="recordAnswer(13, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">To sell computers for commercial broadcast profit.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-B">
+                                <input type="radio" name="q13" value="B" onchange="recordAnswer(13, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">To replace television cameras.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-C">
+                                <input type="radio" name="q13" value="C" onchange="recordAnswer(13, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">To accompany their television literacy series.</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-13-D">
+                                <input type="radio" name="q13" value="D" onchange="recordAnswer(13, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">To monitor employee payroll.</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-13" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-14">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">14</span>
+                            <span class="q-text-content">Which company was chosen to build the BBC Micro?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-14-A">
+                                <input type="radio" name="q14" value="A" onchange="recordAnswer(14, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Acorn Computers</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-B">
+                                <input type="radio" name="q14" value="B" onchange="recordAnswer(14, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Apple Computer</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-C">
+                                <input type="radio" name="q14" value="C" onchange="recordAnswer(14, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Sinclair Research</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-14-D">
+                                <input type="radio" name="q14" value="D" onchange="recordAnswer(14, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">IBM International</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-14" style="display:none;"></div>
+                    </div>
+
+                    <div class="question-item-card" id="q-card-15">
+                        <div class="q-header-line">
+                            <span class="q-number-circle">15</span>
+                            <span class="q-text-content">How many BBC Micro computers were sold eventually?</span>
+                        </div>
+                        <div class="options-group">
+
+                            <label class="option-row" id="opt-label-15-A">
+                                <input type="radio" name="q15" value="A" onchange="recordAnswer(15, 'A')">
+                                <span class="opt-letter">A</span>
+                                <span class="opt-desc">Around 12,000 units as forecasted</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-B">
+                                <input type="radio" name="q15" value="B" onchange="recordAnswer(15, 'B')">
+                                <span class="opt-letter">B</span>
+                                <span class="opt-desc">Over 1.5 million units</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-C">
+                                <input type="radio" name="q15" value="C" onchange="recordAnswer(15, 'C')">
+                                <span class="opt-letter">C</span>
+                                <span class="opt-desc">Fewer than 5,000 units</span>
+                            </label>
+
+                            <label class="option-row" id="opt-label-15-D">
+                                <input type="radio" name="q15" value="D" onchange="recordAnswer(15, 'D')">
+                                <span class="opt-letter">D</span>
+                                <span class="opt-desc">Exactly 100,000 units</span>
+                            </label>
+
+                        </div>
+                        <div class="q-feedback-line" id="feedback-15" style="display:none;"></div>
+                    </div>
+
+                </div>
+
+                <div class="transcript-toggle-bar">
+                    <button class="btn-toggle-transcript" onclick="toggleTranscript('c1-t3-transcript')">
+                        <i class="fa-solid fa-file-lines"></i> Xem / Ẩn Transcript Lời Thoại
+                    </button>
+                    <div class="transcript-content-box" id="c1-t3-transcript" style="display:none;">
+                        <h4><i class="fa-solid fa-quote-left text-amber"></i> Lời thoại (Transcript):</h4>
+                        <p class="transcript-text">In 1980, computers were mysterious, room-sized machines or expensive scientific devices out of reach for the ordinary household. Seeing that a digital revolution was looming, the British Broadcasting Corporation launched the BBC Computer Literacy Project in 1982. Alongside the popular television series 'The Mighty Micro', the BBC decided they needed an accessible, rugged computer to show people how programming worked. They commissioned Acorn Computers in Cambridge to build the BBC Micro. Although the BBC initially forecasted sales of roughly 12,000 units, the computer became an overwhelming sensation, selling more than 1.5 million units across schools, colleges, and British households, sparking a whole generation of British software engineers.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="listening.js"></script>
+</body>
+</html>

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaking – VSTEP Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vstep-page">
+    <header class="vstep-header">
+        <div class="header-left">
+            <a href="index.html" class="logo-wrap">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <span class="logo-title">VSTEP</span>
+                    <span class="logo-sub">Tự Luyện Thi B1-B2-C1</span>
+                </div>
+            </a>
+        </div>
+        <nav class="header-nav">
+            <a href="listening.html" class="nav-link"><i class="fa-solid fa-headphones"></i><span>Listening</span></a>
+            <a href="reading.html" class="nav-link"><i class="fa-solid fa-book-open"></i><span>Reading</span></a>
+            <a href="writing.html" class="nav-link"><i class="fa-solid fa-pen-nib"></i><span>Writing</span></a>
+            <a href="speaking.html" class="nav-link active"><i class="fa-solid fa-microphone"></i><span>Speaking</span></a>
+        </nav>
+        <div class="header-right">
+            <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i><span>Trang Chủ</span></a>
+        </div>
+    </header>
+
+    <div class="exam-layout">
+        <aside class="exam-sidebar">
+            <div class="sidebar-inner">
+                <div class="skill-badge skill-speaking">
+                    <i class="fa-solid fa-microphone"></i> PHẦN III: NÓI (SPEAKING)
+                </div>
+
+                <div class="timer-section">
+                    <div class="timer-label"><i class="fa-solid fa-stopwatch"></i> Đồng hồ luyện nói</div>
+                    <div class="timer-display" id="active-speak-timer">00:00</div>
+                    <div class="speaking-phase-badge" id="speak-phase-badge">Sẵn sàng</div>
+                    <div class="timer-actions">
+                        <button class="btn-timer" onclick="stopCurrentTimer()"><i class="fa-solid fa-stop"></i> Dừng</button>
+                    </div>
+                </div>
+
+                <div class="test-selector-section">
+                    <div class="sidebar-heading">Chọn bài Nói trong sách:</div>
+                    <div class="test-nav-list">
+                        <button class="test-nav-btn active" onclick="switchSpeakTest('speak-test-2')"><span class="btn-num">2</span> Speaking Test 2</button>
+                        <button class="test-nav-btn" onclick="switchSpeakTest('speak-test-3')"><span class="btn-num">3</span> Speaking Test 3</button>
+                        <button class="test-nav-btn" onclick="switchSpeakTest('speak-test-4')"><span class="btn-num">4</span> Speaking Test 4</button>
+                        <button class="test-nav-btn" onclick="switchSpeakTest('speak-test-5')"><span class="btn-num">5</span> Speaking Test 5</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-tips-box">
+                    <h4><i class="fa-solid fa-award"></i> Tiêu chí chấm VSTEP (10đ)</h4>
+                    <ul>
+                        <li><strong>Fluency & Coherence:</strong> Nói lưu loát, liền mạch, có liên từ nối.</li>
+                        <li><strong>Lexical Resource:</strong> Từ vựng đa dạng, đúng ngữ cảnh chủ đề.</li>
+                        <li><strong>Grammar Range:</strong> Câu phức, mệnh đề quan hệ, chia đúng thì.</li>
+                        <li><strong>Pronunciation:</strong> Phát âm rõ, nhấn trọng âm từ và câu chuẩn.</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <main class="exam-main">
+
+            <!-- ===================== Speaking Test 2 ===================== -->
+            <section class="exam-content-area" id="speak-test-2">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN III: SPEAKING – SPEAKING TEST 2</div>
+                    <h1 class="test-title">Speaking Test 2</h1>
+                    <p class="test-meta">Tổng thời gian thi: ~12 phút | Gồm 3 phần: Tương tác xã hội, Thảo luận giải pháp, Phát triển chủ đề</p>
+                </div>
+
+                <!-- PART 1 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill">PART 1</span>
+                        <h2>Social Interaction (3 phút)</h2>
+                    </div>
+                    <p class="part-guide-text">Giám khảo sẽ hỏi bạn một số câu hỏi về các chủ đề quen thuộc (Mẹo: Nên trả lời từ 2-3 câu trọn vẹn, có giải thích lý do).</p>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 1: Holiday</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> What did you do on your last holiday?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t0-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t0-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t0-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"On my last holiday, I went to Sam Son beach with my family. We spent three days swimming, enjoying fresh seafood, and relaxing after a busy working period."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> Who do you prefer spending your holiday with?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t0-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t0-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t0-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I prefer spending my holidays with my family because I love them dearly, and it is a wonderful chance for all family members to bond and create memorable moments together."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> Do you prefer going on holiday abroad? Why / Why not?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t0-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t0-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t0-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"At the moment, I prefer traveling domestically because going abroad requires a large budget and extensive planning, whereas domestic trips are more affordable and accessible."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 2: TV Programs</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> How many hours a day do you watch television?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t1-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t1-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t1-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I usually spend about one hour a day watching television, mostly in the evening to catch up on the daily news and unwind."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> Which TV programs do you like best?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t1-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t1-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t1-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I particularly enjoy watching VTV news and scientific documentaries because these channels provide me with valuable knowledge about current affairs and technology."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> Do you prefer watching TV alone or with other people? Why?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p1-t1-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p1-t1-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-2-p1-t1-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I prefer watching TV with my family because we can share our thoughts, comment on entertaining shows, and discuss interesting news together."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part2-pill">PART 2</span>
+                        <h2>Solution Discussion (4 phút)</h2>
+                    </div>
+                    <div class="situation-card">
+                        <div class="situation-header"><i class="fa-solid fa-triangle-exclamation text-amber"></i> Tình huống (Situation):</div>
+                        <div class="situation-content"><strong>If you won a lottery of 1 billion VND, what would you do with the money?</strong></div>
+                        <div class="options-container">
+                            <div class="option-chip recommended-opt"><i class="fa-solid fa-check-circle"></i> Buy a new house</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Start a business</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Deposit the money in the bank</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p2', 60, 180)"><i class="fa-solid fa-microphone"></i> Luyện Part 2 (1 phút chuẩn bị + 3 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p2-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-2-p2-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Lựa chọn đề xuất: <strong>Buy a new house</strong></div>
+                        <p class="sample-text">"If I were lucky enough to win a lottery of 1 billion VND, I would definitely choose to buy a house. Firstly, having a stable home is essential for an independent and secure life. Currently, I am living with my parents, so owning an apartment will give me my own living space. While starting a business is appealing, it carries a substantial risk of financial loss if one lacks managerial experience. Depositing money in the bank offers safety, but inflation can diminish its real value over time. Therefore, investing in real estate by buying a house is the most practical and reliable choice."</p>
+                    </div>
+                </div>
+
+                <!-- PART 3 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part3-pill">PART 3</span>
+                        <h2>Topic Development (5 phút)</h2>
+                    </div>
+                    <div class="topic-statement-box">
+                        <span class="topic-tag">Chủ đề thảo luận:</span>
+                        <h3>"Online courses have many advantages for learners."</h3>
+                    </div>
+
+                    <div class="mindmap-visual-grid">
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Provide new learning experience</div>
+                            <div class="mindmap-desc">Access interactive multimedia, global lectures, and diverse learning tools.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Be more convenient to study</div>
+                            <div class="mindmap-desc">Study anywhere and anytime without traveling; flexible schedule fitting personal rhythm.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Be independent in learning</div>
+                            <div class="mindmap-desc">Develop self-discipline, autonomy, and time-management skills.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Your own ideas</div>
+                            <div class="mindmap-desc">Cost efficiency: save on transport, accommodation, and physical textbook fees.</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-2-p3', 60, 240)"><i class="fa-solid fa-microphone"></i> Luyện Part 3 (1 phút chuẩn bị + 4 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-2-p3-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-2-p3-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Bài phát triển chủ đề mẫu:</div>
+                        <p class="sample-text">"It is undeniable that online courses offer tremendous benefits to contemporary learners. First and foremost, online courses provide a brand new learning experience. Students can access high-quality lectures from prestigious universities across the globe, supported by rich digital resources. Secondly, convenience is a decisive factor; learners can study at their own pace from the comfort of their homes, saving valuable commute time. Furthermore, self-paced online education fosters independence, training students to become autonomous and responsible for their own learning curve. Lastly, online programs are generally much more affordable than traditional schooling."</p>
+                    </div>
+
+                    <div class="further-questions-box">
+                        <h4><i class="fa-solid fa-circle-question text-blue"></i> Câu hỏi mở rộng (Further Questions):</h4>
+
+                        <div class="further-q-item">
+                            <p><strong>1. What advice would you give someone on how to study English effectively?</strong></p>
+                            <p class="sample-hint"><em>Gợi ý trả lời:</em> "I would advise them to immerse themselves in English daily by listening to podcasts, watching movies with English subtitles, and practicing speaking without fearing mistakes."</p>
+                        </div>
+
+                        <div class="further-q-item">
+                            <p><strong>2. Do you think being a student is the best time of your life?</strong></p>
+                            <p class="sample-hint"><em>Gợi ý trả lời:</em> "Yes, I do. Student life is a unique period when you have boundless energy, great friendships, and freedom to learn without heavy financial burdens."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== Speaking Test 3 ===================== -->
+            <section class="exam-content-area" id="speak-test-3" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN III: SPEAKING – SPEAKING TEST 3</div>
+                    <h1 class="test-title">Speaking Test 3</h1>
+                    <p class="test-meta">Tổng thời gian thi: ~12 phút | Gồm 3 phần: Tương tác xã hội, Thảo luận giải pháp, Phát triển chủ đề</p>
+                </div>
+
+                <!-- PART 1 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill">PART 1</span>
+                        <h2>Social Interaction (3 phút)</h2>
+                    </div>
+                    <p class="part-guide-text">Giám khảo sẽ hỏi bạn về các chủ đề quen thuộc (Music, English).</p>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 1: Music</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> Do you like music? If yes, what kind of music do you like best? Why?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t0-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t0-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t0-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Yes, I am a huge fan of music. I particularly enjoy acoustic pop and classical music because the soothing melodies help me relieve stress after intense study sessions."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> What is the most popular kind of music in your country?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t0-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t0-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t0-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"In Vietnam, V-pop and ballad songs are immensely popular, especially among young people, as they feature catchy melodies and relatable lyrics."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> How is music good or not good for people?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t0-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t0-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t0-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Music is predominantly beneficial because it stimulates mental creativity, lifts your mood, and connects people emotionally."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 2: English</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> Did you learn English at secondary school?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t1-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t1-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t1-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Yes, I began learning English when I was in secondary school. Although the curriculum focused mainly on grammar at that time, it built my initial foundation."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> What do you think about how English is taught at school now?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t1-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t1-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t1-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Nowadays, English teaching has improved with more communicative activities, multimedia aids, and opportunities to practice speaking compared to the past."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> In what ways has learning English improved your life?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p1-t1-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p1-t1-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-3-p1-t1-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Learning English has opened up access to international scientific literature, allowed me to communicate with foreign peers, and broadened my career prospects."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part2-pill">PART 2</span>
+                        <h2>Solution Discussion (4 phút)</h2>
+                    </div>
+                    <div class="situation-card">
+                        <div class="situation-header"><i class="fa-solid fa-triangle-exclamation text-amber"></i> Tình huống (Situation):</div>
+                        <div class="situation-content"><strong>An optional subject will be added to the curriculum for secondary students in your city. Which do you think is the best option for students?</strong></div>
+                        <div class="options-container">
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Photography</div>
+                            <div class="option-chip recommended-opt"><i class="fa-solid fa-check-circle"></i> Swimming</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Dancing</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p2', 60, 180)"><i class="fa-solid fa-microphone"></i> Luyện Part 2 (1 phút chuẩn bị + 3 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p2-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-3-p2-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Lựa chọn đề xuất: <strong>Swimming</strong></div>
+                        <p class="sample-text">"Among the three options, I strongly believe that swimming is the best choice to incorporate into the secondary curriculum. First of all, swimming is not merely a sport but an indispensable survival skill that protects students against drowning accidents. Moreover, regular swimming provides a full-body workout, enhancing cardiovascular endurance and physical growth during adolescence. In contrast, photography requires expensive camera gear that many families cannot afford, and dancing may not appeal to all students equally. Therefore, swimming delivers the greatest health and safety advantages."</p>
+                    </div>
+                </div>
+
+                <!-- PART 3 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part3-pill">PART 3</span>
+                        <h2>Topic Development (5 phút)</h2>
+                    </div>
+                    <div class="topic-statement-box">
+                        <span class="topic-tag">Chủ đề thảo luận:</span>
+                        <h3>"It is good to learn about a culture when you learn a language."</h3>
+                    </div>
+
+                    <div class="mindmap-visual-grid">
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Language: best means of culture</div>
+                            <div class="mindmap-desc">Language reflects cultural history, social values, and idioms.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Better communication</div>
+                            <div class="mindmap-desc">Understanding cultural etiquette ensures polite, respectful conversations.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Avoid culture shocks</div>
+                            <div class="mindmap-desc">Minimizes misunderstandings and embarrassing faux pas in international environments.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Your own ideas</div>
+                            <div class="mindmap-desc">Enhances emotional empathy and appreciation of world diversity.</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-3-p3', 60, 240)"><i class="fa-solid fa-microphone"></i> Luyện Part 3 (1 phút chuẩn bị + 4 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-3-p3-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-3-p3-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Bài phát triển chủ đề mẫu:</div>
+                        <p class="sample-text">"Learning a language should invariably be accompanied by studying its cultural context. First, language is the primary vehicle of culture; idioms and vocabulary are deeply rooted in historical traditions. Second, cultural awareness enables more natural and polite communication, preventing awkward misunderstandings. Third, understanding local customs shields travelers and students from severe culture shock when interacting with native speakers. In short, cultural competence transforms linguistic knowledge into practical fluency."</p>
+                    </div>
+
+                    <div class="further-questions-box">
+                        <h4><i class="fa-solid fa-circle-question text-blue"></i> Câu hỏi mở rộng (Further Questions):</h4>
+
+                        <div class="further-q-item">
+                            <p><strong>1. Do you think it is good to understand other people's cultures?</strong></p>
+                            <p class="sample-hint"><em>Gợi ý trả lời:</em> "Definitely. It promotes mutual respect, tolerance, and eliminates prejudice in our increasingly globalized community."</p>
+                        </div>
+
+                        <div class="further-q-item">
+                            <p><strong>2. What would you introduce first to a foreigner about Vietnamese culture?</strong></p>
+                            <p class="sample-hint"><em>Gợi ý trả lời:</em> "I would proudly introduce Vietnamese culinary traditions, especially Pho and regional street food, alongside our hospitable family values."</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== Speaking Test 4 ===================== -->
+            <section class="exam-content-area" id="speak-test-4" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN III: SPEAKING – SPEAKING TEST 4</div>
+                    <h1 class="test-title">Speaking Test 4</h1>
+                    <p class="test-meta">Tổng thời gian thi: ~12 phút | Gồm 3 phần: Tương tác xã hội, Thảo luận giải pháp, Phát triển chủ đề</p>
+                </div>
+
+                <!-- PART 1 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill">PART 1</span>
+                        <h2>Social Interaction (3 phút)</h2>
+                    </div>
+                    <p class="part-guide-text">Giám khảo sẽ hỏi bạn về Favorite Places & School Subjects.</p>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 1: Favorite Places</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> Where do you usually go when you have spare time?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t0-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t0-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t0-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"In my spare time, I often visit a quiet café or the municipal library where I can read books in a tranquil atmosphere."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> Are there many interesting places where you live for people to go at weekends?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t0-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t0-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t0-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Yes, my city features numerous lively night markets, public green parks, and scenic lakeside promenades that are packed on weekends."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> In what way is a café a great place for people to enjoy their free time?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t0-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t0-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t0-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"A café provides a pleasant ambiance with background music, allowing people to either concentrate on personal tasks or socialize with friends."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 2: Subjects at School</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> What subject did you like most when you were at school?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t1-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t1-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t1-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Mathematics and Computer Science were my absolute favorites because solving logical problems gave me an immense sense of accomplishment."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> Do you think English is a good subject for all students to learn at school? Why?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t1-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t1-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t1-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Yes, absolutely. English is a global lingua franca, so learning it equips students with an essential tool for higher education and global careers."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> Do you think students are learning too many subjects at school now?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p1-t1-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p1-t1-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-4-p1-t1-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"In my opinion, yes. Students often face an overloaded academic curriculum, which leaves them with little time to cultivate soft skills or pursue personal passions."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part2-pill">PART 2</span>
+                        <h2>Solution Discussion (4 phút)</h2>
+                    </div>
+                    <div class="situation-card">
+                        <div class="situation-header"><i class="fa-solid fa-triangle-exclamation text-amber"></i> Tình huống (Situation):</div>
+                        <div class="situation-content"><strong>You are going to take your secondary school students to the cinema. What kind of film do you think is best for the students?</strong></div>
+                        <div class="options-container">
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Cartoon</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> Action movies</div>
+                            <div class="option-chip recommended-opt"><i class="fa-solid fa-check-circle"></i> Detective movies</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p2', 60, 180)"><i class="fa-solid fa-microphone"></i> Luyện Part 2 (1 phút chuẩn bị + 3 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p2-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-4-p2-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Lựa chọn đề xuất: <strong>Detective movies</strong></div>
+                        <p class="sample-text">"Taking secondary students to watch a detective movie would be the most suitable option. At secondary age, teenagers are naturally curious and eager to engage in deductive thinking. A detective movie presents engaging puzzles and plot twists that encourage critical reasoning and group discussion. On the other hand, cartoons might feel too childish for this age group, while action films often contain excessive violence that is inappropriate for young audiences. Thus, a detective film strikes the ideal balance between intellectual stimulation and wholesome entertainment."</p>
+                    </div>
+                </div>
+
+                <!-- PART 3 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part3-pill">PART 3</span>
+                        <h2>Topic Development (5 phút)</h2>
+                    </div>
+                    <div class="topic-statement-box">
+                        <span class="topic-tag">Chủ đề thảo luận:</span>
+                        <h3>"Punishment by teachers at school is good for students."</h3>
+                    </div>
+
+                    <div class="mindmap-visual-grid">
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Obey teachers</div>
+                            <div class="mindmap-desc">Instills respect for classroom rules and authority.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Minimise misbehaviour</div>
+                            <div class="mindmap-desc">Deters disruptive acts and maintains a fair learning environment.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Concentrate better on study</div>
+                            <div class="mindmap-desc">Encourages students to take responsibilities for their academic tasks.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Your own ideas</div>
+                            <div class="mindmap-desc">Punishment must be constructive (e.g., extra tasks, reflections) rather than harsh or humiliating.</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-4-p3', 60, 240)"><i class="fa-solid fa-microphone"></i> Luyện Part 3 (1 phút chuẩn bị + 4 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-4-p3-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-4-p3-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Bài phát triển chủ đề mẫu:</div>
+                        <p class="sample-text">"Reasonable and constructive disciplinary measures play an important role in student development. First, fair disciplinary rules maintain order in the classroom, ensuring that disruptive behavior does not hinder others from studying. Second, it teaches teenagers accountability and consequences for their actions. However, it is vital that punishments are pedagogical—such as writing reflective essays or community tasks—rather than psychological humiliation or corporal punishment, which could foster resentment."</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================== Speaking Test 5 ===================== -->
+            <section class="exam-content-area" id="speak-test-5" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN III: SPEAKING – SPEAKING TEST 5</div>
+                    <h1 class="test-title">Speaking Test 5</h1>
+                    <p class="test-meta">Tổng thời gian thi: ~12 phút | Gồm 3 phần: Tương tác xã hội, Thảo luận giải pháp, Phát triển chủ đề</p>
+                </div>
+
+                <!-- PART 1 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill">PART 1</span>
+                        <h2>Social Interaction (3 phút)</h2>
+                    </div>
+                    <p class="part-guide-text">Giám khảo hỏi về Hometown & Career.</p>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 1: Hometown</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> Where do you come from?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t0-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t0-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t0-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I come from a peaceful province in Vietnam known for its picturesque mountains, fertile agricultural lands, and welcoming inhabitants."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> Do you like living in your hometown? Why?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t0-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t0-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t0-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Yes, I cherish my hometown because of its serene atmosphere, fresh air, and close-knit community where neighbors always support one another."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> What is your hometown famous for?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t0-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t0-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t0-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"My hometown is renowned for its specialties, especially fragrant green tea, scenic lakes, and historic cultural landmarks."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="speaking-subtopic-box">
+                        <h3 class="subtopic-title"><i class="fa-solid fa-comments text-amber"></i> Topic 2: Career</h3>
+                        <div class="questions-list">
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 1:</strong> What is your dream job?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t1-q0', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t1-q0-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t1-q0-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"My dream job is to become an Artificial Intelligence researcher, designing algorithmic solutions to automate complex data processing tasks."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 2:</strong> How long have you been studying or working towards this career?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t1-q1', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t1-q1-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t1-q1-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"I have been dedicating the past two years to computer science fundamentals, machine learning theories, and programming."</p>
+                                </div>
+                            </div>
+
+                            <div class="speak-q-row">
+                                <div class="speak-q-text"><strong>Câu 3:</strong> Why do you like this job?</div>
+                                <div class="speak-q-actions">
+                                    <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p1-t1-q2', 5, 40)"><i class="fa-solid fa-microphone"></i> Luyện (5s chuẩn bị + 40s nói)</button>
+                                    <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p1-t1-q2-sample')"><i class="fa-solid fa-eye"></i> Bài mẫu</button>
+                                </div>
+                                <div class="sample-answer-box" id="speak-test-5-p1-t1-q2-sample" style="display:none;">
+                                    <div class="sample-badge"><i class="fa-solid fa-star"></i> Câu trả lời mẫu B2:</div>
+                                    <p class="sample-text">"Because it combines high-level intellectual rigor with practical global impact, shaping how humanity solves healthcare and educational challenges."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PART 2 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part2-pill">PART 2</span>
+                        <h2>Solution Discussion (4 phút)</h2>
+                    </div>
+                    <div class="situation-card">
+                        <div class="situation-header"><i class="fa-solid fa-triangle-exclamation text-amber"></i> Tình huống (Situation):</div>
+                        <div class="situation-content"><strong>Your town plans to organize an Open Festival and many visitors will come. Which job below do you think would be most suitable for you?</strong></div>
+                        <div class="options-container">
+                            <div class="option-chip recommended-opt"><i class="fa-solid fa-check-circle"></i> A tour guide</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> A traffic instructor</div>
+                            <div class="option-chip"><i class="fa-solid fa-check-circle"></i> A master of ceremony (MC)</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p2', 60, 180)"><i class="fa-solid fa-microphone"></i> Luyện Part 2 (1 phút chuẩn bị + 3 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p2-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-5-p2-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Lựa chọn đề xuất: <strong>A tour guide</strong></div>
+                        <p class="sample-text">"If my town hosts an Open Festival, being a tour guide would be the most suitable and enjoyable role for me. As a local resident, I am deeply familiar with our historical monuments, culinary spots, and cultural stories, which enables me to present our hometown enthusiastically to foreign and domestic guests. Working as a tour guide also allows me to practice interpersonal communication and foreign language skills. In contrast, directing traffic is physically exhausting, and hosting as an MC demands professional stage skills that I have not been trained for."</p>
+                    </div>
+                </div>
+
+                <!-- PART 3 -->
+                <div class="speaking-part-block">
+                    <div class="part-head-title">
+                        <span class="part-pill part3-pill">PART 3</span>
+                        <h2>Topic Development (5 phút)</h2>
+                    </div>
+                    <div class="topic-statement-box">
+                        <span class="topic-tag">Chủ đề thảo luận:</span>
+                        <h3>"Smoking should be banned in public places."</h3>
+                    </div>
+
+                    <div class="mindmap-visual-grid">
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Smoker's health</div>
+                            <div class="mindmap-desc">Helps smokers cut down consumption and reduces cardiovascular/lung risks.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Second-hand smoker's health</div>
+                            <div class="mindmap-desc">Protects innocent children, pregnant women, and workers from toxic passive smoke.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Financial burden</div>
+                            <div class="mindmap-desc">Reduces public healthcare expenditures on tobacco-related diseases.</div>
+                        </div>
+
+                        <div class="mindmap-card">
+                            <div class="mindmap-title"><i class="fa-solid fa-circle-dot text-amber"></i> Your own ideas</div>
+                            <div class="mindmap-desc">Creates cleaner public environments with less cigarette litter.</div>
+                        </div>
+                    </div>
+
+                    <div class="speak-practice-bar">
+                        <button class="btn-practice-speak" onclick="runPracticeTimer('speak-test-5-p3', 60, 240)"><i class="fa-solid fa-microphone"></i> Luyện Part 3 (1 phút chuẩn bị + 4 phút nói)</button>
+                        <button class="btn-toggle-sample" onclick="toggleSampleAnswer('speak-test-5-p3-sample')"><i class="fa-solid fa-eye"></i> Xem bài nói mẫu</button>
+                    </div>
+
+                    <div class="sample-answer-box" id="speak-test-5-p3-sample" style="display:none;">
+                        <div class="sample-badge"><i class="fa-solid fa-star"></i> Bài phát triển chủ đề mẫu:</div>
+                        <p class="sample-text">"Enforcing a comprehensive ban on smoking in public venues is an urgent necessity. Above all, second-hand smoke poses severe health hazards to non-smokers, especially children and elderly citizens who have the right to breathe clean air. Furthermore, restricting smoking zones encourages active smokers to reduce their habit, leading to fewer chronic illnesses and alleviating the heavy financial strain on national healthcare budgets. Public spaces will also be significantly cleaner without discarded cigarette butts."</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="speaking.js"></script>
+</body>
+</html>

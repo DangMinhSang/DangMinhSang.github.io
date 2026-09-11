@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing – VSTEP Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vstep-page">
+    <header class="vstep-header">
+        <div class="header-left">
+            <a href="index.html" class="logo-wrap">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <span class="logo-title">VSTEP</span>
+                    <span class="logo-sub">Tự Luyện Thi B1-B2-C1</span>
+                </div>
+            </a>
+        </div>
+        <nav class="header-nav">
+            <a href="listening.html" class="nav-link"><i class="fa-solid fa-headphones"></i><span>Listening</span></a>
+            <a href="reading.html" class="nav-link"><i class="fa-solid fa-book-open"></i><span>Reading</span></a>
+            <a href="writing.html" class="nav-link active"><i class="fa-solid fa-pen-nib"></i><span>Writing</span></a>
+            <a href="speaking.html" class="nav-link"><i class="fa-solid fa-microphone"></i><span>Speaking</span></a>
+        </nav>
+        <div class="header-right">
+            <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i><span>Trang Chủ</span></a>
+        </div>
+    </header>
+
+    <div class="exam-layout">
+        <aside class="exam-sidebar">
+            <div class="sidebar-inner">
+                <div class="skill-badge skill-writing">
+                    <i class="fa-solid fa-pen-nib"></i> PHẦN II: VIẾT (WRITING)
+                </div>
+
+                <div class="timer-section">
+                    <div class="timer-label"><i class="fa-regular fa-clock"></i> Thời gian làm bài</div>
+                    <div class="timer-display" id="timer">60:00</div>
+                    <div class="timer-actions">
+                        <button id="btn-timer-toggle" class="btn-timer" onclick="toggleTimer()"><i class="fa-solid fa-pause"></i> Tạm dừng</button>
+                        <button class="btn-timer" onclick="resetTimer()"><i class="fa-solid fa-rotate-right"></i> Đặt lại</button>
+                    </div>
+                </div>
+
+                <div class="test-selector-section">
+                    <div class="sidebar-heading">Danh sách đề trong sách:</div>
+                    <div class="test-nav-list" id="test-nav-list">
+                        <button class="test-nav-btn active" onclick="switchTest('test-1')"><span class="btn-num">1</span> Writing Test 1</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-2')"><span class="btn-num">2</span> Writing Test 2</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-3')"><span class="btn-num">3</span> Writing Test 3</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-4')"><span class="btn-num">4</span> Writing Test 4</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-5')"><span class="btn-num">5</span> Writing Test 5</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-6')"><span class="btn-num">6</span> Writing Test 6</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-7')"><span class="btn-num">7</span> Writing Test 7</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-8')"><span class="btn-num">8</span> Writing Test 8</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-9')"><span class="btn-num">9</span> Writing Test 9</button>
+                        <button class="test-nav-btn" onclick="switchTest('test-10')"><span class="btn-num">10</span> Writing Test 10</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-tips-box">
+                    <h4><i class="fa-solid fa-lightbulb"></i> Quy định VSTEP Writing</h4>
+                    <ul>
+                        <li><strong>Task 1:</strong> Viết thư/email xã giao (≥ 120 từ, ~20 phút). Tuyệt đối không ghi tên thật.</li>
+                        <li><strong>Task 2:</strong> Bài luận nghị luận xã hội (≥ 250 từ, ~40 phút). Cần có mở bài, 2 thân bài và kết bài rõ ràng.</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <main class="exam-main">
+
+            <!-- ===================== Writing Test 1 ===================== -->
+            <section class="exam-content-area" id="test-1">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 1</div>
+                    <h1 class="test-title">Writing Test 1</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to a Friend (Robin in Canada)</h2>
+                    <p class="task-prompt">You are planning to visit your friend Robin in Canada. Robin has written to you. Read Robin's letter.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            My friends and I are going to a sports camp in the mountains in July. We'd love you to join us there.<br><br>We can play tennis, hockey, football, basketball and other sports. We can stay in rooms or sleep in tents. Which would you prefer? We'll cook together in the evenings. Is there something special from your country that you could cook?<br><br>You could fly over to Canada a few days before the sports camp and stay with me here in the city. What would you like to do before we go to the camp?<br><br>Write soon.<br>Robin
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Robin. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-1-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-1', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-1-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-1-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Compulsory University Attendance</h2>
+                    <p class="task-prompt">Read the following text from an educational magazine:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "Compulsory attendance in university has always been a highly debated subject. Professors view class attendance as an individual student responsibility. However, many students want to be given the freedom to decide which classes to attend. Due to the difficulty of regulating a school-wide attendance policy, most colleges and universities give professors the authority to set their own attendance rules. Some people believe that university students should be required to attend classes. Others believe that going to classes should be optional for students."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an essay to an educated reader to tell which point of view you agree with. Include specific reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-1-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-1', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-1-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-1-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-1')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-1')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 2 ===================== -->
+            <section class="exam-content-area" id="test-2" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 2</div>
+                    <h1 class="test-title">Writing Test 2</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Natalie (Directions & Travel Tips)</h2>
+                    <p class="task-prompt">You have received the following letter from your English-speaking friend, Natalie.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            Thanks for inviting me to stay with you when I visit your country next month. I'm not sure how to get to your apartment from the airport. Could you write back giving me some simple directions? What's the cheapest means of transport? What will the weather be like when I get there? What kind of clothes should I take?
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Natalie. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-2-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-2', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-2-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-2-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Best Ways to Reduce Stress</h2>
+                    <p class="task-prompt">Read the following text from a health magazine:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "Stress is the feeling of being under too much mental or emotional pressure. Pressure becomes stress when you feel unable to cope. Stress can affect how you feel, think, and behave and even how your body functions. It is worth taking the time to learn different strategies and techniques for managing your stress before there are serious consequences for your mental and physical well-being. People have different ways of escaping the stress and difficulties of modern life. Some read; some exercise; others work in their gardens."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an essay to an educated reader to tell what you think is the best way of reducing stress. Include specific reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-2-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-2', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-2-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-2-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-2')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-2')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 3 ===================== -->
+            <section class="exam-content-area" id="test-3" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 3</div>
+                    <h1 class="test-title">Writing Test 3</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to John Webster (Language Academy)</h2>
+                    <p class="task-prompt">You are helping to organize a visit to an English Language Academy in Manchester. You have received a letter from John Webster, the director of the Academy. Read the letter.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            I am very glad to see that you are coming to our academy in July. I am sure you will all have a very enjoyable time and that you will learn a lot of English.<br><br>You can either stay all together in a youth hostel, or individually with local families. Please tell me which you would prefer.<br><br>Tell me something about your group so that I can organize interesting spare time activities. What sort of things do they like doing?<br><br>Please ask if you need any further information.<br>Yours sincerely,<br>John Webster
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to John Webster. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-3-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-3', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-3-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-3-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Where Does Success Come From?</h2>
+                    <p class="task-prompt">Read the following text from a business magazine:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "Success is the most aspired by everyone. Success comes in all shapes and colors. You can be successful in your job and career but you can equally be successful in your marriage, at sports or a hobby. However, success is not easy to achieve. The road leading to the achievement has obstacles that are to be crossed over. Some people believe that success in life comes from taking risks or chances. Others believe that success results from careful planning."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an essay to an educated reader to tell what you think success comes from. Include specific reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-3-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-3', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-3-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-3-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-3')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-3')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 4 ===================== -->
+            <section class="exam-content-area" id="test-4" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 4</div>
+                    <h1 class="test-title">Writing Test 4</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Maggie (Surprise Birthday Party)</h2>
+                    <p class="task-prompt">Your Scottish friend, Maggie, has sent you an email asking you to help her organize a special surprise birthday party for her brother Rupert. Read Maggie's email.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            ... We must make sure that Rupert doesn't know we are planning this surprise. I'm not sure how many people to invite but our house is definitely too small. Do you think we should book the Royal hotel for the evening and have the party there? I've also been wondering what we could all buy as a present. What do you think?<br><br>Could you come the day before the party to help with preparations? There's a lot to plan so I'd really like your help. Can you suggest something else that will really make the party special?<br><br>All for now, best wishes,<br>Maggie
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Maggie. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-4-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-4', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-4-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-4-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: School Starting Age (Early vs Later)</h2>
+                    <p class="task-prompt">Read the following text from an education magazine:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "While compulsory education in some countries such as England begins at the age of five (with many children actually starting at four), in countries such as Sweden, Denmark and Finland, school does not begin until the age of seven.
+
+There are two different points of view regarding this. Some people think that children should begin their formal education at a very early age and should spend most of their time on school studies. Others believe that young children should spend most of their time playing."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an essay to an educated reader to tell which point of view you agree with. Include specific reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-4-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-4', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-4-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-4-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-4')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-4')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 5 ===================== -->
+            <section class="exam-content-area" id="test-5" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 5</div>
+                    <h1 class="test-title">Writing Test 5</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Ms. Janet (College Ski Trip Feedback)</h2>
+                    <p class="task-prompt">You recently helped organize a college ski trip and you have received an email from Ms. Janet, a parent of one of the students. Read part of her email below:</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            I understand you were one of the organizers of our son's ski trip. I have to say my husband and I were extremely dissatisfied with the arrangements. You know my son and his classmates were eager to join the trip at first. But when he came home, my son informed us that the lessons were fewer than promised and the accommodation was inadequate. Can you please give us a satisfactory explanation?
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Ms. Janet. You should write at least 120 words. You do not need to include your name or addresses.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-5-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-5', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-5-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-5-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Online Shopping Pros & Cons</h2>
+                    <p class="task-prompt">Read the following text from an article about the Internet:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "In some countries, people are increasingly doing their shopping on the Internet instead of going to stores. Some people, especially those with a limited time budget, regard online shopping as a positive development since they can buy products at home or office without having to go to stores or shopping malls. However, there are those who argue that making online transactions can be advantageous to them in several ways."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss your opinions about the positive and negative aspects of online shopping. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-5-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-5', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-5-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-5-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-5')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-5')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 6 ===================== -->
+            <section class="exam-content-area" id="test-6" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 6</div>
+                    <h1 class="test-title">Writing Test 6</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Jane (Advice on Keeping Fit)</h2>
+                    <p class="task-prompt">You received an email from your English friend, Jane. She asked you for some information about the way to keep fit. Read part of her email below.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            I enjoy my job but I often sit at a computer all day. I don't get much exercise so I often feel tired. I consider going to the gym but I often work very late. Could you recommend something else I should do to keep fit? Do I really need an instructor or I can do by myself? Also, do I need to buy any equipment to do exercise? Does it cost much to buy them?<br><br>I look forward to your reply.
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Jane. You should write at least 120 words. You mustn't include your name or addresses.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-6-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-6', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-6-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-6-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Effects of Computer Games on Children</h2>
+                    <p class="task-prompt">Read the following text from an article about computer games:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "Access to computers has increased significantly over the past decades and the number of children playing games on computers has been correspondingly on the rise. As regards to positive effects, playing computers provides children with various skills that may not be taught at school. However, concerns have been raised about negative sides of computer games by children, much of this related to the violence."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss the effects of computer games on children's behaviour and what can be done to minimize the bad effects. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-6-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-6', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-6-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-6-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-6')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-6')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 7 ===================== -->
+            <section class="exam-content-area" id="test-7" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 7</div>
+                    <h1 class="test-title">Writing Test 7</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Lily (Traditional Festivals)</h2>
+                    <p class="task-prompt">You received an email from your English friend, Lily. She asked you for some information about traditional festivals in your country. Read part of her email below.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            I have just watched such a fantastic program about traditional festivals in the world. There are not many festivals like these in my country. Are there many traditional festivals in your country? Which is the most popular one? Could you tell me about it? In what time of the year does it happen? What do people often do in this occasion? Is it widely known by international tourists? Do young people in your country still enjoy it?<br><br>I look forward to your reply.
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Lily. You should write at least 120 words. You do not need to include your name or addresses.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-7-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-7', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-7-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-7-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Internet and Human Social Interactions</h2>
+                    <p class="task-prompt">Read the following text from an article about the Internet:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "It is evident that the Internet has increasingly brought about significant changes to our life. According to a recent study, the more time people use the Internet, the less time they spend with real human beings. Some people say that instead of seeing the Internet as a way of opening up new communication possibilities worldwide, we should be concerned about the effect it is having on social interactions."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss your opinions about the effects of the Internet on human interactions. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-7-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-7', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-7-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-7-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-7')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-7')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 8 ===================== -->
+            <section class="exam-content-area" id="test-8" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 8</div>
+                    <h1 class="test-title">Writing Test 8</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Email to Paul (Television in Your Country)</h2>
+                    <p class="task-prompt">You received an email from your English pen friend, Paul. He asked you about your TV in your country. Read part of his email below.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            One of my hobbies is watching TV. There are many fantastic programs for me to watch. Sometimes I can spend my whole day watching TV. Could you tell me about TV in your country? Are the programs interesting to you? What is your best favourite TV program? What is that program about? How much TV do you watch every day? Do people in your country watch too much TV these days?<br><br>I'm looking forward to hearing from you soon.
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write an email responding to Paul. You should write at least 120 words. You do not need to include your name or addresses.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-8-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-8', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-8-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-8-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Banning Smoking in Public Places</h2>
+                    <p class="task-prompt">Read the following text from an article about smoking:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "Medical studies have shown that smoking not only leads to health problems for the smoker, but also for people close by. For this reason, smoking should not be allowed in public places. Opponents argue that the forbiddance of smoking would possibly affect the freedom of choice or lead to the closure of many bars and pubs. However, supporters of this ban place people's health problems at the top of the scale."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss your opinions about whether public smoking should be banned or not. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-8-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-8', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-8-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-8-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-8')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-8')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 9 ===================== -->
+            <section class="exam-content-area" id="test-9" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 9</div>
+                    <h1 class="test-title">Writing Test 9</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Letter to Ms. Johnston (Summer Camp Application)</h2>
+                    <p class="task-prompt">You have recently applied for a job at a summer camp for children. You have just received a letter from Ms. Johnston asking you for more information to support your application. Read part of the letter from her below.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            Your application has made a positive impression on us, but we need more information in order to fully evaluate you as a candidate.<br><br>First of all, how old are you? Secondly, we would like to know what, you think, makes you the ideal candidate for this job. Finally, we have two positions open, one at Pebble Beach, and another at Spruce Mountain. Pebble Beach is our busiest, most popular location, while Spruce Mountain is a beautiful wild area near a national park. Which would you prefer?<br><br>Please send us this information as soon as possible, and feel free to ask if you have any further questions.
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write a letter responding to Ms. Johnston. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-9-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-9', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-9-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-9-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Purposes of Mass Media in Society</h2>
+                    <p class="task-prompt">Read the following text from an article about mass media:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "While most of us make use of some form of the media on a daily basis, we may not think about the functions or purposes the media serves in our society. One important function is entertainment. On television, in particular, the variety of entertainment programs is extensive, ranging from soap operas, to comedy, to talk shows, to sports."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss your opinions about the purposes of mass media. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-9-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-9', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-9-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-9-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-9')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-9')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+            <!-- ===================== Writing Test 10 ===================== -->
+            <section class="exam-content-area" id="test-10" style="display:none;">
+                <div class="exam-header-banner">
+                    <div class="test-tag">PHẦN II: WRITING – WRITING TEST 10</div>
+                    <h1 class="test-title">Writing Test 10</h1>
+                    <p class="test-meta">Thời gian quy định: 60 phút | Số lượng: 2 câu hỏi (Task 1 & Task 2)</p>
+                </div>
+
+                <!-- TASK 1 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge">TASK 1</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 20 phút | Mục tiêu: ≥ 120 từ</div>
+                    </div>
+                    <h2 class="task-title">Letter to Mr. Jones (Interview for Camp Job)</h2>
+                    <p class="task-prompt">You have applied for a job helping out at a summer camp for children, and you have just received a letter from Mr. Jones asking you to come for an interview. Read part of the letter from him below.</p>
+                    
+                    <div class="letter-box">
+                        <div class="letter-inner">
+                            ... Your application made a very good impression on us, and we would like to invite you to come for an interview. We will be holding the interviews on the first and second weekends in May. Are you available for either of these weekends?<br><br>As you know, we are located in the Cairngorm Mountains. We will hold the interviews there, and although we realize that this is a long journey for interviewees, we think it is important for you to see our location and facilities first hand. Of course, we will pay for your travel expenses.<br><br>Finally, we would like to know when you would be available to start work.<br>We look forward to meeting you, and please let us know if you have any questions.
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Write a letter responding to Mr. Jones. You should write at least 120 words. You are not allowed to include your name.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-10-t1-input" placeholder="Viết câu trả lời Task 1 tại đây... (Dear Robin / Dear Natalie...)" oninput="updateWordCount('test-10', 1)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-10-t1-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 120 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-10-t1-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TASK 2 -->
+                <div class="writing-task-card">
+                    <div class="task-head">
+                        <div class="task-badge task2-badge">TASK 2</div>
+                        <div class="task-timing"><i class="fa-regular fa-clock"></i> Khuyến nghị: 40 phút | Mục tiêu: ≥ 250 từ</div>
+                    </div>
+                    <h2 class="task-title">Essay: Internet Rumors & Solutions</h2>
+                    <p class="task-prompt">Read the following text from an article about rumors on the Internet:</p>
+
+                    <div class="quote-box">
+                        <div class="quote-inner">
+                            "The Internet is the source of many rumors, or unverified stories. Rumors are generally spread from one person to another by word of mouth, and the story evolves or changes in the process. But the Internet has allowed rumors to spread much further and faster than ever before."
+                        </div>
+                    </div>
+
+                    <div class="task-instruction-bar">
+                        <i class="fa-solid fa-circle-exclamation text-amber"></i>
+                        <span>Now, write an essay to an educated reader to discuss your opinions about the consequences of rumors on the Internet and what can be done to solve this problem. Include reasons and any relevant examples to support your answer. You should write at least 250 words.</span>
+                    </div>
+
+                    <div class="writing-input-wrap">
+                        <textarea class="writing-textarea" id="test-10-t2-input" placeholder="Viết bài luận Task 2 tại đây... (Introduction, Body 1, Body 2, Conclusion)" oninput="updateWordCount('test-10', 2)"></textarea>
+                        <div class="textarea-footer">
+                            <div class="word-counter-display">
+                                Số từ: <strong id="test-10-t2-words">0</strong> từ <span class="target-hint">(Cần tối thiểu 250 từ)</span>
+                            </div>
+                            <div class="autosave-status" id="test-10-t2-save"><i class="fa-solid fa-check"></i> Đã tự lưu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="writing-bottom-actions">
+                    <button class="btn-save-manual" onclick="manualSave('test-10')"><i class="fa-solid fa-floppy-disk"></i> Lưu bài làm</button>
+                    <button class="btn-clear-draft" onclick="clearDraft('test-10')"><i class="fa-solid fa-trash-can"></i> Xóa làm lại</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="writing.js"></script>
+</body>
+</html>
