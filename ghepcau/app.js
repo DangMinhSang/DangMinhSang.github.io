@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let userAnswers = {};
     let lastPrompt = '';
     let lastEvaluations = null;
-    let attachedFile = null;
+    let attachedFiles = [];
 
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
@@ -58,13 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnExportNoAnswers = document.getElementById('btn-export-no-answers');
     const btnExportWithAnswers = document.getElementById('btn-export-with-answers');
 
-    // DOM Elements - File Attachment
+    // DOM Elements - File Attachment & Multiple files / Paste
     const promptFileInput = document.getElementById('prompt-file-input');
     const btnAttachFile = document.getElementById('btn-attach-file');
-    const attachedFileBadge = document.getElementById('attached-file-badge');
-    const attachedFileName = document.getElementById('attached-file-name');
-    const attachedFileSize = document.getElementById('attached-file-size');
-    const btnRemoveAttachedFile = document.getElementById('btn-remove-attached-file');
+    const attachedFilesContainer = document.getElementById('attached-files-container');
+    const attachedFilesList = document.getElementById('attached-files-list');
+    const attachedFilesCount = document.getElementById('attached-files-count');
+    const btnClearAllFiles = document.getElementById('btn-clear-all-files');
 
     // DOM Elements - Sections
     const promptSection = document.getElementById('prompt-section');
@@ -132,29 +132,242 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       File Attachment & Base64 Data URL Convertor
+       File Attachment & Image Paste & Base64 Data URL Convertor
        ========================================================================== */
     btnAttachFile.addEventListener('click', () => {
         promptFileInput.click();
     });
 
     promptFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        attachedFile = file;
-        attachedFileName.textContent = file.name;
-        attachedFileSize.textContent = `(${formatFileSize(file.size)})`;
-        attachedFileBadge.classList.remove('hidden');
-        btnAttachFile.classList.add('hidden');
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        addAttachedFiles(files);
+        promptFileInput.value = ''; // Reset to allow selecting the same file again
     });
 
-    btnRemoveAttachedFile.addEventListener('click', () => {
-        attachedFile = null;
+    if (btnClearAllFiles) {
+        btnClearAllFiles.addEventListener('click', () => {
+            clearAllAttachedFiles();
+        });
+    }
+
+    function addAttachedFiles(files) {
+        if (!files || files.length === 0) return;
+
+        let addedCount = 0;
+        for (const file of files) {
+            // Avoid exact duplicates
+            const isDuplicate = attachedFiles.some(f =>
+                f.name === file.name && f.size === file.size && f.lastModified === file.lastModified
+            );
+            if (!isDuplicate) {
+                if (file.size > 25 * 1024 * 1024) {
+                    showToast(`File "${file.name}" quá lớn (>25MB). Vui lòng chọn file nhỏ hơn.`, 'error');
+                    continue;
+                }
+                attachedFiles.push(file);
+                addedCount++;
+            }
+        }
+
+        if (addedCount > 0) {
+            renderAttachedFilesList();
+        }
+    }
+
+    function removeAttachedFile(index) {
+        if (index >= 0 && index < attachedFiles.length) {
+            const removed = attachedFiles.splice(index, 1)[0];
+            if (removed && removed._previewUrl) {
+                URL.revokeObjectURL(removed._previewUrl);
+            }
+            renderAttachedFilesList();
+        }
+    }
+
+    function clearAllAttachedFiles() {
+        attachedFiles.forEach(f => {
+            if (f._previewUrl) URL.revokeObjectURL(f._previewUrl);
+        });
+        attachedFiles = [];
         promptFileInput.value = '';
-        attachedFileBadge.classList.add('hidden');
-        btnAttachFile.classList.remove('hidden');
+        renderAttachedFilesList();
+    }
+
+    function renderAttachedFilesList() {
+        if (!attachedFilesContainer || !attachedFilesList) return;
+
+        if (attachedFiles.length === 0) {
+            attachedFilesContainer.classList.add('hidden');
+            btnAttachFile.innerHTML = '<i class="fa-solid fa-paperclip"></i> Đính Kèm File (Ảnh, PDF, Word, TXT...)';
+            return;
+        }
+
+        attachedFilesContainer.classList.remove('hidden');
+        btnAttachFile.innerHTML = '<i class="fa-solid fa-plus"></i> Đính kèm thêm file...';
+        if (attachedFilesCount) {
+            attachedFilesCount.textContent = attachedFiles.length;
+        }
+
+        attachedFilesList.innerHTML = '';
+
+        attachedFiles.forEach((file, index) => {
+            const badge = document.createElement('div');
+            badge.className = 'file-badge';
+
+            let iconHtml = '';
+            if (file.type.startsWith('image/')) {
+                if (!file._previewUrl) {
+                    file._previewUrl = URL.createObjectURL(file);
+                }
+                iconHtml = `<img src="${file._previewUrl}" alt="${escapeHtml(file.name)}" class="file-badge-thumb" />`;
+            } else {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext === 'pdf') {
+                    iconHtml = '<i class="fa-solid fa-file-pdf file-badge-icon file-icon-pdf"></i>';
+                } else if (ext === 'docx' || ext === 'doc') {
+                    iconHtml = '<i class="fa-solid fa-file-word file-badge-icon file-icon-word"></i>';
+                } else if (['txt', 'md', 'json', 'csv'].includes(ext)) {
+                    iconHtml = '<i class="fa-solid fa-file-lines file-badge-icon file-icon-text"></i>';
+                } else {
+                    iconHtml = '<i class="fa-solid fa-file file-badge-icon"></i>';
+                }
+            }
+
+            badge.innerHTML = `
+                ${iconHtml}
+                <span class="file-badge-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+                <span class="file-badge-size">(${formatFileSize(file.size)})</span>
+                <button type="button" class="btn-icon-inside-badge" data-index="${index}" title="Gỡ file này">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            const removeBtn = badge.querySelector('.btn-icon-inside-badge');
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeAttachedFile(index);
+            });
+
+            attachedFilesList.appendChild(badge);
+        });
+    }
+
+    // Image Paste Handler for prompt input & form
+    function handleImagePaste(e) {
+        const clipboardData = e.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+
+        const newImageFiles = [];
+
+        // Check clipboardData.items (standard for screenshots/canvas/browser copy)
+        if (clipboardData.items && clipboardData.items.length > 0) {
+            for (let i = 0; i < clipboardData.items.length; i++) {
+                const item = clipboardData.items[i];
+                if (item.type && item.type.startsWith('image/')) {
+                    const blob = item.getAsFile();
+                    if (blob) {
+                        const ext = blob.type.split('/')[1]?.replace('+xml', '') || 'png';
+                        const count = attachedFiles.length + newImageFiles.length + 1;
+                        const now = new Date();
+                        const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+                        const customFile = new File([blob], `anh_dan_${timeStr}_${count}.${ext}`, {
+                            type: blob.type,
+                            lastModified: Date.now()
+                        });
+                        newImageFiles.push(customFile);
+                    }
+                }
+            }
+        }
+
+        // Check clipboardData.files if items didn't produce files
+        if (newImageFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+            for (let i = 0; i < clipboardData.files.length; i++) {
+                const file = clipboardData.files[i];
+                if (file.type && file.type.startsWith('image/')) {
+                    newImageFiles.push(file);
+                }
+            }
+        }
+
+        if (newImageFiles.length > 0) {
+            // If clipboard only had images and no text, prevent default paste
+            const text = clipboardData.getData('text/plain');
+            if (!text || !text.trim()) {
+                e.preventDefault();
+            }
+
+            addAttachedFiles(newImageFiles);
+            showToast(`Đã dán ${newImageFiles.length} hình ảnh vào yêu cầu!`, 'success');
+        }
+    }
+
+    promptInput.addEventListener('paste', handleImagePaste);
+
+    if (generatorForm) {
+        generatorForm.addEventListener('paste', (e) => {
+            if (e.target === promptInput) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            handleImagePaste(e);
+        });
+    }
+
+    // Drag & Drop files directly onto prompt textarea
+    const promptTextareaWrapper = promptInput.closest('.textarea-wrapper') || promptInput;
+    ['dragenter', 'dragover'].forEach(eventName => {
+        promptTextareaWrapper.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            promptTextareaWrapper.classList.add('drag-over');
+        }, false);
     });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        promptTextareaWrapper.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            promptTextareaWrapper.classList.remove('drag-over');
+        }, false);
+    });
+
+    promptTextareaWrapper.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+            addAttachedFiles(Array.from(dt.files));
+            showToast(`Đã nhận ${dt.files.length} file đính kèm!`, 'success');
+        }
+    });
+
+    // Toast Notification Helper
+    function showToast(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast-item toast-${type}`;
+        const iconClass = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info');
+        toast.innerHTML = `
+            <i class="fa-solid ${iconClass}"></i>
+            <span>${escapeHtml(message)}</span>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('toast-show');
+        }, 10);
+
+        setTimeout(() => {
+            toast.classList.remove('toast-show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 
     function formatFileSize(bytes) {
         if (bytes < 1024) return bytes + ' B';
@@ -164,6 +377,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
+            // Check if image and needs resizing
+            if (file.type.startsWith('image/')) {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    const MAX_DIM = 2048;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_DIM || height > MAX_DIM || file.size > 3 * 1024 * 1024) {
+                        if (width > height) {
+                            if (width > MAX_DIM) {
+                                height = Math.round(height * (MAX_DIM / width));
+                                width = MAX_DIM;
+                            }
+                        } else {
+                            if (height > MAX_DIM) {
+                                width = Math.round(width * (MAX_DIM / height));
+                                height = MAX_DIM;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                        const dataUrl = canvas.toDataURL(mimeType, 0.88);
+                        const base64 = dataUrl.split(',')[1];
+                        resolve({
+                            name: file.name,
+                            dataUrl: dataUrl,
+                            base64: base64,
+                            mimeType: mimeType
+                        });
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const dataUrl = reader.result;
+                        const base64 = dataUrl.split(',')[1];
+                        resolve({
+                            name: file.name,
+                            dataUrl: dataUrl,
+                            base64: base64,
+                            mimeType: file.type || 'image/jpeg'
+                        });
+                    };
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const dataUrl = reader.result;
+                        const base64 = dataUrl.split(',')[1];
+                        resolve({
+                            name: file.name,
+                            dataUrl: dataUrl,
+                            base64: base64,
+                            mimeType: file.type || 'image/jpeg'
+                        });
+                    };
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                };
+                img.src = url;
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = () => {
                 const dataUrl = reader.result;
@@ -172,12 +458,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!mime) {
                     const ext = file.name.split('.').pop().toLowerCase();
                     if (ext === 'pdf') mime = 'application/pdf';
-                    else if (ext === 'png') mime = 'image/png';
-                    else if (ext === 'jpg' || ext === 'jpeg') mime = 'image/jpeg';
-                    else if (ext === 'webp') mime = 'image/webp';
                     else mime = 'application/octet-stream';
                 }
                 resolve({
+                    name: file.name,
                     dataUrl: dataUrl,
                     base64: base64,
                     mimeType: mime
@@ -509,21 +793,21 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================================================
        4. Unified AI LLM API Call Helper (Gemini / OpenRouter Router)
        ========================================================================== */
-    async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null, fileInlineData = null) {
+    async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null, filesData = []) {
         if (!model) {
             openKeyModal();
             throw new Error('Chưa có API Key nào được cài đặt. Vui lòng nhập Gemini Key để bắt đầu sử dụng.');
         }
 
         if (model.startsWith('gemini')) {
-            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, fileInlineData);
+            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, filesData);
         } else {
-            return await callOpenRouterAPI(systemInstruction, userPrompt, model, fileInlineData);
+            return await callOpenRouterAPI(systemInstruction, userPrompt, model, filesData);
         }
     }
 
-    // Google Gemini API Call (Direct Multimodal inlineData support)
-    async function callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, fileInlineData) {
+    // Google Gemini API Call (Direct Multimodal inlineData support for multiple files)
+    async function callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, filesData) {
         const apiKey = getStoredGeminiKey();
         if (!apiKey) {
             openKeyModal();
@@ -547,14 +831,21 @@ document.addEventListener('DOMContentLoaded', () => {
             { text: systemInstruction + '\n\n' + userPrompt }
         ];
 
-        // Directly attach Base64 file as Gemini inlineData!
-        if (fileInlineData && fileInlineData.base64) {
-            parts.push({
-                inlineData: {
-                    mimeType: fileInlineData.mimeType,
-                    data: fileInlineData.base64
+        // Attach Base64 files as Gemini inlineData!
+        const fileList = Array.isArray(filesData) ? filesData : (filesData ? [filesData] : []);
+        for (const fileItem of fileList) {
+            if (fileItem && fileItem.base64 && fileItem.mimeType) {
+                const mime = fileItem.mimeType;
+                // Gemini supports image/*, application/pdf, audio/*, video/*
+                if (mime.startsWith('image/') || mime === 'application/pdf' || mime.startsWith('audio/') || mime.startsWith('video/')) {
+                    parts.push({
+                        inlineData: {
+                            mimeType: mime,
+                            data: fileItem.base64
+                        }
+                    });
                 }
-            });
+            }
         }
 
         const payload = {
@@ -588,8 +879,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return candidate.content.parts[0].text;
     }
 
-    // OpenRouter API Call (Multimodal Vision / Image URL support)
-    async function callOpenRouterAPI(systemInstruction, userPrompt, model, fileInlineData) {
+    // OpenRouter API Call (Multimodal Vision / Image URL support for multiple images)
+    async function callOpenRouterAPI(systemInstruction, userPrompt, model, filesData) {
         const apiKey = getStoredOpenRouterKey();
         if (!apiKey) {
             openKeyModal();
@@ -599,11 +890,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
 
+        const fileList = Array.isArray(filesData) ? filesData : (filesData ? [filesData] : []);
+        const imageFiles = fileList.filter(f => f && f.dataUrl && f.mimeType && f.mimeType.startsWith('image/'));
+
         let userMessageContent = userPrompt;
-        if (fileInlineData && fileInlineData.dataUrl && fileInlineData.mimeType.startsWith('image/')) {
+        if (imageFiles.length > 0) {
             userMessageContent = [
                 { type: "text", text: userPrompt },
-                { type: "image_url", image_url: { url: fileInlineData.dataUrl } }
+                ...imageFiles.map(img => ({
+                    type: "image_url",
+                    image_url: { url: img.dataUrl }
+                }))
             ];
         }
 
@@ -709,8 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
         hideError();
 
         const promptText = promptInput.value.trim();
-        if (!promptText && !attachedFile) {
-            showError('Thiếu thông tin', 'Vui lòng nhập yêu cầu (prompt) hoặc đính kèm file tài liệu.');
+        if (!promptText && attachedFiles.length === 0) {
+            showError('Thiếu thông tin', 'Vui lòng nhập yêu cầu (prompt) hoặc đính kèm file / dán ảnh tài liệu.');
             return;
         }
 
@@ -722,20 +1019,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         lastPrompt = promptText;
-        let finalUserPrompt = promptText || "Hãy phân tích file đính kèm và tạo bài tập phù hợp.";
-        let fileInlineData = null;
+        let finalUserPrompt = promptText || "Hãy phân tích các file/hình ảnh đính kèm và tạo bài tập phù hợp.";
+        const filesData = [];
 
-        if (attachedFile) {
+        if (attachedFiles.length > 0) {
             try {
-                showLoading('Đang Chuẩn Bị File...', `Nạp dữ liệu file ${attachedFile.name} cho AI...`);
-                fileInlineData = await fileToBase64(attachedFile);
+                showLoading('Đang Chuẩn Bị File...', `Đang xử lý ${attachedFiles.length} file tài liệu/ảnh cho AI...`);
+                for (let i = 0; i < attachedFiles.length; i++) {
+                    const file = attachedFiles[i];
+                    showLoading('Đang Chuẩn Bị File...', `Đang nạp file (${i + 1}/${attachedFiles.length}): ${file.name}...`);
+                    const fileData = await fileToBase64(file);
+                    filesData.push(fileData);
 
-                // Extract text if document file
-                const isDoc = !attachedFile.type.startsWith('image/');
-                if (isDoc) {
-                    const text = await extractTextFromFile(attachedFile);
-                    if (text && text.length > 0) {
-                        finalUserPrompt += `\n\nNỘI DUNG VĂN BẢN TRÍCH XUẤT TỪ FILE "${attachedFile.name}":\n"""\n${text.substring(0, 15000)}\n"""`;
+                    // Extract text if document file
+                    const isDoc = !file.type.startsWith('image/');
+                    if (isDoc) {
+                        const text = await extractTextFromFile(file);
+                        if (text && text.length > 0) {
+                            finalUserPrompt += `\n\nNỘI DUNG VĂN BẢN TRÍCH XUẤT TỪ FILE "${file.name}":\n"""\n${text.substring(0, 15000)}\n"""`;
+                        }
                     }
                 }
             } catch (fileErr) {
@@ -779,7 +1081,7 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
             showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang truyền dữ liệu file và xử lý prompt với ${selectedModel}...`);
             btnGenerate.disabled = true;
 
-            const rawResponse = await callLLMAPI(systemPrompt, finalUserPrompt, selectedModel, questionGenerationSchema, fileInlineData);
+            const rawResponse = await callLLMAPI(systemPrompt, finalUserPrompt, selectedModel, questionGenerationSchema, filesData);
             const parsedData = parseAIJsonResponse(rawResponse);
 
             if (!parsedData.questions || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {

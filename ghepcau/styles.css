@@ -484,9 +484,36 @@ body {
     color: var(--text-secondary);
 }
 
+.form-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.paste-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
 .textarea-wrapper {
     width: 100%;
     display: block;
+}
+
+.textarea-wrapper.drag-over textarea {
+    border-color: var(--primary) !important;
+    background-color: var(--primary-light) !important;
+    box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.2) !important;
 }
 
 .textarea-wrapper textarea,
@@ -625,37 +652,100 @@ body {
 }
 
 /* ==========================================================================
-   File Attachment
+   File Attachment (Multiple files & Paste support)
    ========================================================================== */
 .file-attach-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.file-attach-controls {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+}
+
+.attached-files-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 12px;
+    animation: fadeInUp 0.2s ease-out;
+}
+
+.attached-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.attached-files-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .file-badge {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: var(--primary-light);
-    border: 1px solid rgba(26,86,219,0.25);
+    background: #ffffff;
+    border: 1px solid rgba(26, 86, 219, 0.25);
     border-radius: 20px;
-    padding: 5px 12px;
+    padding: 4px 10px 4px 8px;
     font-size: 0.82rem;
     color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
     animation: fadeInUp 0.2s ease-out;
+    transition: var(--transition-fast);
 }
 
-.file-badge-icon { color: var(--primary); }
+.file-badge:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 6px rgba(26, 86, 219, 0.15);
+}
+
+.file-badge-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.file-badge-icon {
+    font-size: 0.95rem;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.file-icon-pdf { color: #e02424 !important; }
+.file-icon-word { color: #1a56db !important; }
+.file-icon-text { color: #059669 !important; }
+.file-icon-image { color: #8b5cf6 !important; }
+
 .file-badge-name {
     font-weight: 600;
-    max-width: 200px;
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .file-badge-size {
     font-size: 0.72rem;
     color: var(--text-muted);
@@ -669,9 +759,82 @@ body {
     font-size: 0.8rem;
     margin-left: 2px;
     padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition-fast);
 }
-.btn-icon-inside-badge:hover { color: var(--danger); }
+
+.btn-icon-inside-badge:hover {
+    color: var(--danger);
+    transform: scale(1.15);
+}
+
+.btn-clear-all-files {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.76rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition-fast);
+}
+
+.btn-clear-all-files:hover {
+    color: var(--danger);
+    background: rgba(220, 53, 69, 0.08);
+}
+
+/* Toast Notification Component */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.toast-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 9px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    font-size: 0.84rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+}
+
+.toast-item.toast-show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-item.toast-success i {
+    color: var(--success);
+}
+
+.toast-item.toast-error i {
+    color: var(--danger);
+}
+
+.toast-item.toast-info i {
+    color: var(--primary);
+}
 
 /* ==========================================================================
    Excel header actions

@@ -213,29 +213,34 @@
 
                 <form id="generator-form">
                     <div class="form-group mb-3">
-                        <label for="prompt-input">Yêu cầu tạo câu hỏi (Prompt)</label>
+                        <div class="form-label-row">
+                            <label for="prompt-input">Yêu cầu tạo câu hỏi (Prompt)</label>
+                            <span class="paste-hint"><i class="fa-regular fa-clipboard"></i> Dán ảnh (Ctrl+V) hoặc kéo thả file vào khung</span>
+                        </div>
                         <div class="textarea-wrapper">
                             <textarea id="prompt-input" rows="3"
-                                placeholder="Ví dụ: Hãy dựa vào file đính kèm này để tạo 3 câu trắc nghiệm trình độ B1..."></textarea>
+                                placeholder="Ví dụ: Dán ảnh đề bài, hoặc dựa vào các file đính kèm để tạo 3 câu trắc nghiệm trình độ B1..."></textarea>
                         </div>
                     </div>
 
                     <!-- File Attachment Section -->
                     <div class="file-attach-wrapper mb-3">
                         <input type="file" id="prompt-file-input"
-                            accept=".png, .jpg, .jpeg, .webp, .pdf, .txt, .docx, .doc, .md, .json, .csv"
-                            class="hidden">
-                        <button type="button" id="btn-attach-file" class="btn btn-outline btn-sm">
-                            <i class="fa-solid fa-paperclip"></i> Đính Kèm File Gửi AI (Ảnh, PDF, Word, TXT...)
-                        </button>
-                        <div id="attached-file-badge" class="file-badge hidden">
-                            <i class="fa-solid fa-file-lines file-badge-icon"></i>
-                            <span id="attached-file-name" class="file-badge-name">file.pdf</span>
-                            <span id="attached-file-size" class="file-badge-size">(0 KB)</span>
-                            <button type="button" id="btn-remove-attached-file" class="btn-icon-inside-badge"
-                                title="Gỡ file đính kèm">
-                                <i class="fa-solid fa-xmark"></i>
+                            accept=".png, .jpg, .jpeg, .webp, .pdf, .txt, .docx, .doc, .md, .json, .csv, image/*"
+                            class="hidden" multiple>
+                        <div class="file-attach-controls">
+                            <button type="button" id="btn-attach-file" class="btn btn-outline btn-sm">
+                                <i class="fa-solid fa-paperclip"></i> Đính Kèm File (Ảnh, PDF, Word, TXT...)
                             </button>
+                        </div>
+                        <div id="attached-files-container" class="attached-files-container hidden">
+                            <div class="attached-files-header">
+                                <span><i class="fa-solid fa-paperclip"></i> Tệp đính kèm (<span id="attached-files-count">0</span>):</span>
+                                <button type="button" id="btn-clear-all-files" class="btn-clear-all-files" title="Gỡ tất cả tệp">
+                                    <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+                                </button>
+                            </div>
+                            <div id="attached-files-list" class="attached-files-list"></div>
                         </div>
                     </div>
 
