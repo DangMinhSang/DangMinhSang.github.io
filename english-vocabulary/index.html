@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Vocabulary — Vietnamese to English</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header__inner">
+      <div class="header__brand">
+        <div class="header__logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="currentColor" opacity="0.15"/>
+            <text x="14" y="20" font-size="16" text-anchor="middle" fill="currentColor" font-weight="700">E</text>
+          </svg>
+        </div>
+        <div>
+          <div class="header__title">English Vocabulary</div>
+          <div class="header__subtitle">Vietnamese → English</div>
+        </div>
+      </div>
+
+      <nav class="header__nav" role="navigation" aria-label="Main navigation">
+        <button class="nav-btn active" data-page="practice" aria-current="page">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Practice
+        </button>
+        <button class="nav-btn" data-page="history">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          History
+        </button>
+        <button class="nav-btn" data-page="statistics">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Statistics
+        </button>
+      </nav>
+
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+        <span class="theme-toggle__icon theme-toggle__icon--light">☀️</span>
+        <span class="theme-toggle__icon theme-toggle__icon--dark">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ───────────────────────────────────────────────────────────────
+         PAGE: PRACTICE
+    ─────────────────────────────────────────────────────────────────── -->
+    <section id="page-practice" class="page active" aria-label="Practice page">
+
+      <!-- FILTERS BAR -->
+      <div class="filters-bar">
+        <div class="filters-bar__inner">
+          <div class="filter-group">
+            <label class="filter-label" for="filterDifficulty">Difficulty</label>
+            <select id="filterDifficulty" class="filter-select">
+              <option value="all">All Levels</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="filterTopic">Topic</label>
+            <select id="filterTopic" class="filter-select">
+              <option value="all">All Topics</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Mode</label>
+            <div class="mode-toggle" role="group" aria-label="Practice mode">
+              <button class="mode-btn active" id="modeSequential" data-mode="sequential">Sequential</button>
+              <button class="mode-btn" id="modeRandom" data-mode="random">🔀 Random</button>
+            </div>
+          </div>
+          <button class="btn btn--ghost btn--sm" id="resetSession" title="Reset current session">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- PRACTICE CARD -->
+      <div class="practice-container">
+
+        <!-- No results state -->
+        <div class="no-results hidden" id="noResults">
+          <div class="no-results__icon">🔍</div>
+          <h2 class="no-results__title">No sentences found</h2>
+          <p class="no-results__desc">Try changing the difficulty or topic filter.</p>
+        </div>
+
+        <!-- Main card -->
+        <div class="card" id="practiceCard">
+
+          <!-- Progress -->
+          <div class="card__progress">
+            <div class="progress-text">
+              <span id="progressLabel">Question <strong id="currentNum">1</strong> of <strong id="totalNum">0</strong></span>
+              <span class="progress-filters" id="progressFilters"></span>
+            </div>
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar__fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <!-- Difficulty & Topic badges -->
+          <div class="card__meta">
+            <span class="badge badge--difficulty" id="badgeDifficulty"></span>
+            <span class="badge badge--topic" id="badgeTopic"></span>
+            <span class="badge badge--mode hidden" id="badgeMode">🔀 Random</span>
+          </div>
+
+          <!-- English sentence -->
+          <div class="card__question">
+            <div class="question-label">Vietnamese</div>
+            <p class="question-text" id="englishSentence" lang="vi">Loading…</p>
+            <button class="listen-btn" id="listenBtn" title="Listen (Text-to-Speech)" aria-label="Listen to the English sentence">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              Listen
+            </button>
+          </div>
+
+          <!-- Keywords hint (optional) -->
+          <div class="card__keywords hidden" id="keywordsContainer">
+            <span class="keywords-label">Key words:</span>
+            <span id="keywordsList"></span>
+          </div>
+
+          <!-- Input area -->
+          <div class="card__input" id="inputArea">
+            <label class="sr-only" for="answerInput">Your English translation</label>
+            <textarea
+              id="answerInput"
+              class="answer-input"
+              placeholder="Type your English translation…"
+              rows="3"
+              lang="en"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="true"
+            ></textarea>
+            <div class="input-actions">
+              <div class="input-actions__left">
+                <button class="btn btn--ghost btn--sm" id="backBtn" title="Go to previous sentence (← key)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                  Back
+                </button>
+                <button class="btn btn--ghost btn--sm" id="showKeywordsBtn" title="Show key words hint">
+                  💡 Hint
+                </button>
+              </div>
+              <button class="btn btn--primary" id="checkBtn">
+                Check Answer
+              </button>
+            </div>
+          </div>
+
+          <!-- Result area (hidden until checked) -->
+          <div class="card__result hidden" id="resultArea">
+            <div class="result-verdict" id="resultVerdict"></div>
+
+            <div class="result-comparison">
+              <div class="result-box result-box--user">
+                <div class="result-box__label">Your answer</div>
+                <p class="result-box__text" id="userAnswerDisplay"></p>
+              </div>
+              <div class="result-box result-box--expected">
+                <div class="result-box__label">Expected answer</div>
+                <p class="result-box__text" id="expectedAnswerDisplay"></p>
+              </div>
+            </div>
+
+            <!-- Note (grammar explanation) -->
+            <div class="result-note hidden" id="resultNote">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="resultNoteText"></span>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn btn--ghost" id="backBtn2" title="Go to previous sentence (← key)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back
+              </button>
+              <button class="btn btn--ghost" id="skipBtn">Skip</button>
+              <button class="btn btn--retry hidden" id="tryAgainBtn">
+                🔄 Try Again
+              </button>
+              <button class="btn btn--primary" id="nextBtn">
+                Next
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Session complete state -->
+          <div class="card__complete hidden" id="sessionComplete">
+            <div class="complete-icon">🎉</div>
+            <h2 class="complete-title">Session Complete!</h2>
+            <p class="complete-desc" id="sessionSummary"></p>
+            <div class="complete-actions">
+              <button class="btn btn--ghost" id="restartFilteredBtn">Practice Again</button>
+              <button class="btn btn--primary" id="viewStatsBtn" data-page="statistics">View Statistics</button>
+            </div>
+          </div>
+
+        </div><!-- /.card -->
+      </div><!-- /.practice-container -->
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────
+         PAGE: HISTORY
+    ─────────────────────────────────────────────────────────────────── -->
+    <section id="page-history" class="page hidden" aria-label="History page">
+      <div class="page-header">
+        <h1 class="page-title">History</h1>
+        <button class="btn btn--ghost btn--sm btn--danger" id="clearHistoryBtn">
+          🗑 Clear All
+        </button>
+      </div>
+
+      <div class="history-filters">
+        <button class="filter-chip active" data-result="all">All</button>
+        <button class="filter-chip" data-result="correct">✓ Correct</button>
+        <button class="filter-chip" data-result="almost">~ Almost</button>
+        <button class="filter-chip" data-result="incorrect">✗ Incorrect</button>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <div class="empty-state" id="historyEmpty">
+          <div class="empty-state__icon">📖</div>
+          <p class="empty-state__text">No history yet. Start practicing!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────────────────────────────────────────────
+         PAGE: STATISTICS
+    ─────────────────────────────────────────────────────────────────── -->
+    <section id="page-statistics" class="page hidden" aria-label="Statistics page">
+      <div class="page-header">
+        <h1 class="page-title">Statistics</h1>
+        <button class="btn btn--ghost btn--sm btn--danger" id="clearStatsBtn">
+          🗑 Reset Stats
+        </button>
+      </div>
+
+      <!-- Overview -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card__value" id="statTotal">0</div>
+          <div class="stat-card__label">Total Attempts</div>
+        </div>
+        <div class="stat-card stat-card--correct">
+          <div class="stat-card__value" id="statCorrect">0</div>
+          <div class="stat-card__label">Correct</div>
+        </div>
+        <div class="stat-card stat-card--almost">
+          <div class="stat-card__value" id="statAlmost">0</div>
+          <div class="stat-card__label">Almost Correct</div>
+        </div>
+        <div class="stat-card stat-card--incorrect">
+          <div class="stat-card__value" id="statIncorrect">0</div>
+          <div class="stat-card__label">Incorrect</div>
+        </div>
+      </div>
+
+      <!-- Accuracy -->
+      <div class="stats-section">
+        <h2 class="stats-section__title">Overall Accuracy</h2>
+        <div class="accuracy-bar-container">
+          <div class="accuracy-bar" id="accuracyBar">
+            <div class="accuracy-segment accuracy-segment--correct" id="accCorrectBar"></div>
+            <div class="accuracy-segment accuracy-segment--almost" id="accAlmostBar"></div>
+            <div class="accuracy-segment accuracy-segment--incorrect" id="accIncorrectBar"></div>
+          </div>
+          <p class="accuracy-label" id="accuracyLabel">No data yet</p>
+        </div>
+      </div>
+
+      <!-- By Difficulty -->
+      <div class="stats-section">
+        <h2 class="stats-section__title">By Difficulty</h2>
+        <div class="breakdown-list" id="statsByDifficulty"></div>
+      </div>
+
+      <!-- By Topic -->
+      <div class="stats-section">
+        <h2 class="stats-section__title">By Topic</h2>
+        <div class="breakdown-list" id="statsByTopic"></div>
+      </div>
+
+      <!-- Streak -->
+      <div class="stats-section">
+        <h2 class="stats-section__title">Streak &amp; Sessions</h2>
+        <div class="stats-grid stats-grid--small">
+          <div class="stat-card">
+            <div class="stat-card__value" id="statStreak">0</div>
+            <div class="stat-card__label">🔥 Current Streak</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value" id="statBestStreak">0</div>
+            <div class="stat-card__label">🏆 Best Streak</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value" id="statSessions">0</div>
+            <div class="stat-card__label">📅 Sessions</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast hidden" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
