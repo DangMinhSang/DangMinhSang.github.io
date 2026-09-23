@@ -584,16 +584,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const group = document.createElement('optgroup');
             group.label = 'Google Gemini';
 
-            const opt1 = document.createElement('option');
-            opt1.value = 'gemini-3.8-flash';
-            opt1.textContent = 'Gemini 3.8 Flash (Khuyên dùng)';
-
             const opt2 = document.createElement('option');
             opt2.value = 'gemini-3.5-flash-lite';
-            opt2.textContent = 'Gemini 3.5 Flash-Lite (Tiết kiệm)';
+            opt2.textContent = 'Gemini 3.5 Flash-Lite (Mặc định · ổn định)';
+            opt2.selected = true;
 
-            group.appendChild(opt1);
+            const opt1 = document.createElement('option');
+            opt1.value = 'gemini-3.8-flash';
+            opt1.textContent = 'Gemini 3.8 Flash (Nhu cầu cao)';
+
             group.appendChild(opt2);
+            group.appendChild(opt1);
             modelSelect.appendChild(group);
         }
 
