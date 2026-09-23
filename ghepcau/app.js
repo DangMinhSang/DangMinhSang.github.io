@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let draftSaveTimer = null;
     let currentCourse = null;
     let currentLessonId = null;
+    const prefetchingLessonIds = new Set();
+    const lessonPreparationPromises = new Map();
 
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
@@ -97,6 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnNewRoadmap = document.getElementById('btn-new-roadmap');
     const roadmapDailyFill = document.getElementById('roadmap-daily-fill');
     const roadmapDailyText = document.getElementById('roadmap-daily-text');
+    const roadmapLoadMore = document.getElementById('roadmap-load-more');
+    const roadmapNextPartLabel = document.getElementById('roadmap-next-part-label');
+    const roadmapNextPartTitle = document.getElementById('roadmap-next-part-title');
+    const btnGenerateNextPart = document.getElementById('btn-generate-next-part');
     const btnDismissError = document.getElementById('btn-dismiss-error');
 
     // DOM Elements - Reading Passage
@@ -622,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateKeyStatusUI();
         closeKeyModal();
         hideError();
+        if (currentCourse) void prefetchUpcomingLessons();
     });
 
     btnClearKey.addEventListener('click', () => {
@@ -686,6 +693,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveCurrentCourse() {
         if (currentCourse) {
+            const cacheKeys = Object.keys(currentCourse.lesson_cache || {});
+            if (cacheKeys.length > 12) {
+                const completedIds = new Set(currentCourse.completed_lessons || []);
+                const keepIds = new Set([
+                    currentLessonId,
+                    ...prefetchingLessonIds,
+                    ...(currentCourse.completed_lessons || []).slice(-5),
+                    ...getCourseLessons()
+                        .filter(lesson => !completedIds.has(lesson.id) && currentCourse.lesson_cache[lesson.id])
+                        .slice(0, 5)
+                        .map(lesson => lesson.id)
+                ].filter(Boolean));
+                cacheKeys.forEach(lessonId => {
+                    if (!keepIds.has(lessonId)) delete currentCourse.lesson_cache[lessonId];
+                });
+            }
             localStorage.setItem(LS_COURSE_KEY, JSON.stringify(currentCourse));
         }
     }
@@ -695,11 +718,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return currentCourse.chapters.flatMap(chapter => chapter.lessons || []);
     }
 
+    function getMinimumTargetLessonCount(course = currentCourse) {
+        const totalDays = Math.max(1, Number(course?.total_days) || 30);
+        return Math.max(8, Math.ceil(totalDays * 5 / 7));
+    }
+
     function normalizeCourse(course, sourcePrompt) {
         const normalized = {
             ...course,
             source_prompt: sourcePrompt || course.source_prompt || '',
             completed_lessons: Array.isArray(course.completed_lessons) ? course.completed_lessons : [],
+            lesson_cache: course.lesson_cache && typeof course.lesson_cache === 'object' ? course.lesson_cache : {},
+            generated_parts: Math.max(1, Number(course.generated_parts) || 1),
+            has_more: course.has_more !== false,
+            next_part_focus: course.next_part_focus || 'Tiếp tục mở rộng kiến thức và tăng độ khó',
             chapters: Array.isArray(course.chapters) ? course.chapters : []
         };
 
@@ -712,14 +744,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const sourceLessons = Array.isArray(chapter.lessons) && chapter.lessons.length
                 ? chapter.lessons
                 : fallbackLessons;
+            const hasPracticeLessons = sourceLessons.some(lesson => lesson.type === 'practice');
+            const lessonsWithPractice = hasPracticeLessons ? sourceLessons : sourceLessons.reduce((lessons, lesson, lessonIndex) => {
+                lessons.push(lesson);
+                const midpoint = Math.ceil(sourceLessons.length / 2) - 1;
+                if (lessonIndex === midpoint) {
+                    lessons.push({
+                        type: 'practice',
+                        title: 'Practice giữa chương',
+                        objective: `Luyện tập tổng hợp nửa đầu ${chapter.title || `chương ${chapterIndex + 1}`}`
+                    });
+                }
+                if (lessonIndex === sourceLessons.length - 1) {
+                    lessons.push({
+                        type: 'practice',
+                        title: 'Practice cuối chương',
+                        objective: `Kiểm tra và củng cố toàn bộ ${chapter.title || `chương ${chapterIndex + 1}`}`
+                    });
+                }
+                return lessons;
+            }, []);
 
             return {
                 ...chapter,
                 id: chapter.id || `chapter-${chapterIndex + 1}`,
-                lessons: sourceLessons.map((lesson, lessonIndex) => ({
+                part_number: Math.max(1, Number(chapter.part_number) || 1),
+                lessons: lessonsWithPractice.map((lesson, lessonIndex) => ({
                 ...lesson,
-                id: lesson.id || `chapter-${chapterIndex + 1}-lesson-${lessonIndex + 1}`,
-                day: lesson.day || (chapterIndex * sourceLessons.length) + lessonIndex + 1,
+                id: lesson.id || `chapter-${chapterIndex + 1}-${lesson.type === 'practice' ? 'practice' : 'lesson'}-${lessonIndex + 1}`,
+                day: lesson.day || (chapterIndex * lessonsWithPractice.length) + lessonIndex + 1,
                 duration_minutes: lesson.duration_minutes || normalized.daily_minutes || 30
                 }))
             };
@@ -749,22 +802,26 @@ document.addEventListener('DOMContentLoaded', () => {
         roadmapChapters.innerHTML = currentCourse.chapters.map((chapter, chapterIndex) => {
             const chapterLessons = chapter.lessons || [];
             const chapterCompleted = chapterLessons.filter(lesson => completed.has(lesson.id)).length;
+            let chapterContentLessonNumber = 0;
             const lessonHtml = chapterLessons.map((lesson, lessonIndex) => {
                 const lessonNumber = ++globalLessonIndex;
+                const isPractice = lesson.type === 'practice';
+                const displayLessonNumber = isPractice ? 0 : ++chapterContentLessonNumber;
                 const isCompleted = completed.has(lesson.id);
                 const previousLesson = lessons[lessonNumber - 2];
                 const isNextLesson = !isCompleted && (!previousLesson || completed.has(previousLesson.id));
-                const stateClass = isCompleted ? 'completed' : isNextLesson ? 'available' : 'upcoming';
-                const icon = isCompleted ? 'fa-check' : isNextLesson ? 'fa-play' : 'fa-book-open';
-                const status = isCompleted ? 'Học lại bài này' : isNextLesson ? 'Bắt đầu bài học' : 'Mở bài học';
-                const isLocked = false;
+                const isPrepared = isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]);
+                const isPreparing = prefetchingLessonIds.has(lesson.id);
+                const stateClass = `${isCompleted ? 'completed' : isNextLesson ? 'available' : 'upcoming'}${isPractice ? ' practice' : ''}${isPrepared ? ' prepared' : ''}`;
+                const icon = isCompleted ? 'fa-check' : isPreparing ? 'fa-spinner fa-spin' : isPractice ? 'fa-dumbbell' : isNextLesson ? 'fa-play' : 'fa-book-open';
+                const status = isPreparing ? 'AI đang chuẩn bị...' : isPrepared ? 'Mở ngay · Đã chuẩn bị' : isCompleted ? 'Học lại bài này' : isNextLesson ? 'Bắt đầu bài học' : 'Mở bài học';
 
                 return `
-                    <button type="button" class="roadmap-lesson ${stateClass}" data-lesson-id="${escapeHtml(lesson.id)}" ${isLocked ? 'disabled' : ''}>
+                    <button type="button" class="roadmap-lesson ${stateClass}" data-lesson-id="${escapeHtml(lesson.id)}">
                         <span class="lesson-node"><i class="fa-solid ${icon}"></i></span>
                         <span class="lesson-content">
                             <small>Ngày ${escapeHtml(lesson.day)} · ${escapeHtml(lesson.duration_minutes)} phút</small>
-                            <strong>Bài ${lessonIndex + 1}: ${escapeHtml(lesson.title)}</strong>
+                            <strong>${isPractice ? 'Practice' : `Bài ${displayLessonNumber}`}: ${escapeHtml(lesson.title)}</strong>
                             <span>${escapeHtml(lesson.objective || lesson.description || '')}</span>
                             <em>${status} <i class="fa-solid fa-arrow-right"></i></em>
                         </span>
@@ -772,11 +829,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
 
             return `
-                <article class="roadmap-chapter">
+                <article class="roadmap-chapter" data-chapter-index="${chapterIndex}">
                     <div class="chapter-heading">
                         <span class="chapter-number">${chapterIndex + 1}</span>
                         <div>
-                            <small>Chương ${chapterIndex + 1} · ${chapterCompleted}/${chapterLessons.length} bài</small>
+                            <small>Phần ${chapter.part_number || 1} · Chương ${chapterIndex + 1} · ${chapterCompleted}/${chapterLessons.length} bài</small>
                             <h3>${escapeHtml(chapter.title || `Chương ${chapterIndex + 1}`)}</h3>
                             <p>${escapeHtml(chapter.description || '')}</p>
                         </div>
@@ -788,7 +845,114 @@ document.addEventListener('DOMContentLoaded', () => {
         roadmapChapters.querySelectorAll('.roadmap-lesson:not(:disabled)').forEach(button => {
             button.addEventListener('click', () => openRoadmapLesson(button.dataset.lessonId));
         });
+
+        const nextPartNumber = (currentCourse.generated_parts || 1) + 1;
+        roadmapLoadMore.classList.toggle('hidden', currentCourse.has_more === false);
+        roadmapNextPartLabel.textContent = `PHẦN ${nextPartNumber}`;
+        roadmapNextPartTitle.textContent = currentCourse.next_part_focus || 'Mở rộng lộ trình';
     }
+
+    async function generateNextRoadmapPart() {
+        if (!currentCourse) return;
+
+        const selectedModel = modelSelect.value;
+        if (!selectedModel) {
+            openKeyModal();
+            showError('Thiếu API Key', 'Vui lòng kết nối Gemini để tạo phần tiếp theo của lộ trình.');
+            return;
+        }
+
+        const nextPartNumber = (currentCourse.generated_parts || 1) + 1;
+        const firstNewChapterIndex = currentCourse.chapters.length;
+        const existingLessons = getCourseLessons();
+        const maxExistingDay = existingLessons.reduce((maxDay, lesson) => Math.max(maxDay, Number(lesson.day) || 0), 0);
+        const existingOutline = currentCourse.chapters.map((chapter, chapterIndex) => ({
+            chapter: chapterIndex + 1,
+            title: chapter.title,
+            lessons: (chapter.lessons || []).map(lesson => lesson.title)
+        }));
+
+        const systemPrompt = `Bạn là chuyên gia thiết kế chương trình học dài hạn. Hãy tạo duy nhất một phần tiếp theo cho lộ trình đang có.
+
+YÊU CẦU BẮT BUỘC:
+- Đây là PHẦN ${nextPartNumber}; không lặp lại chương hoặc bài học đã có.
+- Chỉ tạo đúng 2 chương mới, mỗi chương 4-6 bài học chi tiết, tổng cộng 8-12 bài.
+- Nội dung phải nối tiếp hợp lý, tăng dần độ khó và bám sát mục tiêu cuối khóa.
+- Mỗi bài là một buổi học độc lập, có mục tiêu rõ ràng và đủ hẹp để AI soạn bài chuyên sâu.
+- Giữ nguyên title, summary, level, duration_label, total_days và daily_minutes của toàn khóa.
+- Đặt has_more = true nếu lộ trình vẫn chưa bao phủ đủ mục tiêu; chỉ đặt false khi các phần đã đủ hoàn chỉnh.
+- next_part_focus mô tả ngắn nội dung của phần sau nữa.
+- Chỉ trả về JSON đúng schema, không thêm markdown bên ngoài.`;
+
+        const userPrompt = `MỤC TIÊU GỐC:\n${currentCourse.source_prompt}\n\nTHÔNG TIN KHÓA HỌC:\n${JSON.stringify({
+            title: currentCourse.title,
+            summary: currentCourse.summary,
+            level: currentCourse.level,
+            duration_label: currentCourse.duration_label,
+            total_days: currentCourse.total_days,
+            daily_minutes: currentCourse.daily_minutes,
+            generated_parts: currentCourse.generated_parts,
+            generated_lessons: existingLessons.length
+        }, null, 2)}\n\nCÁC NỘI DUNG ĐÃ CÓ, TUYỆT ĐỐI KHÔNG LẶP:\n${JSON.stringify(existingOutline, null, 2)}\n\nTRỌNG TÂM GỢI Ý CHO PHẦN NÀY:\n${currentCourse.next_part_focus || 'Tiếp tục tăng độ khó và mở rộng kỹ năng.'}`;
+
+        const originalButtonHtml = btnGenerateNextPart.innerHTML;
+        try {
+            hideError();
+            btnGenerateNextPart.disabled = true;
+            btnGenerateNextPart.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang tạo phần mới...</span>';
+            showLoading(`AI Đang Tạo Phần ${nextPartNumber}...`, 'Đang nối thêm chương và bài học vào lộ trình hiện tại.');
+
+            const rawResponse = await callLLMAPI(systemPrompt, userPrompt, selectedModel, roadmapGenerationSchema);
+            const parsedData = parseAIJsonResponse(rawResponse);
+            const newLessonCount = (parsedData.chapters || []).reduce((total, chapter) => total + (chapter.lessons?.length || 0), 0);
+            if (!parsedData.chapters?.length || newLessonCount < 6) {
+                throw new Error(`AI chỉ tạo ${newLessonCount} bài cho phần ${nextPartNumber}. Vui lòng thử lại để có phần chi tiết hơn.`);
+            }
+
+            let lessonOffset = 0;
+            const newChapters = parsedData.chapters.map((chapter, chapterIndex) => ({
+                ...chapter,
+                id: `part-${nextPartNumber}-chapter-${chapterIndex + 1}`,
+                part_number: nextPartNumber,
+                lessons: (chapter.lessons || []).map((lesson, lessonIndex) => {
+                    lessonOffset += 1;
+                    return {
+                        ...lesson,
+                        id: `part-${nextPartNumber}-chapter-${chapterIndex + 1}-lesson-${lessonIndex + 1}`,
+                        day: maxExistingDay + lessonOffset,
+                        duration_minutes: lesson.duration_minutes || currentCourse.daily_minutes || 30
+                    };
+                })
+            }));
+
+            currentCourse.chapters.push(...newChapters);
+            currentCourse = normalizeCourse(currentCourse, currentCourse.source_prompt);
+            currentCourse.generated_parts = nextPartNumber;
+            currentCourse.has_more = parsedData.has_more !== false
+                || getCourseLessons().length < getMinimumTargetLessonCount(currentCourse);
+            currentCourse.next_part_focus = parsedData.next_part_focus || 'Tiếp tục hoàn thiện mục tiêu cuối khóa';
+            saveCurrentCourse();
+            renderRoadmap();
+            void prefetchUpcomingLessons();
+            showToast(`Đã thêm phần ${nextPartNumber} với ${newLessonCount} bài học mới.`, 'success');
+
+            requestAnimationFrame(() => {
+                roadmapChapters.querySelector(`[data-chapter-index="${firstNewChapterIndex}"]`)?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        } catch (err) {
+            showError(`Không thể tạo phần ${nextPartNumber}`, err.message);
+            showToast('Tạo phần tiếp theo chưa thành công. Vui lòng thử lại.', 'error');
+        } finally {
+            hideLoading();
+            btnGenerateNextPart.disabled = false;
+            btnGenerateNextPart.innerHTML = originalButtonHtml;
+        }
+    }
+
+    btnGenerateNextPart.addEventListener('click', generateNextRoadmapPart);
 
     function showRoadmap() {
         if (!currentCourse) {
@@ -801,12 +965,133 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.classList.add('hidden');
         roadmapSection.classList.remove('hidden');
         renderRoadmap();
+        void prefetchUpcomingLessons();
         roadmapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function normalizeAnswerKey(answer) {
+        const match = String(answer || '').trim().toUpperCase().match(/^[A-D]/);
+        return match ? match[0] : '';
+    }
+
+    function isLessonPackageReady(lessonPackage) {
+        return Boolean(
+            lessonPackage?.questions?.length >= 20
+            && lessonPackage.questions.every(question => normalizeAnswerKey(question.correct_answer))
+        );
+    }
+
+    async function generateLessonPackage(lesson, chapter, selectedModel, background = false) {
+        const isPractice = lesson.type === 'practice';
+        const systemPrompt = `Bạn là gia sư AI và chuyên gia ra đề. Hãy chuẩn bị trọn gói một ${isPractice ? 'bài Practice tổng hợp' : 'bài học chuyên sâu'} bằng tiếng Việt.
+- reading_passage dùng Markdown rõ ràng với ##, ###, danh sách và **từ khóa**.
+- ${isPractice ? 'Tóm tắt ngắn kiến thức cần ôn, tập trung phần bài tập.' : 'Cung cấp kiến thức cốt lõi, ví dụ, lỗi thường gặp và quy trình thực hành.'}
+- Tạo 20-25 câu trắc nghiệm 4 lựa chọn, tuyệt đối không ít hơn 20 câu.
+- Phân bổ khoảng 30% cơ bản, 40% vận dụng, 30% khó; mục tiêu cao thì tăng câu bẫy sát đề thật.
+- Mỗi câu bắt buộc có correct_answer là A, B, C hoặc D; explanation giải thích vì sao đúng và vì sao phương án nhiễu dễ sai.
+- Công thức ngữ pháp đặt trong backtick. Chỉ dùng LaTeX cho Toán, Lý, Hóa.
+- Không tạo câu tự luận vì hệ thống cần chấm tức thì tại trình duyệt.
+- Chỉ trả về JSON đúng schema.`;
+        const lessonPrompt = `Mục tiêu khóa học: ${currentCourse.source_prompt}\nTên khóa: ${currentCourse.title}\nChương: ${chapter?.title || ''}\nLoại: ${isPractice ? 'Practice' : 'Bài học'}\nTên: ${lesson.title}\nMục tiêu: ${lesson.objective || lesson.description || ''}\nCác bài trong chương: ${JSON.stringify((chapter?.lessons || []).map(item => item.title))}\nThời lượng: ${lesson.duration_minutes || currentCourse.daily_minutes || 30} phút.`;
+
+        if (!background) {
+            showLoading('AI Đang Soạn Bài Học...', `Đang chuẩn bị “${lesson.title}” với ${selectedModel}...`);
+        }
+
+        const rawResponse = await callLLMAPI(systemPrompt, lessonPrompt, selectedModel, questionGenerationSchema);
+        const parsedData = parseAIJsonResponse(rawResponse);
+        parsedData.questions = (parsedData.questions || []).filter(question => question.options && normalizeAnswerKey(question.correct_answer));
+
+        if (parsedData.questions.length < 20) {
+            const missingCount = 20 - parsedData.questions.length;
+            if (!background) {
+                showLoading('AI Đang Bổ Sung Câu Hỏi Khó...', `Bài hiện có ${parsedData.questions.length}/20 câu. Đang tạo thêm ít nhất ${missingCount} câu.`);
+            }
+            const supplementPrompt = `Bổ sung ít nhất ${missingCount + 2} câu trắc nghiệm mới cho bài “${lesson.title}”. Ít nhất 60% là câu khó hoặc có bẫy. Không lặp các câu sau:\n${JSON.stringify(parsedData.questions.map(question => question.question), null, 2)}`;
+            const supplementRaw = await callLLMAPI(systemPrompt, supplementPrompt, selectedModel, questionGenerationSchema);
+            const supplementData = parseAIJsonResponse(supplementRaw);
+            const validSupplement = (supplementData.questions || []).filter(question => question.options && normalizeAnswerKey(question.correct_answer));
+            parsedData.questions.push(...validSupplement);
+        }
+
+        if (parsedData.questions.length < 20) {
+            throw new Error(`AI mới chuẩn bị được ${parsedData.questions.length}/20 câu hợp lệ.`);
+        }
+
+        const lessonPackage = {
+            topic: parsedData.topic || lesson.title,
+            reading_passage: parsedData.reading_passage || '',
+            prepared_at: new Date().toISOString(),
+            questions: parsedData.questions.slice(0, 25).map((question, index) => ({
+                ...question,
+                id: index + 1,
+                type: 'multiple_choice',
+                correct_answer: normalizeAnswerKey(question.correct_answer)
+            }))
+        };
+
+        if (!currentCourse || !getCourseLessons().some(item => item.id === lesson.id)) {
+            throw new Error('Lộ trình đã thay đổi trong lúc AI chuẩn bị bài.');
+        }
+        currentCourse.lesson_cache[lesson.id] = lessonPackage;
+        saveCurrentCourse();
+        return lessonPackage;
+    }
+
+    async function prefetchUpcomingLessons() {
+        if (!currentCourse || !modelSelect.value) return;
+        const completedLessons = new Set(currentCourse.completed_lessons || []);
+        const upcomingLessons = getCourseLessons().filter(lesson => !completedLessons.has(lesson.id));
+        const readyOrPreparingCount = upcomingLessons.filter(lesson => (
+            isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]) || prefetchingLessonIds.has(lesson.id)
+        )).length;
+        const availableSlots = Math.max(0, 5 - readyOrPreparingCount);
+        const candidates = upcomingLessons
+            .filter(lesson => !isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]) && !prefetchingLessonIds.has(lesson.id))
+            .slice(0, availableSlots);
+        candidates.forEach(lesson => prefetchingLessonIds.add(lesson.id));
+
+        let queue = Promise.resolve();
+        candidates.forEach(lesson => {
+            const chapter = currentCourse.chapters.find(item => (item.lessons || []).some(child => child.id === lesson.id));
+            const preparationPromise = queue.then(() => generateLessonPackage(lesson, chapter, modelSelect.value, true));
+            lessonPreparationPromises.set(lesson.id, preparationPromise);
+            preparationPromise
+                .catch(error => console.warn(`Không thể chuẩn bị trước bài ${lesson.title}:`, error))
+                .finally(() => {
+                    prefetchingLessonIds.delete(lesson.id);
+                    lessonPreparationPromises.delete(lesson.id);
+                    if (!roadmapSection.classList.contains('hidden')) renderRoadmap();
+                });
+            queue = preparationPromise.catch(() => undefined);
+        });
+
+        if (candidates.length && !roadmapSection.classList.contains('hidden')) renderRoadmap();
+        await queue;
+    }
+
+    function launchLessonPackage(lessonId, lessonPackage) {
+        currentLessonId = lessonId;
+        currentQuestions = lessonPackage.questions;
+        currentReadingPassage = lessonPackage.reading_passage || '';
+        userAnswers = {};
+        resetQuizSession();
+        renderQuestionsUI(lessonPackage.topic, currentQuestions, currentReadingPassage);
+        roadmapSection.classList.add('hidden');
+        promptSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        quizSection.classList.remove('hidden');
+        window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
     }
 
     async function openRoadmapLesson(lessonId) {
         const lesson = getCourseLessons().find(item => item.id === lessonId);
         if (!lesson) return;
+        const cachedPackage = currentCourse.lesson_cache?.[lessonId];
+        if (isLessonPackageReady(cachedPackage)) {
+            launchLessonPackage(lessonId, cachedPackage);
+            return;
+        }
 
         const selectedModel = modelSelect.value;
         if (!selectedModel) {
@@ -815,35 +1100,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const chapter = currentCourse.chapters.find(item => (item.lessons || []).some(child => child.id === lessonId));
-        const systemPrompt = `Bạn là gia sư AI. Hãy soạn một bài học ngắn, rõ ràng bằng tiếng Việt dựa trên lộ trình đã có.
-- Trường reading_passage phải chứa phần kiến thức cốt lõi, ví dụ minh họa và các bước thực hành của bài học.
-- Trình bày reading_passage bằng Markdown rõ ràng: dùng ## cho mục lớn, ### cho mục nhỏ, danh sách gạch đầu dòng và **chữ đậm** cho từ khóa.
-- Mỗi đoạn chỉ 2-4 câu và phải có dòng trống giữa các phần. Không viết toàn bộ bài học thành một đoạn dài.
-- Công thức ngữ pháp như S + V(s/es) phải đặt trong dấu backtick, ví dụ: \`S + V(s/es)\`. Chỉ dùng LaTeX cho công thức Toán, Lý, Hóa.
-- Tạo 5-8 câu hỏi để kiểm tra đúng mục tiêu bài học; ưu tiên trắc nghiệm, có thể xen câu tự luận.
-- Không mở rộng sang bài sau. Với công thức, dùng LaTeX trong $...$ hoặc $$...$$.
-- Chỉ trả về JSON đúng schema được yêu cầu.`;
-        const lessonPrompt = `Mục tiêu khóa học: ${currentCourse.source_prompt}\nTên khóa: ${currentCourse.title}\nChương: ${chapter?.title || ''}\nBài học: ${lesson.title}\nMục tiêu bài: ${lesson.objective || lesson.description || ''}\nThời lượng: ${lesson.duration_minutes || currentCourse.daily_minutes || 30} phút.`;
-
         try {
             hideError();
-            showLoading('AI Đang Soạn Bài Học...', `Đang chuẩn bị “${lesson.title}” với ${selectedModel}...`);
-            const rawResponse = await callLLMAPI(systemPrompt, lessonPrompt, selectedModel, questionGenerationSchema);
-            const parsedData = parseAIJsonResponse(rawResponse);
-            if (!parsedData.questions?.length) throw new Error('AI chưa tạo được nội dung bài học hợp lệ.');
-
             currentLessonId = lessonId;
-            currentQuestions = parsedData.questions;
-            currentReadingPassage = parsedData.reading_passage || '';
-            userAnswers = {};
-            resetQuizSession();
-            renderQuestionsUI(parsedData.topic || lesson.title, currentQuestions, currentReadingPassage);
-            roadmapSection.classList.add('hidden');
-            promptSection.classList.add('hidden');
-            resultsSection.classList.add('hidden');
-            quizSection.classList.remove('hidden');
-            window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
+            const chapter = currentCourse.chapters.find(item => (item.lessons || []).some(child => child.id === lessonId));
+            let lessonPackage;
+            if (lessonPreparationPromises.has(lessonId)) {
+                showLoading('Bài Học Sắp Sẵn Sàng...', `AI đang hoàn tất “${lesson.title}”.`);
+                lessonPackage = await lessonPreparationPromises.get(lessonId);
+            } else {
+                lessonPackage = await generateLessonPackage(lesson, chapter, selectedModel, false);
+            }
+            launchLessonPackage(lessonId, lessonPackage);
         } catch (err) {
             showError('Không thể mở bài học', err.message);
         } finally {
@@ -857,6 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentCourse.completed_lessons.push(currentLessonId);
             saveCurrentCourse();
         }
+        void prefetchUpcomingLessons();
     }
 
     function setLearningNavActive(action) {
@@ -1035,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
         const generationConfig = {
-            maxOutputTokens: 8192,
+            maxOutputTokens: 16384,
             responseMimeType: "application/json"
         };
 
@@ -1152,9 +1421,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 D: { type: "STRING" }
                             }
                         },
-                        hint: { type: "STRING" }
+                        hint: { type: "STRING" },
+                        correct_answer: { type: "STRING" },
+                        explanation: { type: "STRING" },
+                        difficulty: { type: "STRING" }
                     },
-                    required: ["id", "type", "question"]
+                    required: ["id", "type", "question", "options", "correct_answer", "explanation"]
                 }
             }
         },
@@ -1170,6 +1442,9 @@ document.addEventListener('DOMContentLoaded', () => {
             duration_label: { type: "STRING" },
             total_days: { type: "INTEGER" },
             daily_minutes: { type: "INTEGER" },
+            part_title: { type: "STRING" },
+            has_more: { type: "BOOLEAN" },
+            next_part_focus: { type: "STRING" },
             chapters: {
                 type: "ARRAY",
                 items: {
@@ -1250,10 +1525,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 YÊU CẦU:
 - Suy luận trình độ, thời lượng và mục tiêu từ yêu cầu. Nếu người dùng không nói rõ, chọn kế hoạch thực tế: 30 phút/ngày trong 30 ngày.
-- Chia lộ trình thành 3-8 chương theo thứ tự từ nền tảng đến ứng dụng.
-- Mỗi chương có các bài nhỏ; mỗi bài học trong một buổi và có mục tiêu cụ thể.
-- Với lộ trình dài, không cần tạo một bài cho mọi ngày: có thể thiết kế 3-5 buổi/tuần và dùng trường day để thể hiện ngày dự kiến.
-- Tổng số bài nên từ 8 đến 40, đủ chi tiết để người dùng nhìn thấy một hành trình dài nhưng không quá tải.
+- Đây là PHẦN 1, không được cố tạo toàn bộ lộ trình trong một lần.
+- Chỉ tạo đúng 2 chương đầu tiên theo thứ tự từ nền tảng đến nâng cao.
+- Mỗi chương phải có 4-6 bài học cụ thể, tổng cộng 8-12 bài trong phần này.
+- Mỗi bài học tương ứng một buổi, có mục tiêu riêng và không được trùng nội dung với bài khác.
+- duration_label và total_days phải mô tả toàn bộ hành trình dài hạn, không chỉ riêng phần 1.
+- Đặt has_more = true nếu mục tiêu còn cần các phần tiếp theo. next_part_focus mô tả ngắn nội dung nên học ở phần 2.
 - ID phải duy nhất, ngắn gọn, chỉ dùng chữ thường, số và dấu gạch ngang.
 - Chỉ trả về JSON đúng schema, không thêm markdown hay giải thích bên ngoài.`;
 
@@ -1268,7 +1545,15 @@ YÊU CẦU:
                 throw new Error('AI chưa tạo được lộ trình hợp lệ. Vui lòng mô tả mục tiêu rõ hơn.');
             }
 
+            const generatedLessonCount = parsedData.chapters.reduce((total, chapter) => total + (chapter.lessons?.length || 0), 0);
+            if (generatedLessonCount < 6) {
+                throw new Error(`AI chỉ tạo ${generatedLessonCount} bài. Vui lòng thử lại để nhận phần lộ trình chi tiết hơn.`);
+            }
+
             currentCourse = normalizeCourse(parsedData, promptText);
+            currentCourse.generated_parts = 1;
+            currentCourse.has_more = parsedData.has_more !== false
+                || getCourseLessons().length < getMinimumTargetLessonCount(currentCourse);
             currentLessonId = null;
             saveCurrentCourse();
             setLearningNavActive('home');
@@ -1277,6 +1562,7 @@ YÊU CẦU:
             quizSection.classList.add('hidden');
             resultsSection.classList.add('hidden');
             renderRoadmap();
+            void prefetchUpcomingLessons();
             window.scrollTo({ top: roadmapSection.offsetTop - 20, behavior: 'smooth' });
 
         } catch (err) {
@@ -1354,6 +1640,7 @@ YÊU CẦU:
             readingPassage: currentReadingPassage,
             userAnswers,
             lastPrompt,
+            lessonId: currentLessonId,
             elapsedSeconds: quizElapsedSeconds,
             savedAt: new Date().toISOString()
         };
@@ -1394,6 +1681,7 @@ YÊU CẦU:
         currentReadingPassage = draft.readingPassage || '';
         userAnswers = draft.userAnswers || {};
         lastPrompt = draft.lastPrompt || '';
+        currentLessonId = draft.lessonId || null;
         quizElapsedSeconds = Number(draft.elapsedSeconds) || 0;
         isQuizTimerPaused = false;
         updateQuizTimerUI();
@@ -1467,6 +1755,32 @@ YÊU CẦU:
         return html.join('');
     }
 
+    function applyImmediateQuestionFeedback(questionCard, question, selectedKey) {
+        const correctKey = normalizeAnswerKey(question.correct_answer);
+        if (!correctKey) return;
+        const isCorrect = selectedKey === correctKey;
+        const feedbackBox = questionCard.querySelector('.instant-feedback');
+
+        questionCard.querySelectorAll('.mc-option-card').forEach(optionCard => {
+            const optionKey = optionCard.dataset.optionKey;
+            optionCard.classList.remove('answer-correct', 'answer-wrong');
+            if (optionKey === correctKey) optionCard.classList.add('answer-correct');
+            if (optionKey === selectedKey && !isCorrect) optionCard.classList.add('answer-wrong');
+        });
+        questionCard.querySelectorAll('input[type="radio"]').forEach(input => { input.disabled = true; });
+        questionCard.classList.add(isCorrect ? 'instant-correct' : 'instant-wrong');
+
+        if (feedbackBox) {
+            const answerText = question.options?.[correctKey] || '';
+            feedbackBox.className = `instant-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+            feedbackBox.innerHTML = `
+                <strong><i class="fa-solid fa-${isCorrect ? 'circle-check' : 'circle-xmark'}"></i> ${isCorrect ? 'Chính xác!' : 'Chưa đúng'}</strong>
+                <p><b>Đáp án đúng: ${correctKey}</b>${answerText ? ` — ${escapeHtml(answerText)}` : ''}</p>
+                <p>${escapeHtml(question.explanation || 'Hãy xem lại phần kiến thức liên quan và thử áp dụng quy tắc vào câu này.')}</p>`;
+            renderMathInContainer(feedbackBox);
+        }
+    }
+
     /* Render UI câu hỏi & Bài đọc hiểu (nếu có) & Trigger KaTeX */
     function renderQuestionsUI(topic, questions, readingPassage = '') {
         quizTopicTitle.textContent = topic;
@@ -1516,22 +1830,22 @@ YÊU CẦU:
 
                 bodyHtml = `
                     <div class="mc-options-grid" data-id="${q.id}">
-                        <label class="mc-option-card ${isCheckedA ? 'selected' : ''}">
+                        <label class="mc-option-card ${isCheckedA ? 'selected' : ''}" data-option-key="A">
                             <input type="radio" name="question_${q.id}" value="${escapeHtml(valA)}" ${isCheckedA ? 'checked' : ''}>
                             <span class="opt-key">A</span>
                             <span class="opt-text">${escapeHtml(optA)}</span>
                         </label>
-                        <label class="mc-option-card ${isCheckedB ? 'selected' : ''}">
+                        <label class="mc-option-card ${isCheckedB ? 'selected' : ''}" data-option-key="B">
                             <input type="radio" name="question_${q.id}" value="${escapeHtml(valB)}" ${isCheckedB ? 'checked' : ''}>
                             <span class="opt-key">B</span>
                             <span class="opt-text">${escapeHtml(optB)}</span>
                         </label>
-                        <label class="mc-option-card ${isCheckedC ? 'selected' : ''}">
+                        <label class="mc-option-card ${isCheckedC ? 'selected' : ''}" data-option-key="C">
                             <input type="radio" name="question_${q.id}" value="${escapeHtml(valC)}" ${isCheckedC ? 'checked' : ''}>
                             <span class="opt-key">C</span>
                             <span class="opt-text">${escapeHtml(optC)}</span>
                         </label>
-                        <label class="mc-option-card ${isCheckedD ? 'selected' : ''}">
+                        <label class="mc-option-card ${isCheckedD ? 'selected' : ''}" data-option-key="D">
                             <input type="radio" name="question_${q.id}" value="${escapeHtml(valD)}" ${isCheckedD ? 'checked' : ''}>
                             <span class="opt-key">D</span>
                             <span class="opt-text">${escapeHtml(optD)}</span>
@@ -1570,9 +1884,13 @@ YÊU CẦU:
                 <div class="question-title">${escapeHtml(q.question)}</div>
                 ${hintHtml}
                 ${bodyHtml}
+                ${isMC ? `<div class="instant-feedback hidden" aria-live="polite"></div>` : ''}
             `;
 
             questionsContainer.appendChild(qCard);
+            if (isMC && existingAnswer && q.correct_answer) {
+                applyImmediateQuestionFeedback(qCard, q, normalizeAnswerKey(existingAnswer));
+            }
         });
 
         // Event listeners for radio option cards
@@ -1580,10 +1898,16 @@ YÊU CẦU:
             card.addEventListener('click', () => {
                 const radio = card.querySelector('input[type="radio"]');
                 if (radio) {
+                    if (radio.disabled) return;
                     radio.checked = true;
                     const parentGrid = card.closest('.mc-options-grid');
                     parentGrid.querySelectorAll('.mc-option-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
+                    const question = currentQuestions.find(item => String(item.id) === String(parentGrid.dataset.id));
+                    if (question) {
+                        userAnswers[question.id] = radio.value;
+                        applyImmediateQuestionFeedback(card.closest('.question-card'), question, card.dataset.optionKey);
+                    }
                     updateQuizProgress();
                     scheduleDraftSave();
                 }
@@ -1717,6 +2041,46 @@ YÊU CẦU:
 
         if (answeredCount === 0) {
             showError('Chưa trả lời', 'Vui lòng chọn đáp án trắc nghiệm hoặc nhập câu trả lời cho ít nhất một câu hỏi.');
+            return;
+        }
+
+        const canGradeLocally = currentQuestions.every(question => normalizeAnswerKey(question.correct_answer));
+        if (canGradeLocally) {
+            const localQaList = currentQuestions.map(question => ({
+                id: question.id,
+                type: 'multiple_choice',
+                question: question.question,
+                options: question.options || null,
+                user_answer: userAnswers[question.id] || '(Chưa trả lời)'
+            }));
+            const evaluations = currentQuestions.map(question => {
+                const selectedKey = normalizeAnswerKey(userAnswers[question.id]);
+                const correctKey = normalizeAnswerKey(question.correct_answer);
+                const isCorrect = selectedKey === correctKey;
+                return {
+                    id: question.id,
+                    score: isCorrect ? 10 : 0,
+                    explanation: question.explanation || (isCorrect ? 'Bạn đã áp dụng đúng kiến thức của bài.' : 'Đáp án đã chọn chưa phù hợp với quy tắc của bài.'),
+                    improvement: `Đáp án đúng: ${correctKey}${question.options?.[correctKey] ? ` — ${question.options[correctKey]}` : ''}`
+                };
+            });
+            const correctCount = evaluations.filter(item => item.score === 10).length;
+            const averageScore = currentQuestions.length ? (correctCount / currentQuestions.length) * 10 : 0;
+            const evalResult = {
+                average_score: averageScore,
+                overall_feedback: `Bạn trả lời đúng ${correctCount}/${currentQuestions.length} câu. Kết quả được chấm tức thì từ đáp án đã chuẩn bị trước.`,
+                evaluations
+            };
+
+            lastEvaluations = evalResult;
+            renderResultsUI(evalResult, localQaList);
+            awardLearningXp(averageScore, currentQuestions.length);
+            completeCurrentLesson();
+            stopQuizTimer();
+            clearQuizDraft();
+            quizSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            window.scrollTo({ top: resultsSection.offsetTop - 30, behavior: 'smooth' });
             return;
         }
 
