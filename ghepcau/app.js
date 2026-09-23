@@ -818,6 +818,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const chapter = currentCourse.chapters.find(item => (item.lessons || []).some(child => child.id === lessonId));
         const systemPrompt = `Bạn là gia sư AI. Hãy soạn một bài học ngắn, rõ ràng bằng tiếng Việt dựa trên lộ trình đã có.
 - Trường reading_passage phải chứa phần kiến thức cốt lõi, ví dụ minh họa và các bước thực hành của bài học.
+- Trình bày reading_passage bằng Markdown rõ ràng: dùng ## cho mục lớn, ### cho mục nhỏ, danh sách gạch đầu dòng và **chữ đậm** cho từ khóa.
+- Mỗi đoạn chỉ 2-4 câu và phải có dòng trống giữa các phần. Không viết toàn bộ bài học thành một đoạn dài.
+- Công thức ngữ pháp như S + V(s/es) phải đặt trong dấu backtick, ví dụ: \`S + V(s/es)\`. Chỉ dùng LaTeX cho công thức Toán, Lý, Hóa.
 - Tạo 5-8 câu hỏi để kiểm tra đúng mục tiêu bài học; ưu tiên trắc nghiệm, có thể xen câu tự luận.
 - Không mở rộng sang bài sau. Với công thức, dùng LaTeX trong $...$ hoặc $$...$$.
 - Chỉ trả về JSON đúng schema được yêu cầu.`;
@@ -1404,6 +1407,66 @@ YÊU CẦU:
         window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
     }
 
+    function renderInlineMarkdown(text) {
+        return escapeHtml(text)
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    }
+
+    function renderLessonMarkdown(markdown) {
+        const lines = String(markdown || '').replace(/\r\n?/g, '\n').split('\n');
+        const html = [];
+        let listType = '';
+
+        const closeList = () => {
+            if (!listType) return;
+            html.push(`</${listType}>`);
+            listType = '';
+        };
+
+        lines.forEach(rawLine => {
+            const line = rawLine.trim();
+            if (!line) {
+                closeList();
+                return;
+            }
+
+            const heading = line.match(/^(#{1,3})\s+(.+)$/);
+            if (heading) {
+                closeList();
+                const level = Math.min(4, heading[1].length + 1);
+                html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+                return;
+            }
+
+            const unordered = line.match(/^[-*•]\s+(.+)$/);
+            const ordered = line.match(/^\d+[.)]\s+(.+)$/);
+            if (unordered || ordered) {
+                const nextListType = unordered ? 'ul' : 'ol';
+                if (listType !== nextListType) {
+                    closeList();
+                    listType = nextListType;
+                    html.push(`<${listType}>`);
+                }
+                html.push(`<li>${renderInlineMarkdown((unordered || ordered)[1])}</li>`);
+                return;
+            }
+
+            closeList();
+            if (/^[A-ZÀ-Ỹ]\.[ ]+/.test(line) && line.length < 140) {
+                html.push(`<h4>${renderInlineMarkdown(line)}</h4>`);
+            } else if (/^Bước\s+\d+\s*:/i.test(line)) {
+                html.push(`<p class='lesson-step'>${renderInlineMarkdown(line)}</p>`);
+            } else {
+                html.push(`<p>${renderInlineMarkdown(line)}</p>`);
+            }
+        });
+
+        closeList();
+        return html.join('');
+    }
+
     /* Render UI câu hỏi & Bài đọc hiểu (nếu có) & Trigger KaTeX */
     function renderQuestionsUI(topic, questions, readingPassage = '') {
         quizTopicTitle.textContent = topic;
@@ -1413,7 +1476,7 @@ YÊU CẦU:
         const passageColumn = document.querySelector('.passage-column');
 
         if (readingPassage && readingPassage.trim() !== '') {
-            readingPassageContent.innerHTML = escapeHtml(readingPassage);
+            readingPassageContent.innerHTML = renderLessonMarkdown(readingPassage);
             readingPassageContainer.classList.remove('hidden');
             if (passageColumn) passageColumn.classList.remove('hidden');
             if (quizColumnsLayout) quizColumnsLayout.classList.remove('no-passage');

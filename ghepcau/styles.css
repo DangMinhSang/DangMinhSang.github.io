@@ -951,8 +951,77 @@ body {
     font-size: 0.975rem;
     line-height: 1.85;
     color: var(--text-main);
-    white-space: pre-wrap;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
+
+.passage-content h2,
+.passage-content h3,
+.passage-content h4 {
+    color: var(--text-main);
+    line-height: 1.35;
+}
+
+.passage-content h2 {
+    margin: 4px 0 14px;
+    padding-bottom: 9px;
+    border-bottom: 2px solid var(--border-divider);
+    font-size: 1.24rem;
+    font-weight: 900;
+}
+
+.passage-content h3 {
+    margin: 24px 0 10px;
+    color: var(--primary-dark);
+    font-size: 1.08rem;
+    font-weight: 900;
+}
+
+.passage-content h4 {
+    margin: 18px 0 8px;
+    font-size: 0.98rem;
+    font-weight: 900;
+}
+
+.passage-content p { margin: 0 0 14px; }
+
+.passage-content ul,
+.passage-content ol {
+    margin: 8px 0 18px;
+    padding-left: 24px;
+}
+
+.passage-content li {
+    margin: 7px 0;
+    padding-left: 4px;
+}
+
+.passage-content strong { font-weight: 900; }
+
+.passage-content code {
+    display: inline-block;
+    max-width: 100%;
+    padding: 2px 7px;
+    overflow-x: auto;
+    vertical-align: middle;
+    color: var(--sky-dark);
+    background: rgba(28,176,246,0.1);
+    border: 1px solid rgba(28,176,246,0.22);
+    border-radius: 7px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.88em;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.passage-content .lesson-step {
+    padding: 11px 13px;
+    background: var(--bg-sidebar);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 10px 10px 0;
+}
+
+.passage-content .katex-display { overflow-x: auto; overflow-y: hidden; }
 
 /* Passage label top bar */
 .passage-label-bar {
