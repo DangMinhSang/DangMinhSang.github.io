@@ -1014,6 +1014,69 @@ body {
     white-space: nowrap;
 }
 
+.code-block {
+    margin: 18px 0;
+    overflow: hidden;
+    border: 2px solid #25324a;
+    border-radius: 14px;
+    background: #111827;
+    box-shadow: 0 5px 0 rgba(15, 23, 42, 0.18);
+}
+
+.code-block-header {
+    display: flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 8px 14px;
+    color: #cbd5e1;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.code-block pre {
+    margin: 0;
+    padding: 18px;
+    overflow-x: auto;
+    background: transparent;
+}
+
+.passage-content .code-block code {
+    display: block;
+    max-width: none;
+    padding: 0;
+    overflow: visible;
+    color: #e2e8f0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.quiz-columns-layout.lesson-only {
+    display: block;
+    max-width: 1040px;
+    width: calc(100% - 48px);
+    margin: 0 auto;
+}
+
+.quiz-columns-layout.lesson-only .passage-column {
+    border-right: 0;
+    overflow: visible;
+}
+
+.quiz-columns-layout.lesson-only .questions-column {
+    padding-top: 0;
+    border-left: 0;
+    background: transparent;
+}
+
 .passage-content .lesson-step {
     padding: 11px 13px;
     background: var(--bg-sidebar);

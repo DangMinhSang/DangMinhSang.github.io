@@ -810,7 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isCompleted = completed.has(lesson.id);
                 const previousLesson = lessons[lessonNumber - 2];
                 const isNextLesson = !isCompleted && (!previousLesson || completed.has(previousLesson.id));
-                const isPrepared = isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]);
+                const isPrepared = isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id], lesson);
                 const isPreparing = prefetchingLessonIds.has(lesson.id);
                 const stateClass = `${isCompleted ? 'completed' : isNextLesson ? 'available' : 'upcoming'}${isPractice ? ' practice' : ''}${isPrepared ? ' prepared' : ''}`;
                 const icon = isCompleted ? 'fa-check' : isPreparing ? 'fa-spinner fa-spin' : isPractice ? 'fa-dumbbell' : isNextLesson ? 'fa-play' : 'fa-book-open';
@@ -879,6 +879,7 @@ YÊU CẦU BẮT BUỘC:
 - Chỉ tạo đúng 2 chương mới, mỗi chương 4-6 bài học chi tiết, tổng cộng 8-12 bài.
 - Nội dung phải nối tiếp hợp lý, tăng dần độ khó và bám sát mục tiêu cuối khóa.
 - Mỗi bài là một buổi học độc lập, có mục tiêu rõ ràng và đủ hẹp để AI soạn bài chuyên sâu.
+- Gán lesson_kind = introduction cho bài giới thiệu/tổng quan, setup cho bài cài đặt công cụ hoặc thư viện, theory cho bài chỉ đọc kiến thức, và standard cho bài cần luyện tập.
 - Giữ nguyên title, summary, level, duration_label, total_days và daily_minutes của toàn khóa.
 - Đặt has_more = true nếu lộ trình vẫn chưa bao phủ đủ mục tiêu; chỉ đặt false khi các phần đã đủ hoàn chỉnh.
 - next_part_focus mô tả ngắn nội dung của phần sau nữa.
@@ -974,19 +975,33 @@ YÊU CẦU BẮT BUỘC:
         return match ? match[0] : '';
     }
 
-    function isLessonPackageReady(lessonPackage) {
-        return Boolean(
-            lessonPackage?.questions?.length >= 20
-            && lessonPackage.questions.every(question => normalizeAnswerKey(question.correct_answer))
-        );
+    function lessonRequiresQuestions(lesson) {
+        if (lesson?.type === 'practice') return true;
+        const lessonKind = String(lesson?.lesson_kind || '').toLowerCase();
+        if (['theory', 'setup', 'introduction'].includes(lessonKind)) return false;
+        const lessonText = `${lesson?.title || ''} ${lesson?.objective || lesson?.description || ''}`.toLowerCase();
+        return !/(giới thiệu|tổng quan|làm quen|cài đặt|thiết lập|setup|install|môi trường|chuẩn bị công cụ|overview|introduction)/i.test(lessonText);
+    }
+
+    function isLessonPackageReady(lessonPackage, lesson = null) {
+        if (!lessonPackage) return false;
+        if (lesson && !lessonRequiresQuestions(lesson)) {
+            return lessonPackage.quiz_required === false && Boolean(lessonPackage.reading_passage);
+        }
+        if (lessonPackage.quiz_required === false) return Boolean(lessonPackage.reading_passage);
+        return Boolean(lessonPackage.questions?.length >= 20
+            && lessonPackage.questions.every(question => normalizeAnswerKey(question.correct_answer)));
     }
 
     async function generateLessonPackage(lesson, chapter, selectedModel, background = false) {
         const isPractice = lesson.type === 'practice';
+        const quizRequired = lessonRequiresQuestions(lesson);
         const systemPrompt = `Bạn là gia sư AI và chuyên gia ra đề. Hãy chuẩn bị trọn gói một ${isPractice ? 'bài Practice tổng hợp' : 'bài học chuyên sâu'} bằng tiếng Việt.
 - reading_passage dùng Markdown rõ ràng với ##, ###, danh sách và **từ khóa**.
+- Mọi đoạn code nhiều dòng phải đặt trong code fence Markdown có tên ngôn ngữ, ví dụ ba dấu backtick + python. Không viết code thành văn bản thường.
+- Code mẫu phải chạy được; phần giải thích đặt ngoài code, còn chú thích bên trong phải dùng đúng cú pháp comment của ngôn ngữ như # với Python hoặc // với JavaScript.
 - ${isPractice ? 'Tóm tắt ngắn kiến thức cần ôn, tập trung phần bài tập.' : 'Cung cấp kiến thức cốt lõi, ví dụ, lỗi thường gặp và quy trình thực hành.'}
-- Tạo 20-25 câu trắc nghiệm 4 lựa chọn, tuyệt đối không ít hơn 20 câu.
+- ${quizRequired ? 'Tạo 20-25 câu trắc nghiệm 4 lựa chọn, tuyệt đối không ít hơn 20 câu.' : 'Đây là bài giới thiệu hoặc cài đặt công cụ: không tạo câu hỏi, trả về questions là mảng rỗng.'}
 - Phân bổ khoảng 30% cơ bản, 40% vận dụng, 30% khó; mục tiêu cao thì tăng câu bẫy sát đề thật.
 - Mỗi câu bắt buộc có correct_answer là A, B, C hoặc D; explanation giải thích vì sao đúng và vì sao phương án nhiễu dễ sai.
 - Công thức ngữ pháp đặt trong backtick. Chỉ dùng LaTeX cho Toán, Lý, Hóa.
@@ -1002,7 +1017,7 @@ YÊU CẦU BẮT BUỘC:
         const parsedData = parseAIJsonResponse(rawResponse);
         parsedData.questions = (parsedData.questions || []).filter(question => question.options && normalizeAnswerKey(question.correct_answer));
 
-        if (parsedData.questions.length < 20) {
+        if (quizRequired && parsedData.questions.length < 20) {
             const missingCount = 20 - parsedData.questions.length;
             if (!background) {
                 showLoading('AI Đang Bổ Sung Câu Hỏi Khó...', `Bài hiện có ${parsedData.questions.length}/20 câu. Đang tạo thêm ít nhất ${missingCount} câu.`);
@@ -1014,13 +1029,14 @@ YÊU CẦU BẮT BUỘC:
             parsedData.questions.push(...validSupplement);
         }
 
-        if (parsedData.questions.length < 20) {
+        if (quizRequired && parsedData.questions.length < 20) {
             throw new Error(`AI mới chuẩn bị được ${parsedData.questions.length}/20 câu hợp lệ.`);
         }
 
         const lessonPackage = {
             topic: parsedData.topic || lesson.title,
             reading_passage: parsedData.reading_passage || '',
+            quiz_required: quizRequired,
             prepared_at: new Date().toISOString(),
             questions: parsedData.questions.slice(0, 25).map((question, index) => ({
                 ...question,
@@ -1043,11 +1059,11 @@ YÊU CẦU BẮT BUỘC:
         const completedLessons = new Set(currentCourse.completed_lessons || []);
         const upcomingLessons = getCourseLessons().filter(lesson => !completedLessons.has(lesson.id));
         const readyOrPreparingCount = upcomingLessons.filter(lesson => (
-            isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]) || prefetchingLessonIds.has(lesson.id)
+            isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id], lesson) || prefetchingLessonIds.has(lesson.id)
         )).length;
         const availableSlots = Math.max(0, 5 - readyOrPreparingCount);
         const candidates = upcomingLessons
-            .filter(lesson => !isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id]) && !prefetchingLessonIds.has(lesson.id))
+            .filter(lesson => !isLessonPackageReady(currentCourse.lesson_cache?.[lesson.id], lesson) && !prefetchingLessonIds.has(lesson.id))
             .slice(0, availableSlots);
         candidates.forEach(lesson => prefetchingLessonIds.add(lesson.id));
 
@@ -1088,7 +1104,7 @@ YÊU CẦU BẮT BUỘC:
         const lesson = getCourseLessons().find(item => item.id === lessonId);
         if (!lesson) return;
         const cachedPackage = currentCourse.lesson_cache?.[lessonId];
-        if (isLessonPackageReady(cachedPackage)) {
+        if (isLessonPackageReady(cachedPackage, lesson)) {
             launchLessonPackage(lessonId, cachedPackage);
             return;
         }
@@ -1462,6 +1478,7 @@ YÊU CẦU BẮT BUỘC:
                                     day: { type: "INTEGER" },
                                     title: { type: "STRING" },
                                     objective: { type: "STRING" },
+                                    lesson_kind: { type: "STRING" },
                                     duration_minutes: { type: "INTEGER" }
                                 },
                                 required: ["id", "day", "title", "objective", "duration_minutes"]
@@ -1529,6 +1546,7 @@ YÊU CẦU:
 - Chỉ tạo đúng 2 chương đầu tiên theo thứ tự từ nền tảng đến nâng cao.
 - Mỗi chương phải có 4-6 bài học cụ thể, tổng cộng 8-12 bài trong phần này.
 - Mỗi bài học tương ứng một buổi, có mục tiêu riêng và không được trùng nội dung với bài khác.
+- Gán lesson_kind = introduction cho bài giới thiệu/tổng quan, setup cho bài cài đặt công cụ hoặc thư viện, theory cho bài chỉ đọc kiến thức, và standard cho bài cần luyện tập.
 - duration_label và total_days phải mô tả toàn bộ hành trình dài hạn, không chỉ riêng phần 1.
 - Đặt has_more = true nếu mục tiêu còn cần các phần tiếp theo. next_part_focus mô tả ngắn nội dung nên học ở phần 2.
 - ID phải duy nhất, ngắn gọn, chỉ dùng chữ thường, số và dấu gạch ngang.
@@ -1706,6 +1724,8 @@ YÊU CẦU:
         const lines = String(markdown || '').replace(/\r\n?/g, '\n').split('\n');
         const html = [];
         let listType = '';
+        let codeLanguage = '';
+        let codeLines = null;
 
         const closeList = () => {
             if (!listType) return;
@@ -1713,7 +1733,33 @@ YÊU CẦU:
             listType = '';
         };
 
+        const closeCodeBlock = () => {
+            if (!codeLines) return;
+            const languageLabel = codeLanguage ? codeLanguage.toUpperCase() : 'CODE';
+            const languageClass = codeLanguage ? ` class="language-${escapeHtml(codeLanguage)}"` : '';
+            html.push(`<div class="code-block"><div class="code-block-header"><span>${escapeHtml(languageLabel)}</span></div><pre><code${languageClass}>${escapeHtml(codeLines.join('\n'))}</code></pre></div>`);
+            codeLanguage = '';
+            codeLines = null;
+        };
+
         lines.forEach(rawLine => {
+            const fence = rawLine.trim().match(/^```([\w#+.-]*)\s*$/);
+            if (fence) {
+                if (codeLines) {
+                    closeCodeBlock();
+                } else {
+                    closeList();
+                    codeLanguage = fence[1] || '';
+                    codeLines = [];
+                }
+                return;
+            }
+
+            if (codeLines) {
+                codeLines.push(rawLine);
+                return;
+            }
+
             const line = rawLine.trim();
             if (!line) {
                 closeList();
@@ -1752,6 +1798,7 @@ YÊU CẦU:
         });
 
         closeList();
+        closeCodeBlock();
         return html.join('');
     }
 
@@ -1784,10 +1831,12 @@ YÊU CẦU:
     /* Render UI câu hỏi & Bài đọc hiểu (nếu có) & Trigger KaTeX */
     function renderQuestionsUI(topic, questions, readingPassage = '') {
         quizTopicTitle.textContent = topic;
-        quizQuestionCount.textContent = `${questions.length} câu hỏi`;
+        const isLessonOnly = questions.length === 0;
+        quizQuestionCount.textContent = isLessonOnly ? 'Bài lý thuyết · không có câu hỏi' : `${questions.length} câu hỏi`;
 
         const quizColumnsLayout = document.querySelector('.quiz-columns-layout');
         const passageColumn = document.querySelector('.passage-column');
+        if (quizColumnsLayout) quizColumnsLayout.classList.toggle('lesson-only', isLessonOnly);
 
         if (readingPassage && readingPassage.trim() !== '') {
             readingPassageContent.innerHTML = renderLessonMarkdown(readingPassage);
@@ -2028,6 +2077,15 @@ YÊU CẦU:
     answersForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         hideError();
+
+        if (currentQuestions.length === 0) {
+            completeCurrentLesson();
+            stopQuizTimer();
+            clearQuizDraft();
+            showRoadmap();
+            showToast('Đã hoàn thành bài học lý thuyết.', 'success');
+            return;
+        }
 
         captureUserAnswers();
         let answeredCount = 0;
