@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghép Câu – Luyện Thi AI</title>
     <meta name="description"
-        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD, Reading Comprehension, công thức Toán học LaTeX và tự luận AI thông minh. Hỗ trợ Gemini & OpenRouter API, đính kèm file Ảnh/PDF/Word/TXT truyền trực tiếp tới AI, nhập xuất Excel, lưu lịch sử local.">
+        content="Trang web tĩnh ghép câu, bài tập trắc nghiệm ABCD, Reading Comprehension, công thức Toán học LaTeX và tự luận AI thông minh. Hỗ trợ Gemini API, đính kèm file Ảnh/PDF/Word/TXT truyền trực tiếp tới AI, nhập xuất Excel, lưu lịch sử local.">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,15 +52,22 @@
                 </a>
             </div>
             <div class="header-actions">
+                <button id="btn-restore-draft" class="btn btn-outline hidden" title="Khôi phục bài làm đang dang dở">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Khôi Phục Bài</span>
+                </button>
                 <button id="btn-open-history" class="btn btn-outline" title="Xem lịch sử bài làm đã lưu">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Lịch Sử</span>
                     <span id="history-count-badge" class="count-badge hidden">0</span>
                 </button>
-                <button id="btn-toggle-key-modal" class="btn btn-outline" title="Cấu hình API Keys">
+                <button id="btn-toggle-key-modal" class="btn btn-outline" title="Cấu hình Gemini API Key">
                     <i class="fa-solid fa-key"></i>
                     <span id="key-status-text">Chưa nhập API Key</span>
                     <span id="key-status-dot" class="dot dot-invalid"></span>
+                </button>
+                <button id="btn-toggle-theme" class="btn-icon theme-toggle" title="Chuyển chế độ sáng/tối" aria-label="Chuyển chế độ sáng/tối">
+                    <i class="fa-solid fa-moon"></i>
                 </button>
             </div>
         </header>
@@ -69,13 +76,13 @@
         <div id="key-modal" class="modal-overlay hidden">
             <div class="modal-content glass-card">
                 <div class="modal-header">
-                    <h2><i class="fa-solid fa-shield-halved"></i> Cấu Hình API Keys</h2>
+                    <h2><i class="fa-solid fa-shield-halved"></i> Cấu Hình Gemini API</h2>
                     <button id="btn-close-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted mb-4">
-                        API Key được lưu an toàn trong <strong>localStorage</strong> của trình duyệt bạn. Hãy nhập ít
-                        nhất một API Key để sử dụng.
+                        API Key được lưu trong <strong>localStorage</strong> của trình duyệt và chỉ được dùng để gọi
+                        trực tiếp Google Gemini API.
                     </p>
 
                     <!-- Standard: Gemini Key Input -->
@@ -98,43 +105,11 @@
                         </small>
                     </div>
 
-                    <!-- Advanced Toggle Button -->
-                    <div class="advanced-toggle-wrap">
-                        <button type="button" id="btn-toggle-advanced-keys" class="btn-advanced-toggle">
-                            <span><i class="fa-solid fa-sliders text-purple-400"></i> Nâng cao (OpenRouter API)</span>
-                            <i class="fa-solid fa-chevron-down" id="advanced-chevron"></i>
-                        </button>
-                    </div>
-
-                    <!-- Hidden Advanced Section: OpenRouter -->
-                    <div id="advanced-key-section" class="advanced-section hidden">
-                        <!-- OpenRouter -->
-                        <div class="form-group mb-2">
-                            <label for="openrouter-key-input" class="label-with-badge">
-                                <span><i class="fa-solid fa-globe text-purple-400"></i> OpenRouter API Key</span>
-                                <span id="openrouter-badge-status" class="key-tag-badge invalid">Chưa lưu</span>
-                            </label>
-                            <div class="input-with-icon">
-                                <i class="fa-solid fa-lock input-icon"></i>
-                                <input type="password" id="openrouter-key-input" placeholder="sk-or-v1-..."
-                                    autocomplete="off">
-                                <button id="btn-toggle-show-openrouter-key" class="btn-icon-inside"
-                                    title="Hiện/Ẩn Key">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                            </div>
-                            <small class="help-text">
-                                <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">Lấy OpenRouter Key
-                                    tại openrouter.ai <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                            </small>
-                        </div>
-                    </div>
                 </div> <!-- End modal-body -->
                 <div class="modal-footer">
-                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa
-                        Tất Cả Key</button>
+                    <button id="btn-clear-key" class="btn btn-danger-ghost"><i class="fa-solid fa-trash-can"></i> Xóa Key</button>
                     <button id="btn-save-key" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lưu API
-                        Keys</button>
+                        Key</button>
                 </div>
             </div> <!-- End modal-content -->
         </div> <!-- End key-modal -->
@@ -244,20 +219,6 @@
                         </div>
                     </div>
 
-                    <!-- Quick Prompt Suggestions -->
-                    <div class="quick-prompts">
-                        <span class="label-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý prompt:</span>
-                        <button type="button" class="chip-btn"
-                            data-prompt="Hãy tạo 2 câu trắc nghiệm Toán học có công thức LaTeX về Tích phân và Đạo hàm">📐
-                            2 câu Toán (Công thức LaTeX)</button>
-                        <button type="button" class="chip-btn"
-                            data-prompt="Hãy tạo cho tôi 1 task reading trình độ B1 với 3 câu hỏi trắc nghiệm">📖
-                            Task Reading B1 (Kèm bài đọc)</button>
-                        <button type="button" class="chip-btn"
-                            data-prompt="Hãy tạo cho tôi 5 câu tự luận tiếng anh để tôi dịch sang tiếng việt với trình độ B1">📖
-                            5 câu tự luận tiếng anh (Dịch Việt)</button>
-                    </div>
-
                     <div class="form-actions">
                         <div class="model-select-wrap">
                             <i class="fa-solid fa-robot"></i>
@@ -307,6 +268,33 @@
                         </button>
                         <button type="button" id="btn-reset-quiz" class="btn btn-outline">
                             <i class="fa-solid fa-rotate-left"></i> Tạo / Nhập Đề Khác
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quiz-session-bar">
+                    <div class="quiz-progress-group">
+                        <div class="quiz-progress-meta">
+                            <span><i class="fa-solid fa-list-check"></i> Tiến độ</span>
+                            <strong id="quiz-progress-text">0/0 câu</strong>
+                        </div>
+                        <div id="quiz-progress-track" class="quiz-progress-track" role="progressbar"
+                            aria-label="Tiến độ làm bài" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div id="quiz-progress-fill" class="quiz-progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="quiz-session-actions">
+                        <div class="quiz-timer" title="Thời gian làm bài">
+                            <i class="fa-regular fa-clock"></i>
+                            <span id="quiz-timer-text">00:00</span>
+                        </div>
+                        <button type="button" id="btn-toggle-timer" class="btn btn-outline btn-sm" title="Tạm dừng thời gian">
+                            <i class="fa-solid fa-pause"></i>
+                            <span>Tạm dừng</span>
+                        </button>
+                        <button type="button" id="btn-next-unanswered" class="btn btn-outline btn-sm">
+                            <i class="fa-solid fa-forward-step"></i>
+                            <span>Câu chưa làm</span>
                         </button>
                     </div>
                 </div>

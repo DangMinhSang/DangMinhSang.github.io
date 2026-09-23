@@ -1,13 +1,14 @@
 /**
  * Ghép Câu & Luyện AI - Main Client Application Logic
- * Pure client-side static web application with Gemini & OpenRouter API integration, File Attachments (Images, PDF, Word, TXT) sent directly to AI, Reading Passages, KaTeX Math & Excel
+ * Pure client-side static web application with Gemini API integration, File Attachments (Images, PDF, Word, TXT) sent directly to AI, Reading Passages, KaTeX Math & Excel
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     // LocalStorage Keys
     const LS_GEMINI_KEY = 'gemini_api_key';
-    const LS_OPENROUTER_KEY = 'openrouter_api_key';
     const LS_HISTORY_KEY = 'ghepcau_history_list';
+    const LS_THEME_KEY = 'ghepcau_theme';
+    const LS_DRAFT_KEY = 'ghepcau_quiz_draft';
 
     // Configure PDF.js worker URL
     if (window.pdfjsLib) {
@@ -21,26 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastPrompt = '';
     let lastEvaluations = null;
     let attachedFiles = [];
+    let quizElapsedSeconds = 0;
+    let quizTimerId = null;
+    let isQuizTimerPaused = false;
+    let draftSaveTimer = null;
 
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
     const apiKeyInput = document.getElementById('api-key-input');
-    const openrouterKeyInput = document.getElementById('openrouter-key-input');
     const btnToggleKeyModal = document.getElementById('btn-toggle-key-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const btnSaveKey = document.getElementById('btn-save-key');
     const btnClearKey = document.getElementById('btn-clear-key');
     const btnToggleShowKey = document.getElementById('btn-toggle-show-key');
-    const btnToggleShowOpenRouterKey = document.getElementById('btn-toggle-show-openrouter-key');
     const keyStatusText = document.getElementById('key-status-text');
     const keyStatusDot = document.getElementById('key-status-dot');
     const geminiBadgeStatus = document.getElementById('gemini-badge-status');
-    const openrouterBadgeStatus = document.getElementById('openrouter-badge-status');
-
-    // DOM Elements - Advanced Key Toggle
-    const btnToggleAdvancedKeys = document.getElementById('btn-toggle-advanced-keys');
-    const advancedKeySection = document.getElementById('advanced-key-section');
-    const advancedChevron = document.getElementById('advanced-chevron');
+    const btnToggleTheme = document.getElementById('btn-toggle-theme');
+    const btnRestoreDraft = document.getElementById('btn-restore-draft');
 
     // DOM Elements - History Modal
     const historyModal = document.getElementById('history-modal');
@@ -82,12 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const readingPassageContainer = document.getElementById('reading-passage-container');
     const readingPassageContent = document.getElementById('reading-passage-content');
 
-    // DOM Elements - Generator & Excel & Chips
+    // DOM Elements - Generator & Excel
     const generatorForm = document.getElementById('generator-form');
     const promptInput = document.getElementById('prompt-input');
     const modelSelect = document.getElementById('model-select');
     const btnGenerate = document.getElementById('btn-generate');
-    const chipBtns = document.querySelectorAll('.chip-btn');
     const btnImportExcel = document.getElementById('btn-import-excel');
     const excelFileInput = document.getElementById('excel-file-input');
     const btnExportQuestionsExcel = document.getElementById('btn-export-questions-excel');
@@ -100,6 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const questionsContainer = document.getElementById('questions-container');
     const btnResetQuiz = document.getElementById('btn-reset-quiz');
     const btnSubmitAnswers = document.getElementById('btn-submit-answers');
+    const quizProgressText = document.getElementById('quiz-progress-text');
+    const quizProgressFill = document.getElementById('quiz-progress-fill');
+    const quizProgressTrack = document.getElementById('quiz-progress-track');
+    const quizTimerText = document.getElementById('quiz-timer-text');
+    const btnToggleTimer = document.getElementById('btn-toggle-timer');
+    const btnNextUnanswered = document.getElementById('btn-next-unanswered');
 
     // DOM Elements - Results Section
     const overallScoreBadge = document.getElementById('overall-score-badge');
@@ -512,22 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       1. API Keys & Advanced Toggle Logic
+       1. API Key & Theme Logic
        ========================================================================== */
     function getStoredGeminiKey() {
         return localStorage.getItem(LS_GEMINI_KEY) || '';
     }
 
-    function getStoredOpenRouterKey() {
-        return localStorage.getItem(LS_OPENROUTER_KEY) || '';
-    }
-
     function updateKeyStatusUI() {
         const geminiKey = getStoredGeminiKey();
-        const openrouterKey = getStoredOpenRouterKey();
-
         const hasGemini = geminiKey && geminiKey.trim().length > 10;
-        const hasOpenRouter = openrouterKey && openrouterKey.trim().length > 10;
 
         if (hasGemini) {
             geminiBadgeStatus.textContent = 'Đã lưu';
@@ -539,39 +536,21 @@ document.addEventListener('DOMContentLoaded', () => {
             apiKeyInput.value = '';
         }
 
-        if (hasOpenRouter) {
-            openrouterBadgeStatus.textContent = 'Đã lưu';
-            openrouterBadgeStatus.className = 'key-tag-badge valid';
-            openrouterKeyInput.value = openrouterKey;
-            advancedKeySection.classList.remove('hidden');
-            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-up';
-        } else {
-            openrouterBadgeStatus.textContent = 'Chưa lưu';
-            openrouterBadgeStatus.className = 'key-tag-badge invalid';
-            openrouterKeyInput.value = '';
-        }
-
-        if (hasGemini && hasOpenRouter) {
-            keyStatusText.textContent = 'Gemini & OpenRouter API';
-            keyStatusDot.className = 'dot dot-valid';
-        } else if (hasGemini) {
+        if (hasGemini) {
             keyStatusText.textContent = 'Gemini API (Đã cài)';
-            keyStatusDot.className = 'dot dot-valid';
-        } else if (hasOpenRouter) {
-            keyStatusText.textContent = 'OpenRouter API (Đã cài)';
             keyStatusDot.className = 'dot dot-valid';
         } else {
             keyStatusText.textContent = 'Chưa nhập API Key';
             keyStatusDot.className = 'dot dot-invalid';
         }
 
-        updateModelSelectOptions(hasGemini, hasOpenRouter);
+        updateModelSelectOptions(hasGemini);
     }
 
-    function updateModelSelectOptions(hasGemini, hasOpenRouter) {
+    function updateModelSelectOptions(hasGemini) {
         modelSelect.innerHTML = '';
 
-        if (!hasGemini && !hasOpenRouter) {
+        if (!hasGemini) {
             const opt = document.createElement('option');
             opt.value = '';
             opt.textContent = '⚠️ Chưa nhập API Key (Bấm vào nút Key ở góc phải để nhập)';
@@ -584,47 +563,19 @@ document.addEventListener('DOMContentLoaded', () => {
             group.label = 'Google Gemini';
 
             const opt1 = document.createElement('option');
-            opt1.value = 'gemini-2.5-flash';
-            opt1.textContent = 'Gemini 2.5 Flash (Khuyên dùng - Nhanh & Mới nhất)';
+            opt1.value = 'gemini-3.8-flash';
+            opt1.textContent = 'Gemini 3.8 Flash (Khuyên dùng)';
 
             const opt2 = document.createElement('option');
-            opt2.value = 'gemini-1.5-flash';
-            opt2.textContent = 'Gemini 1.5 Flash (Ổn định)';
+            opt2.value = 'gemini-3.5-flash-lite';
+            opt2.textContent = 'Gemini 3.5 Flash-Lite (Tiết kiệm)';
 
             group.appendChild(opt1);
             group.appendChild(opt2);
             modelSelect.appendChild(group);
         }
 
-        if (hasOpenRouter) {
-            const group = document.createElement('optgroup');
-            group.label = 'OpenRouter (Nâng cao)';
-
-            const opt4 = document.createElement('option');
-            opt4.value = 'deepseek/deepseek-chat';
-            opt4.textContent = 'DeepSeek V3 / Chat (OpenRouter)';
-
-            const opt5 = document.createElement('option');
-            opt5.value = 'meta-llama/llama-3.3-70b-instruct';
-            opt5.textContent = 'Llama 3.3 70B (OpenRouter)';
-
-            group.appendChild(opt4);
-            group.appendChild(opt5);
-            modelSelect.appendChild(group);
-        }
     }
-
-    // Toggle Advanced Section
-    btnToggleAdvancedKeys.addEventListener('click', () => {
-        const isHidden = advancedKeySection.classList.contains('hidden');
-        if (isHidden) {
-            advancedKeySection.classList.remove('hidden');
-            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-up';
-        } else {
-            advancedKeySection.classList.add('hidden');
-            if (advancedChevron) advancedChevron.className = 'fa-solid fa-chevron-down';
-        }
-    });
 
     function openKeyModal() {
         keyModal.classList.remove('hidden');
@@ -640,13 +591,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnSaveKey.addEventListener('click', () => {
         const geminiVal = apiKeyInput.value.trim();
-        const openrouterVal = openrouterKeyInput.value.trim();
 
         if (geminiVal) localStorage.setItem(LS_GEMINI_KEY, geminiVal);
         else localStorage.removeItem(LS_GEMINI_KEY);
-
-        if (openrouterVal) localStorage.setItem(LS_OPENROUTER_KEY, openrouterVal);
-        else localStorage.removeItem(LS_OPENROUTER_KEY);
 
         updateKeyStatusUI();
         closeKeyModal();
@@ -655,7 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnClearKey.addEventListener('click', () => {
         localStorage.removeItem(LS_GEMINI_KEY);
-        localStorage.removeItem(LS_OPENROUTER_KEY);
         updateKeyStatusUI();
         closeKeyModal();
     });
@@ -666,20 +612,21 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToggleShowKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
     });
 
-    btnToggleShowOpenRouterKey.addEventListener('click', () => {
-        const currentType = openrouterKeyInput.getAttribute('type');
-        openrouterKeyInput.setAttribute('type', currentType === 'password' ? 'text' : 'password');
-        btnToggleShowOpenRouterKey.innerHTML = currentType === 'password' ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
-    });
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem(LS_THEME_KEY, theme);
+        const isDark = theme === 'dark';
+        btnToggleTheme.innerHTML = `<i class="fa-solid fa-${isDark ? 'sun' : 'moon'}"></i>`;
+        btnToggleTheme.title = isDark ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối';
+    }
 
-    chipBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const promptText = btn.getAttribute('data-prompt');
-            if (promptText) {
-                promptInput.value = promptText;
-                promptInput.focus();
-            }
-        });
+    const preferredTheme = localStorage.getItem(LS_THEME_KEY)
+        || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(preferredTheme);
+
+    btnToggleTheme.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
     /* ==========================================================================
@@ -791,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ==========================================================================
-       4. Unified AI LLM API Call Helper (Gemini / OpenRouter Router)
+       4. Gemini API Call Helper
        ========================================================================== */
     async function callLLMAPI(systemInstruction, userPrompt, model, responseSchema = null, filesData = []) {
         if (!model) {
@@ -799,11 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error('Chưa có API Key nào được cài đặt. Vui lòng nhập Gemini Key để bắt đầu sử dụng.');
         }
 
-        if (model.startsWith('gemini')) {
-            return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, filesData);
-        } else {
-            return await callOpenRouterAPI(systemInstruction, userPrompt, model, filesData);
-        }
+        return await callGeminiAPI(systemInstruction, userPrompt, model, responseSchema, filesData);
     }
 
     // Google Gemini API Call (Direct Multimodal inlineData support for multiple files)
@@ -817,11 +760,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
         const generationConfig = {
-            temperature: 0.7,
-            topP: 0.95,
             maxOutputTokens: 8192,
             responseMimeType: "application/json"
         };
+
+        if (!model.startsWith('gemini-3')) {
+            generationConfig.temperature = 0.7;
+            generationConfig.topP = 0.95;
+        }
 
         if (responseSchema) {
             generationConfig.responseSchema = responseSchema;
@@ -877,67 +823,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return candidate.content.parts[0].text;
-    }
-
-    // OpenRouter API Call (Multimodal Vision / Image URL support for multiple images)
-    async function callOpenRouterAPI(systemInstruction, userPrompt, model, filesData) {
-        const apiKey = getStoredOpenRouterKey();
-        if (!apiKey) {
-            openKeyModal();
-            advancedKeySection.classList.remove('hidden');
-            throw new Error('Bạn chưa cài đặt OpenRouter API Key. Vui lòng mở Cấu Hình Key -> Nâng Cao để nhập.');
-        }
-
-        const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-
-        const fileList = Array.isArray(filesData) ? filesData : (filesData ? [filesData] : []);
-        const imageFiles = fileList.filter(f => f && f.dataUrl && f.mimeType && f.mimeType.startsWith('image/'));
-
-        let userMessageContent = userPrompt;
-        if (imageFiles.length > 0) {
-            userMessageContent = [
-                { type: "text", text: userPrompt },
-                ...imageFiles.map(img => ({
-                    type: "image_url",
-                    image_url: { url: img.dataUrl }
-                }))
-            ];
-        }
-
-        const payload = {
-            model: model,
-            messages: [
-                { role: 'system', content: systemInstruction },
-                { role: 'user', content: userMessageContent }
-            ],
-            response_format: { type: 'json_object' },
-            temperature: 0.7
-        };
-
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://DangMinhSang.github.io/ghepcau',
-                'X-Title': 'GhepCau AI'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            const errMsg = errData.error?.message || `Lỗi OpenRouter API HTTP ${response.status}: ${response.statusText}`;
-            throw new Error(errMsg);
-        }
-
-        const data = await response.json();
-        const contentText = data.choices?.[0]?.message?.content;
-        if (!contentText) {
-            throw new Error('Phản hồi từ OpenRouter API rỗng.');
-        }
-
-        return contentText;
     }
 
     /* ==========================================================================
@@ -1091,6 +976,7 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
             currentQuestions = parsedData.questions;
             currentReadingPassage = parsedData.reading_passage || '';
             userAnswers = {};
+            resetQuizSession();
 
             renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions, currentReadingPassage);
 
@@ -1108,6 +994,126 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
             btnGenerate.disabled = false;
         }
     });
+
+    function formatQuizTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
+    }
+
+    function updateQuizTimerUI() {
+        quizTimerText.textContent = formatQuizTime(quizElapsedSeconds);
+    }
+
+    function startQuizTimer() {
+        if (quizTimerId || isQuizTimerPaused) return;
+        quizTimerId = window.setInterval(() => {
+            quizElapsedSeconds++;
+            updateQuizTimerUI();
+            if (quizElapsedSeconds % 10 === 0) scheduleDraftSave();
+        }, 1000);
+    }
+
+    function stopQuizTimer() {
+        if (quizTimerId) {
+            window.clearInterval(quizTimerId);
+            quizTimerId = null;
+        }
+    }
+
+    function resetQuizSession() {
+        stopQuizTimer();
+        quizElapsedSeconds = 0;
+        isQuizTimerPaused = false;
+        updateQuizTimerUI();
+        btnToggleTimer.innerHTML = '<i class="fa-solid fa-pause"></i><span>Tạm dừng</span>';
+        startQuizTimer();
+    }
+
+    function getAnsweredQuestionCount() {
+        return currentQuestions.reduce((count, question) => {
+            const answer = userAnswers[question.id];
+            return answer && String(answer).trim() ? count + 1 : count;
+        }, 0);
+    }
+
+    function updateQuizProgress() {
+        captureUserAnswers();
+        const total = currentQuestions.length;
+        const answered = getAnsweredQuestionCount();
+        const percentage = total > 0 ? Math.round((answered / total) * 100) : 0;
+        quizProgressText.textContent = `${answered}/${total} câu`;
+        quizProgressFill.style.width = `${percentage}%`;
+        quizProgressTrack.setAttribute('aria-valuenow', String(percentage));
+
+        questionsContainer.querySelectorAll('.question-card').forEach((card, index) => {
+            const question = currentQuestions[index];
+            const answer = question ? userAnswers[question.id] : '';
+            card.classList.toggle('is-answered', Boolean(answer && String(answer).trim()));
+        });
+    }
+
+    function saveQuizDraft() {
+        if (quizSection.classList.contains('hidden') || currentQuestions.length === 0) return;
+        captureUserAnswers();
+        const draft = {
+            topic: quizTopicTitle.textContent,
+            questions: currentQuestions,
+            readingPassage: currentReadingPassage,
+            userAnswers,
+            lastPrompt,
+            elapsedSeconds: quizElapsedSeconds,
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(LS_DRAFT_KEY, JSON.stringify(draft));
+        updateRestoreDraftButton();
+    }
+
+    function scheduleDraftSave() {
+        window.clearTimeout(draftSaveTimer);
+        draftSaveTimer = window.setTimeout(saveQuizDraft, 250);
+    }
+
+    function clearQuizDraft() {
+        localStorage.removeItem(LS_DRAFT_KEY);
+        updateRestoreDraftButton();
+    }
+
+    function getStoredDraft() {
+        try {
+            const draft = JSON.parse(localStorage.getItem(LS_DRAFT_KEY) || 'null');
+            return draft && Array.isArray(draft.questions) && draft.questions.length > 0 ? draft : null;
+        } catch (error) {
+            localStorage.removeItem(LS_DRAFT_KEY);
+            return null;
+        }
+    }
+
+    function updateRestoreDraftButton() {
+        btnRestoreDraft.classList.toggle('hidden', !getStoredDraft());
+    }
+
+    function restoreQuizDraft() {
+        const draft = getStoredDraft();
+        if (!draft) return;
+
+        stopQuizTimer();
+        currentQuestions = draft.questions;
+        currentReadingPassage = draft.readingPassage || '';
+        userAnswers = draft.userAnswers || {};
+        lastPrompt = draft.lastPrompt || '';
+        quizElapsedSeconds = Number(draft.elapsedSeconds) || 0;
+        isQuizTimerPaused = false;
+        updateQuizTimerUI();
+        renderQuestionsUI(draft.topic || 'Bài làm đang dang dở', currentQuestions, currentReadingPassage);
+
+        promptSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        quizSection.classList.remove('hidden');
+        startQuizTimer();
+        showToast('Đã khôi phục bài làm đang dang dở.', 'success');
+        window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
+    }
 
     /* Render UI câu hỏi & Bài đọc hiểu (nếu có) & Trigger KaTeX */
     function renderQuestionsUI(topic, questions, readingPassage = '') {
@@ -1134,6 +1140,7 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
         questions.forEach((q, index) => {
             const qCard = document.createElement('div');
             qCard.className = 'question-card';
+            qCard.dataset.questionId = q.id;
             const isMC = q.type === 'multiple_choice' && q.options;
 
             const existingAnswer = userAnswers[q.id] || q.importedAnswer || '';
@@ -1225,7 +1232,16 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
                     const parentGrid = card.closest('.mc-options-grid');
                     parentGrid.querySelectorAll('.mc-option-card').forEach(c => c.classList.remove('selected'));
                     card.classList.add('selected');
+                    updateQuizProgress();
+                    scheduleDraftSave();
                 }
+            });
+        });
+
+        questionsContainer.querySelectorAll('.answer-textarea').forEach(textarea => {
+            textarea.addEventListener('input', () => {
+                updateQuizProgress();
+                scheduleDraftSave();
             });
         });
 
@@ -1252,6 +1268,8 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
 
         // Render KaTeX Math Formulas
         renderMathInContainer(quizSection);
+        updateQuizProgress();
+        scheduleDraftSave();
     }
 
     function captureUserAnswers() {
@@ -1269,6 +1287,42 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
             }
         });
     }
+
+    btnToggleTimer.addEventListener('click', () => {
+        isQuizTimerPaused = !isQuizTimerPaused;
+        if (isQuizTimerPaused) {
+            stopQuizTimer();
+            btnToggleTimer.innerHTML = '<i class="fa-solid fa-play"></i><span>Tiếp tục</span>';
+        } else {
+            startQuizTimer();
+            btnToggleTimer.innerHTML = '<i class="fa-solid fa-pause"></i><span>Tạm dừng</span>';
+        }
+        scheduleDraftSave();
+    });
+
+    btnNextUnanswered.addEventListener('click', () => {
+        updateQuizProgress();
+        const unansweredQuestion = currentQuestions.find(question => {
+            const answer = userAnswers[question.id];
+            return !answer || !String(answer).trim();
+        });
+
+        if (!unansweredQuestion) {
+            showToast('Bạn đã trả lời tất cả câu hỏi.', 'success');
+            return;
+        }
+
+        const card = questionsContainer.querySelector(`[data-question-id="${unansweredQuestion.id}"]`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.remove('attention-pulse');
+            window.requestAnimationFrame(() => card.classList.add('attention-pulse'));
+            window.setTimeout(() => card.classList.remove('attention-pulse'), 1200);
+        }
+    });
+
+    btnRestoreDraft.addEventListener('click', restoreQuizDraft);
+    window.addEventListener('beforeunload', saveQuizDraft);
 
     /* ==========================================================================
        6. Submit Answers & Grade Flow
@@ -1365,6 +1419,8 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
             lastEvaluations = evalResult;
 
             renderResultsUI(evalResult, qaList);
+            stopQuizTimer();
+            clearQuizDraft();
 
             // Switch view
             quizSection.classList.add('hidden');
@@ -1785,6 +1841,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
                 });
 
                 currentQuestions = importedQuestions;
+                resetQuizSession();
                 renderQuestionsUI(`Bộ Câu Hỏi Nhập Từ Excel (${file.name})`, currentQuestions, currentReadingPassage);
 
                 // Switch UI to quiz
@@ -1846,6 +1903,8 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
        9. Navigation & Reset Handlers
        ========================================================================== */
     btnResetQuiz.addEventListener('click', () => {
+        saveQuizDraft();
+        stopQuizTimer();
         quizSection.classList.add('hidden');
         resultsSection.classList.add('hidden');
         promptSection.classList.remove('hidden');
@@ -1854,6 +1913,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
 
     btnRetrySame.addEventListener('click', () => {
         captureUserAnswers();
+        resetQuizSession();
         resultsSection.classList.add('hidden');
         quizSection.classList.remove('hidden');
         renderQuestionsUI(quizTopicTitle.textContent, currentQuestions, currentReadingPassage);
@@ -1862,6 +1922,8 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
     });
 
     btnCreateNew.addEventListener('click', () => {
+        stopQuizTimer();
+        clearQuizDraft();
         resultsSection.classList.add('hidden');
         quizSection.classList.add('hidden');
         promptSection.classList.remove('hidden');
@@ -2175,6 +2237,8 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
     })(); // end initPassageAnnotations
 
     // Initialize UI status & History count badge
+    localStorage.removeItem('openrouter_api_key');
     updateKeyStatusUI();
     updateHistoryBadge();
+    updateRestoreDraftButton();
 });
