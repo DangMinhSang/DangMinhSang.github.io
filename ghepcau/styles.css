@@ -2906,6 +2906,16 @@ select,
     box-shadow: 0 6px 0 rgba(46, 135, 0, 0.48);
 }
 
+.score-badge-circle #overall-score-num {
+    color: #2f2f2f;
+    text-shadow: none;
+}
+
+.score-badge-circle .score-max {
+    color: #727272;
+    font-weight: 900;
+}
+
 .evaluation-card { background: var(--bg-card); }
 
 .loading-card,
