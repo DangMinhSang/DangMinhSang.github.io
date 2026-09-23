@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
     <!-- FontAwesome Icons -->
@@ -48,10 +48,16 @@
                 <a href="index.html">
                     <div class="logo-text">
                         <h1>Ghép Câu</h1>
+                        <span>Học vui mỗi ngày</span>
                     </div>
                 </a>
             </div>
             <div class="header-actions">
+                <div class="header-reward" title="Điểm kinh nghiệm học tập">
+                    <i class="fa-solid fa-bolt"></i>
+                    <strong class="xp-value">0</strong>
+                    <span>XP</span>
+                </div>
                 <button id="btn-restore-draft" class="btn btn-outline hidden" title="Khôi phục bài làm đang dang dở">
                     <i class="fa-solid fa-rotate"></i>
                     <span>Khôi Phục Bài</span>
@@ -166,15 +172,83 @@
             </div>
         </div>
 
-        <!-- ========== MAIN CONTENT ========== -->
-        <main class="main-content">
+        <div class="learning-shell">
+            <aside class="learning-sidebar" aria-label="Điều hướng học tập">
+                <nav class="learning-nav">
+                    <button type="button" class="learning-nav-item active" data-learning-action="home">
+                        <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+                        <span>Học ngay</span>
+                    </button>
+                    <button type="button" class="learning-nav-item" data-learning-action="history">
+                        <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        <span>Lịch sử</span>
+                    </button>
+                    <button type="button" class="learning-nav-item" data-learning-action="settings">
+                        <span class="nav-icon"><i class="fa-solid fa-key"></i></span>
+                        <span>Kết nối AI</span>
+                    </button>
+                </nav>
+
+                <div class="daily-quest-card">
+                    <div class="quest-topline">
+                        <span>Nhiệm vụ hôm nay</span>
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div class="quest-illustration">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <strong>Hoàn thành một bài luyện tập</strong>
+                    <p>Mỗi bài hoàn thành giúp hành trình của bạn tiến xa hơn.</p>
+                    <div class="quest-progress-track">
+                        <div id="daily-quest-fill" class="quest-progress-fill"></div>
+                    </div>
+                    <span id="daily-quest-text" class="quest-progress-text">0/1 bài</span>
+                </div>
+
+                <div class="sidebar-xp-card">
+                    <span class="sidebar-xp-icon"><i class="fa-solid fa-bolt"></i></span>
+                    <div>
+                        <small>Tổng kinh nghiệm</small>
+                        <strong><span class="xp-value">0</span> XP</strong>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ========== MAIN CONTENT ========== -->
+            <main class="main-content">
 
             <!-- Step 1: Prompt Input Section -->
             <section id="prompt-section" class="glass-card section-card">
+                <div class="lesson-hero">
+                    <div class="lesson-mascot" aria-hidden="true">
+                        <span class="mascot-face"><i class="fa-solid fa-brain"></i></span>
+                        <span class="mascot-spark spark-one"></span>
+                        <span class="mascot-spark spark-two"></span>
+                    </div>
+                    <div class="lesson-hero-copy">
+                        <span class="lesson-eyebrow"><i class="fa-solid fa-star"></i> Hành trình hôm nay</span>
+                        <h2>Học một chút, tiến bộ thật nhiều!</h2>
+                        <p>Tạo bài luyện tập riêng từ chủ đề hoặc tài liệu của bạn, làm bài và nhận phản hồi ngay từ AI.</p>
+                    </div>
+                    <div class="lesson-streak-card">
+                        <span class="streak-flame"><i class="fa-solid fa-fire"></i></span>
+                        <div>
+                            <small>Sẵn sàng học</small>
+                            <strong>Bắt đầu thôi!</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="learning-benefits" aria-label="Các tính năng chính">
+                    <div><i class="fa-solid fa-wand-magic-sparkles"></i><span>AI cá nhân hóa</span></div>
+                    <div><i class="fa-solid fa-file-circle-check"></i><span>Học từ tài liệu</span></div>
+                    <div><i class="fa-solid fa-chart-line"></i><span>Chấm điểm tức thì</span></div>
+                </div>
+
                 <div class="section-header space-between">
                     <div class="header-left">
                         <div class="step-badge">Bước 1</div>
-                        <h2>Tạo Hoặc Nhập Bộ Câu Hỏi</h2>
+                        <h2>Chọn thử thách của bạn</h2>
                     </div>
                     <div class="header-excel-actions">
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden">
@@ -183,18 +257,17 @@
                         </button>
                     </div>
                 </div>
-                <p class="section-desc">Nhập yêu cầu để AI tự động tạo trắc nghiệm ABCD, bài đọc hiểu (Reading task),
-                    câu hỏi Toán học, hoặc gửi đính kèm file (Ảnh/PDF/Word) trực tiếp cho AI.</p>
+                <p class="section-desc">Mô tả bài bạn muốn luyện hoặc tải tài liệu lên để AI tạo một chặng học phù hợp.</p>
 
                 <form id="generator-form">
                     <div class="form-group mb-3">
                         <div class="form-label-row">
-                            <label for="prompt-input">Yêu cầu tạo câu hỏi (Prompt)</label>
+                            <label for="prompt-input">Hôm nay bạn muốn học gì?</label>
                             <span class="paste-hint"><i class="fa-regular fa-clipboard"></i> Dán ảnh (Ctrl+V) hoặc kéo thả file vào khung</span>
                         </div>
                         <div class="textarea-wrapper">
                             <textarea id="prompt-input" rows="3"
-                                placeholder="Ví dụ: Dán ảnh đề bài, hoặc dựa vào các file đính kèm để tạo 3 câu trắc nghiệm trình độ B1..."></textarea>
+                                placeholder="Ví dụ: Tạo một bài đọc hiểu tiếng Anh B1 gồm 5 câu trắc nghiệm..."></textarea>
                         </div>
                     </div>
 
@@ -227,7 +300,7 @@
                             </select>
                         </div>
                         <button type="submit" id="btn-generate" class="btn btn-accent">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Tạo Câu Hỏi
+                            <i class="fa-solid fa-play"></i> Bắt Đầu Học
                         </button>
                     </div>
                 </form>
@@ -374,7 +447,20 @@
                 </div>
             </section>
 
-        </main>
+            </main>
+        </div>
+
+        <nav class="mobile-learning-nav" aria-label="Điều hướng di động">
+            <button type="button" class="active" data-learning-action="home">
+                <i class="fa-solid fa-house"></i><span>Học</span>
+            </button>
+            <button type="button" data-learning-action="history">
+                <i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử</span>
+            </button>
+            <button type="button" data-learning-action="settings">
+                <i class="fa-solid fa-key"></i><span>Kết nối</span>
+            </button>
+        </nav>
     </div>
 
     <!-- ========== ANNOTATION FLOATING TOOLBAR ========== -->

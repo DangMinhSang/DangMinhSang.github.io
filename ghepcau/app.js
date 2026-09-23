@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const LS_HISTORY_KEY = 'ghepcau_history_list';
     const LS_THEME_KEY = 'ghepcau_theme';
     const LS_DRAFT_KEY = 'ghepcau_quiz_draft';
+    const LS_XP_KEY = 'ghepcau_learning_xp';
+    const LS_DAILY_QUEST_KEY = 'ghepcau_daily_quest_date';
 
     // Configure PDF.js worker URL
     if (window.pdfjsLib) {
@@ -40,6 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const geminiBadgeStatus = document.getElementById('gemini-badge-status');
     const btnToggleTheme = document.getElementById('btn-toggle-theme');
     const btnRestoreDraft = document.getElementById('btn-restore-draft');
+    const learningActionButtons = document.querySelectorAll('[data-learning-action]');
+    const xpValueElements = document.querySelectorAll('.xp-value');
+    const dailyQuestFill = document.getElementById('daily-quest-fill');
+    const dailyQuestText = document.getElementById('daily-quest-text');
 
     // DOM Elements - History Modal
     const historyModal = document.getElementById('history-modal');
@@ -584,6 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeKeyModal() {
         keyModal.classList.add('hidden');
+        setLearningNavActive('home');
     }
 
     btnToggleKeyModal.addEventListener('click', openKeyModal);
@@ -627,6 +634,69 @@ document.addEventListener('DOMContentLoaded', () => {
     btnToggleTheme.addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
         applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    function getLocalDateKey() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function updateLearningStats() {
+        const totalXp = Math.max(0, Number(localStorage.getItem(LS_XP_KEY)) || 0);
+        xpValueElements.forEach(element => {
+            element.textContent = totalXp.toLocaleString('vi-VN');
+        });
+
+        const questCompleted = localStorage.getItem(LS_DAILY_QUEST_KEY) === getLocalDateKey();
+        dailyQuestFill.style.width = questCompleted ? '100%' : '0%';
+        dailyQuestText.textContent = questCompleted ? '1/1 bài · Hoàn thành!' : '0/1 bài';
+    }
+
+    function awardLearningXp(averageScore, questionCount) {
+        const score = Math.max(0, Math.min(10, Number(averageScore) || 0));
+        const earnedXp = Math.max(10, Math.round(score * Math.max(1, questionCount)));
+        const currentXp = Math.max(0, Number(localStorage.getItem(LS_XP_KEY)) || 0);
+        localStorage.setItem(LS_XP_KEY, String(currentXp + earnedXp));
+        localStorage.setItem(LS_DAILY_QUEST_KEY, getLocalDateKey());
+        updateLearningStats();
+        showToast(`Tuyệt vời! Bạn nhận được ${earnedXp} XP.`, 'success');
+    }
+
+    function setLearningNavActive(action) {
+        learningActionButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.learningAction === action);
+        });
+    }
+
+    function showLearningHome() {
+        if (!quizSection.classList.contains('hidden')) {
+            saveQuizDraft();
+            stopQuizTimer();
+        }
+        quizSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        promptSection.classList.remove('hidden');
+        hideError();
+        setLearningNavActive('home');
+        promptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    learningActionButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const action = button.dataset.learningAction;
+            if (action === 'home') {
+                showLearningHome();
+            } else if (action === 'history') {
+                setLearningNavActive('history');
+                btnOpenHistory.click();
+            } else if (action === 'settings') {
+                setLearningNavActive('settings');
+                openKeyModal();
+            }
+        });
     });
 
     /* ==========================================================================
@@ -979,6 +1049,7 @@ QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
             resetQuizSession();
 
             renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions, currentReadingPassage);
+            setLearningNavActive('home');
 
             // Switch view
             promptSection.classList.add('hidden');
@@ -1419,6 +1490,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
             lastEvaluations = evalResult;
 
             renderResultsUI(evalResult, qaList);
+            awardLearningXp(evalResult.average_score, currentQuestions.length);
             stopQuizTimer();
             clearQuizDraft();
 
@@ -1568,9 +1640,11 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
 
     btnCloseHistoryModal.addEventListener('click', () => {
         historyModal.classList.add('hidden');
+        setLearningNavActive('home');
     });
     btnCloseHistoryFooter.addEventListener('click', () => {
         historyModal.classList.add('hidden');
+        setLearningNavActive('home');
     });
 
     btnClearHistoryAll.addEventListener('click', () => {
@@ -1843,6 +1917,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
                 currentQuestions = importedQuestions;
                 resetQuizSession();
                 renderQuestionsUI(`Bộ Câu Hỏi Nhập Từ Excel (${file.name})`, currentQuestions, currentReadingPassage);
+                setLearningNavActive('home');
 
                 // Switch UI to quiz
                 promptSection.classList.add('hidden');
@@ -1903,12 +1978,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
        9. Navigation & Reset Handlers
        ========================================================================== */
     btnResetQuiz.addEventListener('click', () => {
-        saveQuizDraft();
-        stopQuizTimer();
-        quizSection.classList.add('hidden');
-        resultsSection.classList.add('hidden');
-        promptSection.classList.remove('hidden');
-        hideError();
+        showLearningHome();
     });
 
     btnRetrySame.addEventListener('click', () => {
@@ -1924,10 +1994,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
     btnCreateNew.addEventListener('click', () => {
         stopQuizTimer();
         clearQuizDraft();
-        resultsSection.classList.add('hidden');
-        quizSection.classList.add('hidden');
-        promptSection.classList.remove('hidden');
-        hideError();
+        showLearningHome();
         promptInput.focus();
     });
 
@@ -2241,4 +2308,5 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
     updateKeyStatusUI();
     updateHistoryBadge();
     updateRestoreDraftButton();
+    updateLearningStats();
 });
