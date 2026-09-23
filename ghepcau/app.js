@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const LS_DRAFT_KEY = 'ghepcau_quiz_draft';
     const LS_XP_KEY = 'ghepcau_learning_xp';
     const LS_DAILY_QUEST_KEY = 'ghepcau_daily_quest_date';
+    const LS_COURSE_KEY = 'ghepcau_ai_learning_roadmap';
 
     // Configure PDF.js worker URL
     if (window.pdfjsLib) {
@@ -28,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let quizTimerId = null;
     let isQuizTimerPaused = false;
     let draftSaveTimer = null;
+    let currentCourse = null;
+    let currentLessonId = null;
 
     // DOM Elements - Key Modal
     const keyModal = document.getElementById('key-modal');
@@ -75,12 +78,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const promptSection = document.getElementById('prompt-section');
     const quizSection = document.getElementById('quiz-section');
     const resultsSection = document.getElementById('results-section');
+    const roadmapSection = document.getElementById('roadmap-section');
     const loadingSpinner = document.getElementById('loading-spinner');
     const loadingTitle = document.getElementById('loading-title');
     const loadingSub = document.getElementById('loading-sub');
     const errorBanner = document.getElementById('error-banner');
     const errorTitle = document.getElementById('error-title');
     const errorMsg = document.getElementById('error-msg');
+    const roadmapTitle = document.getElementById('roadmap-title');
+    const roadmapSummary = document.getElementById('roadmap-summary');
+    const roadmapDuration = document.getElementById('roadmap-duration');
+    const roadmapDailyTime = document.getElementById('roadmap-daily-time');
+    const roadmapLevel = document.getElementById('roadmap-level');
+    const roadmapProgressText = document.getElementById('roadmap-progress-text');
+    const roadmapProgressFill = document.getElementById('roadmap-progress-fill');
+    const roadmapProgressTrack = document.querySelector('.roadmap-progress-track');
+    const roadmapChapters = document.getElementById('roadmap-chapters');
+    const btnNewRoadmap = document.getElementById('btn-new-roadmap');
+    const roadmapDailyFill = document.getElementById('roadmap-daily-fill');
+    const roadmapDailyText = document.getElementById('roadmap-daily-text');
     const btnDismissError = document.getElementById('btn-dismiss-error');
 
     // DOM Elements - Reading Passage
@@ -653,6 +669,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const questCompleted = localStorage.getItem(LS_DAILY_QUEST_KEY) === getLocalDateKey();
         dailyQuestFill.style.width = questCompleted ? '100%' : '0%';
         dailyQuestText.textContent = questCompleted ? '1/1 bài · Hoàn thành!' : '0/1 bài';
+        if (roadmapDailyFill) roadmapDailyFill.style.width = questCompleted ? '100%' : '0%';
+        if (roadmapDailyText) roadmapDailyText.textContent = questCompleted ? '1/1 bài · Hoàn thành!' : '0/1 bài';
     }
 
     function awardLearningXp(averageScore, questionCount) {
@@ -663,6 +681,166 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LS_DAILY_QUEST_KEY, getLocalDateKey());
         updateLearningStats();
         showToast(`Tuyệt vời! Bạn nhận được ${earnedXp} XP.`, 'success');
+    }
+
+    function saveCurrentCourse() {
+        if (currentCourse) {
+            localStorage.setItem(LS_COURSE_KEY, JSON.stringify(currentCourse));
+        }
+    }
+
+    function getCourseLessons() {
+        if (!currentCourse?.chapters) return [];
+        return currentCourse.chapters.flatMap(chapter => chapter.lessons || []);
+    }
+
+    function normalizeCourse(course, sourcePrompt) {
+        const normalized = {
+            ...course,
+            source_prompt: sourcePrompt || course.source_prompt || '',
+            completed_lessons: Array.isArray(course.completed_lessons) ? course.completed_lessons : [],
+            chapters: Array.isArray(course.chapters) ? course.chapters : []
+        };
+
+        normalized.chapters = normalized.chapters.map((chapter, chapterIndex) => ({
+            ...chapter,
+            id: chapter.id || `chapter-${chapterIndex + 1}`,
+            lessons: (chapter.lessons || []).map((lesson, lessonIndex) => ({
+                ...lesson,
+                id: lesson.id || `chapter-${chapterIndex + 1}-lesson-${lessonIndex + 1}`,
+                day: lesson.day || lessonIndex + 1,
+                duration_minutes: lesson.duration_minutes || normalized.daily_minutes || 30
+            }))
+        }));
+
+        return normalized;
+    }
+
+    function renderRoadmap() {
+        if (!currentCourse) return;
+
+        const lessons = getCourseLessons();
+        const completed = new Set(currentCourse.completed_lessons || []);
+        const completedCount = lessons.filter(lesson => completed.has(lesson.id)).length;
+        const progress = lessons.length ? Math.round((completedCount / lessons.length) * 100) : 0;
+
+        roadmapTitle.textContent = currentCourse.title || 'Lộ trình học cá nhân';
+        roadmapSummary.textContent = currentCourse.summary || 'Lộ trình được AI thiết kế theo mục tiêu của bạn.';
+        roadmapDuration.textContent = currentCourse.duration_label || `${currentCourse.total_days || lessons.length} ngày`;
+        roadmapDailyTime.textContent = `${currentCourse.daily_minutes || 30} phút/ngày`;
+        roadmapLevel.textContent = currentCourse.level || 'Cá nhân hóa';
+        roadmapProgressText.textContent = `${completedCount}/${lessons.length} bài`;
+        roadmapProgressFill.style.width = `${progress}%`;
+        roadmapProgressTrack?.setAttribute('aria-valuenow', String(progress));
+
+        let globalLessonIndex = 0;
+        roadmapChapters.innerHTML = currentCourse.chapters.map((chapter, chapterIndex) => {
+            const chapterLessons = chapter.lessons || [];
+            const chapterCompleted = chapterLessons.filter(lesson => completed.has(lesson.id)).length;
+            const lessonHtml = chapterLessons.map((lesson, lessonIndex) => {
+                const lessonNumber = ++globalLessonIndex;
+                const isCompleted = completed.has(lesson.id);
+                const previousLesson = lessons[lessonNumber - 2];
+                const isLocked = lessonNumber > 1 && previousLesson && !completed.has(previousLesson.id);
+                const stateClass = isCompleted ? 'completed' : isLocked ? 'locked' : 'available';
+                const icon = isCompleted ? 'fa-check' : isLocked ? 'fa-lock' : 'fa-play';
+                const status = isCompleted ? 'Học lại' : isLocked ? 'Hoàn thành bài trước' : 'Bắt đầu bài học';
+
+                return `
+                    <button type="button" class="roadmap-lesson ${stateClass}" data-lesson-id="${escapeHtml(lesson.id)}" ${isLocked ? 'disabled' : ''}>
+                        <span class="lesson-node"><i class="fa-solid ${icon}"></i></span>
+                        <span class="lesson-content">
+                            <small>Ngày ${escapeHtml(lesson.day)} · ${escapeHtml(lesson.duration_minutes)} phút</small>
+                            <strong>Bài ${lessonIndex + 1}: ${escapeHtml(lesson.title)}</strong>
+                            <span>${escapeHtml(lesson.objective || lesson.description || '')}</span>
+                            <em>${status} <i class="fa-solid fa-arrow-right"></i></em>
+                        </span>
+                    </button>`;
+            }).join('');
+
+            return `
+                <article class="roadmap-chapter">
+                    <div class="chapter-heading">
+                        <span class="chapter-number">${chapterIndex + 1}</span>
+                        <div>
+                            <small>Chương ${chapterIndex + 1} · ${chapterCompleted}/${chapterLessons.length} bài</small>
+                            <h3>${escapeHtml(chapter.title || `Chương ${chapterIndex + 1}`)}</h3>
+                            <p>${escapeHtml(chapter.description || '')}</p>
+                        </div>
+                    </div>
+                    <div class="chapter-lessons">${lessonHtml}</div>
+                </article>`;
+        }).join('');
+
+        roadmapChapters.querySelectorAll('.roadmap-lesson:not(:disabled)').forEach(button => {
+            button.addEventListener('click', () => openRoadmapLesson(button.dataset.lessonId));
+        });
+    }
+
+    function showRoadmap() {
+        if (!currentCourse) {
+            promptSection.classList.remove('hidden');
+            roadmapSection.classList.add('hidden');
+            return;
+        }
+        promptSection.classList.add('hidden');
+        quizSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        roadmapSection.classList.remove('hidden');
+        renderRoadmap();
+        roadmapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function openRoadmapLesson(lessonId) {
+        const lesson = getCourseLessons().find(item => item.id === lessonId);
+        if (!lesson) return;
+
+        const selectedModel = modelSelect.value;
+        if (!selectedModel) {
+            openKeyModal();
+            showError('Thiếu API Key', 'Vui lòng kết nối Gemini để AI soạn nội dung cho bài học này.');
+            return;
+        }
+
+        const chapter = currentCourse.chapters.find(item => (item.lessons || []).some(child => child.id === lessonId));
+        const systemPrompt = `Bạn là gia sư AI. Hãy soạn một bài học ngắn, rõ ràng bằng tiếng Việt dựa trên lộ trình đã có.
+- Trường reading_passage phải chứa phần kiến thức cốt lõi, ví dụ minh họa và các bước thực hành của bài học.
+- Tạo 5-8 câu hỏi để kiểm tra đúng mục tiêu bài học; ưu tiên trắc nghiệm, có thể xen câu tự luận.
+- Không mở rộng sang bài sau. Với công thức, dùng LaTeX trong $...$ hoặc $$...$$.
+- Chỉ trả về JSON đúng schema được yêu cầu.`;
+        const lessonPrompt = `Mục tiêu khóa học: ${currentCourse.source_prompt}\nTên khóa: ${currentCourse.title}\nChương: ${chapter?.title || ''}\nBài học: ${lesson.title}\nMục tiêu bài: ${lesson.objective || lesson.description || ''}\nThời lượng: ${lesson.duration_minutes || currentCourse.daily_minutes || 30} phút.`;
+
+        try {
+            hideError();
+            showLoading('AI Đang Soạn Bài Học...', `Đang chuẩn bị “${lesson.title}” với ${selectedModel}...`);
+            const rawResponse = await callLLMAPI(systemPrompt, lessonPrompt, selectedModel, questionGenerationSchema);
+            const parsedData = parseAIJsonResponse(rawResponse);
+            if (!parsedData.questions?.length) throw new Error('AI chưa tạo được nội dung bài học hợp lệ.');
+
+            currentLessonId = lessonId;
+            currentQuestions = parsedData.questions;
+            currentReadingPassage = parsedData.reading_passage || '';
+            userAnswers = {};
+            resetQuizSession();
+            renderQuestionsUI(parsedData.topic || lesson.title, currentQuestions, currentReadingPassage);
+            roadmapSection.classList.add('hidden');
+            promptSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            quizSection.classList.remove('hidden');
+            window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
+        } catch (err) {
+            showError('Không thể mở bài học', err.message);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function completeCurrentLesson() {
+        if (!currentCourse || !currentLessonId) return;
+        if (!currentCourse.completed_lessons.includes(currentLessonId)) {
+            currentCourse.completed_lessons.push(currentLessonId);
+            saveCurrentCourse();
+        }
     }
 
     function setLearningNavActive(action) {
@@ -678,11 +856,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         quizSection.classList.add('hidden');
         resultsSection.classList.add('hidden');
-        promptSection.classList.remove('hidden');
+        if (currentCourse) showRoadmap();
+        else promptSection.classList.remove('hidden');
         hideError();
         setLearningNavActive('home');
-        promptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!currentCourse) promptSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    btnNewRoadmap.addEventListener('click', () => {
+        if (!window.confirm('Tạo lộ trình mới? Tiến độ lộ trình hiện tại sẽ được thay thế.')) return;
+        currentCourse = null;
+        currentLessonId = null;
+        localStorage.removeItem(LS_COURSE_KEY);
+        roadmapSection.classList.add('hidden');
+        promptSection.classList.remove('hidden');
+        promptInput.focus();
+    });
 
     learningActionButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -956,6 +1145,45 @@ document.addEventListener('DOMContentLoaded', () => {
         required: ["topic", "questions"]
     };
 
+    const roadmapGenerationSchema = {
+        type: "OBJECT",
+        properties: {
+            title: { type: "STRING" },
+            summary: { type: "STRING" },
+            level: { type: "STRING" },
+            duration_label: { type: "STRING" },
+            total_days: { type: "INTEGER" },
+            daily_minutes: { type: "INTEGER" },
+            chapters: {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        id: { type: "STRING" },
+                        title: { type: "STRING" },
+                        description: { type: "STRING" },
+                        lessons: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    id: { type: "STRING" },
+                                    day: { type: "INTEGER" },
+                                    title: { type: "STRING" },
+                                    objective: { type: "STRING" },
+                                    duration_minutes: { type: "INTEGER" }
+                                },
+                                required: ["id", "day", "title", "objective", "duration_minutes"]
+                            }
+                        }
+                    },
+                    required: ["id", "title", "description", "lessons"]
+                }
+            }
+        },
+        required: ["title", "summary", "level", "duration_label", "total_days", "daily_minutes", "chapters"]
+    };
+
     generatorForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         hideError();
@@ -1002,64 +1230,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const systemPrompt = `Bạn là một chuyên gia giáo dục xuất sắc. Nhiệm vụ của bạn là dựa theo yêu cầu người dùng và file đính kèm (ảnh, PDF, tài liệu...) để tạo bộ câu hỏi phù hợp.
+        const systemPrompt = `Bạn là chuyên gia thiết kế chương trình học dài hạn. Hãy biến một mục tiêu duy nhất của người dùng thành lộ trình học có thể kéo dài từ vài ngày đến vài tháng.
 
-QUY TẮC CÔNG THỨC TOÁN HỌC (LaTeX):
-- Nếu bài tập liên quan đến Toán học, Vật lý, Hóa học: Hãy sử dụng cú pháp LaTeX trong cặp dấu $...$ (inline) hoặc $$...$$ (display) cho mọi công thức, căn thức, tích phân, phân số... Ví dụ: $\\sqrt{x^2+1}$, $\\int_0^1 f(x)dx$, $\\frac{a}{b}$.
-
-QUY TẮC BÀI ĐỌC HỂU (READING PASSAGE):
-- Hãy TỰ ĐỘNG PHÂN TÍCH xem prompt hoặc file đính kèm có chứa bài đọc/đoạn văn tham chiếu (ví dụ: task reading B1, bài đọc hiểu, văn bản dịch thuật, bài tập đọc phân tích...) hay không.
-- Nếu CẦN BÀI ĐỌC hoặc có tệp bài đọc: Hãy điền nội dung bài đọc vào trường "reading_passage".
-- Nếu KHÔNG CẦN BÀI ĐỌC: Đặt "reading_passage" là rỗng "".
-
-Định dạng trả về BẮT BUỘC tuân thủ cấu trúc JSON:
-{
-  "topic": "Tên chủ đề bài làm",
-  "reading_passage": "Nội dung bài đọc (nếu có, hoặc rỗng nếu không cần)",
-  "questions": [
-    {
-      "id": 1,
-      "type": "multiple_choice",
-      "question": "Nội dung câu hỏi...",
-      "options": {
-        "A": "Phương án A",
-        "B": "Phương án B",
-        "C": "Phương án C",
-        "D": "Phương án D"
-      },
-      "hint": "Gợi ý (nếu có)"
-    }
-  ]
-}`;
+YÊU CẦU:
+- Suy luận trình độ, thời lượng và mục tiêu từ yêu cầu. Nếu người dùng không nói rõ, chọn kế hoạch thực tế: 30 phút/ngày trong 30 ngày.
+- Chia lộ trình thành 3-8 chương theo thứ tự từ nền tảng đến ứng dụng.
+- Mỗi chương có các bài nhỏ; mỗi bài học trong một buổi và có mục tiêu cụ thể.
+- Với lộ trình dài, không cần tạo một bài cho mọi ngày: có thể thiết kế 3-5 buổi/tuần và dùng trường day để thể hiện ngày dự kiến.
+- Tổng số bài nên từ 8 đến 40, đủ chi tiết để người dùng nhìn thấy một hành trình dài nhưng không quá tải.
+- ID phải duy nhất, ngắn gọn, chỉ dùng chữ thường, số và dấu gạch ngang.
+- Chỉ trả về JSON đúng schema, không thêm markdown hay giải thích bên ngoài.`;
 
         try {
-            showLoading('AI Đang Tạo Bộ Câu Hỏi...', `Đang truyền dữ liệu file và xử lý prompt với ${selectedModel}...`);
+            showLoading('AI Đang Thiết Kế Lộ Trình...', `Đang phân tích mục tiêu và chia chương, bài với ${selectedModel}...`);
             btnGenerate.disabled = true;
 
-            const rawResponse = await callLLMAPI(systemPrompt, finalUserPrompt, selectedModel, questionGenerationSchema, filesData);
+            const rawResponse = await callLLMAPI(systemPrompt, finalUserPrompt, selectedModel, roadmapGenerationSchema, filesData);
             const parsedData = parseAIJsonResponse(rawResponse);
 
-            if (!parsedData.questions || !Array.isArray(parsedData.questions) || parsedData.questions.length === 0) {
-                throw new Error('AI không tạo được danh sách câu hỏi hợp lệ. Vui lòng thử lại với prompt rõ ràng hơn.');
+            if (!parsedData.chapters || !Array.isArray(parsedData.chapters) || parsedData.chapters.length === 0) {
+                throw new Error('AI chưa tạo được lộ trình hợp lệ. Vui lòng mô tả mục tiêu rõ hơn.');
             }
 
-            currentQuestions = parsedData.questions;
-            currentReadingPassage = parsedData.reading_passage || '';
-            userAnswers = {};
-            resetQuizSession();
-
-            renderQuestionsUI(parsedData.topic || 'Bộ Câu Hỏi AI', currentQuestions, currentReadingPassage);
+            currentCourse = normalizeCourse(parsedData, promptText);
+            currentLessonId = null;
+            saveCurrentCourse();
             setLearningNavActive('home');
-
-            // Switch view
             promptSection.classList.add('hidden');
-            quizSection.classList.remove('hidden');
+            roadmapSection.classList.remove('hidden');
+            quizSection.classList.add('hidden');
             resultsSection.classList.add('hidden');
-
-            window.scrollTo({ top: quizSection.offsetTop - 30, behavior: 'smooth' });
+            renderRoadmap();
+            window.scrollTo({ top: roadmapSection.offsetTop - 20, behavior: 'smooth' });
 
         } catch (err) {
-            showError('Lỗi Tạo Câu Hỏi', err.message);
+            showError('Lỗi Tạo Lộ Trình', err.message);
         } finally {
             hideLoading();
             btnGenerate.disabled = false;
@@ -1491,6 +1696,7 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
 
             renderResultsUI(evalResult, qaList);
             awardLearningXp(evalResult.average_score, currentQuestions.length);
+            completeCurrentLesson();
             stopQuizTimer();
             clearQuizDraft();
 
@@ -1995,7 +2201,6 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
         stopQuizTimer();
         clearQuizDraft();
         showLearningHome();
-        promptInput.focus();
     });
 
     // Helper: HTML Escape
@@ -2309,4 +2514,13 @@ Hãy chấm điểm các câu trả lời trắc nghiệm ABCD và tự luận s
     updateHistoryBadge();
     updateRestoreDraftButton();
     updateLearningStats();
+    try {
+        const savedCourse = JSON.parse(localStorage.getItem(LS_COURSE_KEY) || 'null');
+        if (savedCourse?.chapters?.length) {
+            currentCourse = normalizeCourse(savedCourse, savedCourse.source_prompt);
+            showRoadmap();
+        }
+    } catch (error) {
+        localStorage.removeItem(LS_COURSE_KEY);
+    }
 });
