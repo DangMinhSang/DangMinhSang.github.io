@@ -703,16 +703,27 @@ document.addEventListener('DOMContentLoaded', () => {
             chapters: Array.isArray(course.chapters) ? course.chapters : []
         };
 
-        normalized.chapters = normalized.chapters.map((chapter, chapterIndex) => ({
-            ...chapter,
-            id: chapter.id || `chapter-${chapterIndex + 1}`,
-            lessons: (chapter.lessons || []).map((lesson, lessonIndex) => ({
+        normalized.chapters = normalized.chapters.map((chapter, chapterIndex) => {
+            const fallbackLessons = [
+                { title: 'Kiến thức nền tảng', objective: `Hiểu các khái niệm cốt lõi của ${chapter.title || `chương ${chapterIndex + 1}`}` },
+                { title: 'Thực hành có hướng dẫn', objective: `Áp dụng kiến thức trong ${chapter.title || `chương ${chapterIndex + 1}`}` },
+                { title: 'Ôn tập và kiểm tra', objective: `Củng cố nội dung của ${chapter.title || `chương ${chapterIndex + 1}`}` }
+            ];
+            const sourceLessons = Array.isArray(chapter.lessons) && chapter.lessons.length
+                ? chapter.lessons
+                : fallbackLessons;
+
+            return {
+                ...chapter,
+                id: chapter.id || `chapter-${chapterIndex + 1}`,
+                lessons: sourceLessons.map((lesson, lessonIndex) => ({
                 ...lesson,
                 id: lesson.id || `chapter-${chapterIndex + 1}-lesson-${lessonIndex + 1}`,
-                day: lesson.day || lessonIndex + 1,
+                day: lesson.day || (chapterIndex * sourceLessons.length) + lessonIndex + 1,
                 duration_minutes: lesson.duration_minutes || normalized.daily_minutes || 30
-            }))
-        }));
+                }))
+            };
+        });
 
         return normalized;
     }
@@ -742,10 +753,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lessonNumber = ++globalLessonIndex;
                 const isCompleted = completed.has(lesson.id);
                 const previousLesson = lessons[lessonNumber - 2];
-                const isLocked = lessonNumber > 1 && previousLesson && !completed.has(previousLesson.id);
-                const stateClass = isCompleted ? 'completed' : isLocked ? 'locked' : 'available';
-                const icon = isCompleted ? 'fa-check' : isLocked ? 'fa-lock' : 'fa-play';
-                const status = isCompleted ? 'Học lại' : isLocked ? 'Hoàn thành bài trước' : 'Bắt đầu bài học';
+                const isNextLesson = !isCompleted && (!previousLesson || completed.has(previousLesson.id));
+                const stateClass = isCompleted ? 'completed' : isNextLesson ? 'available' : 'upcoming';
+                const icon = isCompleted ? 'fa-check' : isNextLesson ? 'fa-play' : 'fa-book-open';
+                const status = isCompleted ? 'Học lại bài này' : isNextLesson ? 'Bắt đầu bài học' : 'Mở bài học';
+                const isLocked = false;
 
                 return `
                     <button type="button" class="roadmap-lesson ${stateClass}" data-lesson-id="${escapeHtml(lesson.id)}" ${isLocked ? 'disabled' : ''}>

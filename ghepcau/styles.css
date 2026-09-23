@@ -2373,28 +2373,29 @@ body {
 .lesson-eyebrow i { color: var(--warning); }
 
 .lesson-hero-copy h2 {
-    max-width: 620px;
+    max-width: none;
     color: #fff;
-    font-size: clamp(1.65rem, 3vw, 2.35rem);
+    font-size: clamp(1.45rem, 2.3vw, 1.9rem);
     font-weight: 900;
     line-height: 1.08;
     letter-spacing: -0.035em;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
 }
 
 .lesson-hero-copy { min-width: 0; }
 
 .lesson-hero-copy p {
-    max-width: 660px;
+    max-width: none;
     margin-top: 11px;
     color: rgba(255,255,255,0.9);
-    font-size: 0.91rem;
+    font-size: 0.78rem;
     font-weight: 700;
     line-height: 1.55;
+    white-space: nowrap;
 }
 
 .lesson-streak-card {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 10px;
     min-width: 164px;
@@ -2949,6 +2950,7 @@ select,
 
 .chapter-lessons {
     position: relative;
+    counter-reset: roadmap-lesson;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2972,9 +2974,10 @@ select,
 
 .roadmap-lesson {
     position: relative;
+    counter-increment: roadmap-lesson;
     z-index: 2;
     width: 82px;
-    height: 75px;
+    height: 102px;
     display: block;
     padding: 0;
     color: #fff;
@@ -2982,6 +2985,23 @@ select,
     border: 0;
     font: inherit;
     cursor: pointer;
+}
+
+.roadmap-lesson::after {
+    content: 'Bài ' counter(roadmap-lesson);
+    display: block;
+    width: max-content;
+    min-width: 58px;
+    margin: 10px auto 0;
+    padding: 3px 9px;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 9px;
+    box-shadow: 0 2px 0 var(--border-color);
+    font-size: 0.68rem;
+    font-weight: 900;
+    line-height: 1.15;
 }
 
 .roadmap-lesson:nth-child(6n + 2),
@@ -3014,6 +3034,23 @@ select,
     background: var(--sky);
     border-color: #79d7ff;
     box-shadow: 0 8px 0 var(--sky-dark);
+}
+
+.roadmap-lesson.upcoming .lesson-node {
+    color: #8d8d8d;
+    background: #e5e5e5;
+    border-color: #f2f2f2;
+    box-shadow: 0 8px 0 #c8c8c8;
+}
+
+.roadmap-lesson.available::after {
+    color: var(--primary-dark);
+    border-color: rgba(88,204,2,0.42);
+}
+
+.roadmap-lesson.completed::after {
+    color: var(--sky-dark);
+    border-color: rgba(28,176,246,0.38);
 }
 
 .roadmap-lesson:not(:disabled):hover .lesson-node { transform: translateY(-3px); filter: brightness(1.04); }
@@ -3199,6 +3236,8 @@ select,
     }
 
     .lesson-hero-copy h2 { font-size: 1.35rem; }
+    .lesson-hero-copy h2,
+    .lesson-hero-copy p { white-space: normal; }
     .lesson-hero-copy p { font-size: 0.77rem; }
     .learning-benefits { grid-template-columns: 1fr; padding: 14px 18px 0; }
     .learning-benefits > div { justify-content: flex-start; }
