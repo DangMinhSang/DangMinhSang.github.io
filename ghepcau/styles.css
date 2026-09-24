@@ -1060,21 +1060,51 @@ body {
 }
 
 .quiz-columns-layout.lesson-only {
+    flex: 1;
     display: block;
+    min-height: 0;
+    height: 100%;
     max-width: 1040px;
     width: calc(100% - 48px);
     margin: 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .quiz-columns-layout.lesson-only .passage-column {
+    height: auto;
+    min-height: 0;
     border-right: 0;
     overflow: visible;
 }
 
 .quiz-columns-layout.lesson-only .questions-column {
+    height: auto;
+    min-height: 0;
     padding-top: 0;
     border-left: 0;
     background: transparent;
+    overflow: visible;
+}
+
+.quiz-columns-layout.lesson-only::-webkit-scrollbar {
+    width: 8px;
+}
+
+.quiz-columns-layout.lesson-only::-webkit-scrollbar-track {
+    background: var(--bg-sidebar);
+}
+
+.quiz-columns-layout.lesson-only::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border: 2px solid var(--bg-sidebar);
+    border-radius: 999px;
+}
+
+.quiz-columns-layout.lesson-only::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
 }
 
 .passage-content .lesson-step {
