@@ -1720,6 +1720,62 @@ YÊU CẦU:
             .replace(/\*([^*]+)\*/g, '<em>$1</em>');
     }
 
+    let prismLoaderPromise = null;
+
+    function normalizeCodeLanguage(language) {
+        const normalized = String(language || '').trim().toLowerCase();
+        const aliases = {
+            py: 'python', js: 'javascript', ts: 'typescript', sh: 'bash', shell: 'bash',
+            'c++': 'cpp', cc: 'cpp', cxx: 'cpp', 'c#': 'csharp', cs: 'csharp',
+            'f#': 'fsharp', fs: 'fsharp', html: 'markup', xml: 'markup', svg: 'markup',
+            yml: 'yaml', md: 'markdown', rb: 'ruby', rs: 'rust', golang: 'go',
+            ps1: 'powershell', dockerfile: 'docker', 'objective-c': 'objectivec',
+            plaintext: 'plain', text: 'plain', txt: 'plain'
+        };
+        const canonical = aliases[normalized] || normalized;
+        return canonical.replace(/[^a-z0-9-]/g, '') || 'plain';
+    }
+
+    function loadExternalScript(source) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = source;
+            script.async = true;
+            script.addEventListener('load', resolve, { once: true });
+            script.addEventListener('error', reject, { once: true });
+            document.head.appendChild(script);
+        });
+    }
+
+    function ensurePrismSyntaxHighlighter() {
+        if (window.Prism?.plugins?.autoloader) return Promise.resolve(window.Prism);
+        if (prismLoaderPromise) return prismLoaderPromise;
+
+        window.Prism = window.Prism || {};
+        window.Prism.manual = true;
+        const prismBaseUrl = 'https://cdn.jsdelivr.net/npm/prismjs@1.30.0';
+        prismLoaderPromise = loadExternalScript(`${prismBaseUrl}/prism.min.js`)
+            .then(() => loadExternalScript(`${prismBaseUrl}/plugins/autoloader/prism-autoloader.min.js`))
+            .then(() => {
+                if (window.Prism?.plugins?.autoloader) {
+                    window.Prism.plugins.autoloader.languages_path = `${prismBaseUrl}/components/`;
+                }
+                return window.Prism;
+            })
+            .catch(error => {
+                console.warn('Không thể tải bộ tô màu code:', error);
+                return null;
+            });
+        return prismLoaderPromise;
+    }
+
+    function highlightLessonCode(container) {
+        if (!container?.querySelector('.code-block code[class]')) return;
+        void ensurePrismSyntaxHighlighter().then(prism => {
+            if (prism?.highlightAllUnder && container.isConnected) prism.highlightAllUnder(container);
+        });
+    }
+
     function renderLessonMarkdown(markdown) {
         const lines = String(markdown || '').replace(/\r\n?/g, '\n').split('\n');
         const html = [];
@@ -1735,8 +1791,9 @@ YÊU CẦU:
 
         const closeCodeBlock = () => {
             if (!codeLines) return;
+            const normalizedLanguage = normalizeCodeLanguage(codeLanguage);
             const languageLabel = codeLanguage ? codeLanguage.toUpperCase() : 'CODE';
-            const languageClass = codeLanguage ? ` class="language-${escapeHtml(codeLanguage)}"` : '';
+            const languageClass = ` class="language-${normalizedLanguage}"`;
             html.push(`<div class="code-block"><div class="code-block-header"><span>${escapeHtml(languageLabel)}</span></div><pre><code${languageClass}>${escapeHtml(codeLines.join('\n'))}</code></pre></div>`);
             codeLanguage = '';
             codeLines = null;
@@ -1840,6 +1897,7 @@ YÊU CẦU:
 
         if (readingPassage && readingPassage.trim() !== '') {
             readingPassageContent.innerHTML = renderLessonMarkdown(readingPassage);
+            highlightLessonCode(readingPassageContent);
             readingPassageContainer.classList.remove('hidden');
             if (passageColumn) passageColumn.classList.remove('hidden');
             if (quizColumnsLayout) quizColumnsLayout.classList.remove('no-passage');
