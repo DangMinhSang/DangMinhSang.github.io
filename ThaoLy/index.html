@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Thư Tình</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Great+Vibes&display=swap">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root {
+  --bg: #1a0a0e;
+  --bg2: #2a1018;
+  --fg: #f0e0d6;
+  --fg-dim: #c0a898;
+  --accent: #e85d6f;
+  --accent-glow: rgba(232, 93, 111, 0.4);
+  --accent-soft: #f4a0aa;
+  --gold: #d4a862;
+  --gold-dim: rgba(212, 168, 98, 0.3);
+  --paper: #faf5ef;
+  --paper-fg: #3d2b1f;
+  --paper-line: rgba(61, 43, 31, 0.06);
+  --paper-accent: #b8444e;
+  --rose: #c24058;
+  --rose-petal: #e8809a;
+  --warm: #f5d0b0;
+
+  --font-script: 'Great Vibes', cursive;
+  --font-display: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'Crimson Pro', 'Georgia', serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}
+
+/* ── CANVAS ── */
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ── AMBIENT BACKGROUND ── */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ambient::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 600px 400px at 25% 30%, rgba(200, 64, 88, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 75% 65%, rgba(212, 168, 98, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 800px 600px at 50% 50%, rgba(232, 93, 111, 0.05) 0%, transparent 70%);
+  animation: ambientDrift 20s ease-in-out infinite alternate;
+}
+
+.ambient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg) 75%);
+}
+
+@keyframes ambientDrift {
+  from { transform: translate(-2%, -1%) scale(1); }
+  to   { transform: translate(2%, 1%) scale(1.05); }
+}
+
+/* ── OPENING SCREEN ── */
+.opening {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.opening.hide {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+/* Envelope SVG */
+.envelope-svg {
+  width: min(360px, 80vw);
+  filter: drop-shadow(0 20px 60px rgba(232, 93, 111, 0.25));
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s;
+}
+
+.opening:hover .envelope-svg,
+.opening:focus .envelope-svg {
+  transform: scale(1.04) translateY(-4px);
+  filter: drop-shadow(0 28px 70px rgba(232, 93, 111, 0.35));
+}
+
+.envelope-flap {
+  transform-origin: center top;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.opening.opening-anim .envelope-flap {
+  transform: rotateX(180deg);
+}
+
+/* Wax seal glow */
+.seal-glow {
+  animation: sealGlow 3s ease-in-out infinite;
+}
+
+@keyframes sealGlow {
+  0%, 100% { opacity: 0.3; r: 18; }
+  50%      { opacity: 0.6; r: 22; }
+}
+
+/* Prompt */
+.open-prompt {
+  margin-top: 40px;
+  font-family: var(--font-script);
+  font-size: clamp(22px, 4vw, 30px);
+  color: var(--accent-soft);
+  letter-spacing: 0.5px;
+  opacity: 0;
+  animation: promptIn 1s 0.6s ease forwards;
+}
+
+@keyframes promptIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 0.8; transform: translateY(0); }
+}
+
+.open-prompt span {
+  display: inline-block;
+  animation: promptFloat 3s 1.2s ease-in-out infinite;
+}
+
+@keyframes promptFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* ── LETTER SCREEN ── */
+.letter-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s 0.3s ease;
+  padding: 20px;
+}
+
+.letter-screen.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The paper */
+.paper {
+  width: min(580px, 100%);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  background: var(--paper);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.08),
+    0 12px 48px rgba(0,0,0,0.2),
+    0 40px 80px rgba(0,0,0,0.15),
+    inset 0 0 80px rgba(61, 43, 31, 0.03);
+  transform: translateY(40px) scale(0.95);
+  transition: transform 1s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.letter-screen.show .paper {
+  transform: translateY(0) scale(1);
+}
+
+.paper-scroll {
+  overflow-y: auto;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  padding: 52px 44px 60px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-soft) transparent;
+}
+
+.paper-scroll::-webkit-scrollbar { width: 5px; }
+.paper-scroll::-webkit-scrollbar-track { background: transparent; }
+.paper-scroll::-webkit-scrollbar-thumb { background: rgba(184, 68, 78, 0.2); border-radius: 9px; }
+
+/* Lines on paper */
+.paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 33px,
+    var(--paper-line) 33px,
+    var(--paper-line) 34px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Left red margin line */
+.paper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 36px;
+  width: 1px;
+  background: rgba(184, 68, 78, 0.12);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Decorative frame */
+.paper-frame {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(212, 168, 98, 0.2);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.paper-frame::before,
+.paper-frame::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: rgba(212, 168, 98, 0.35);
+  border-style: solid;
+}
+
+.paper-frame::before {
+  top: -1px; left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.paper-frame::after {
+  bottom: -1px; right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Corner roses — inline SVG as background */
+.corner-rose {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.corner-rose.tl { top: 14px; left: 14px; }
+.corner-rose.br { bottom: 14px; right: 14px; transform: rotate(180deg); }
+
+/* ── LETTER CONTENT ── */
+.letter-content {
+  position: relative;
+  z-index: 2;
+}
+
+.letter-date {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(61, 43, 31, 0.4);
+  text-align: right;
+  margin-bottom: 28px;
+  letter-spacing: 0.3px;
+}
+
+.letter-to {
+  font-family: var(--font-script);
+  font-size: clamp(38px, 8vw, 56px);
+  color: var(--paper-accent);
+  text-align: center;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.letter-to.reveal {
+  animation: revealUp 1s ease forwards;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px auto 32px;
+  width: 200px;
+  opacity: 0;
+}
+
+.divider.reveal {
+  animation: revealUp 0.8s 0.2s ease forwards;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+.divider-heart {
+  color: var(--paper-accent);
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+/* Paragraphs */
+.para {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(16px, 2.8vw, 18.5px);
+  line-height: 1.9;
+  color: var(--paper-fg);
+  margin-bottom: 20px;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.para.reveal {
+  animation: revealUp 0.8s ease forwards;
+}
+
+.para em {
+  font-style: italic;
+  color: var(--paper-accent);
+}
+
+.para:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Signature */
+.signature {
+  text-align: right;
+  margin-top: 40px;
+  padding-right: 8px;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.signature.reveal {
+  animation: revealUp 1s ease forwards;
+}
+
+.signature-text {
+  font-family: var(--font-script);
+  font-size: clamp(28px, 5vw, 38px);
+  color: var(--paper-accent);
+  line-height: 1.3;
+}
+
+.signature-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(61, 43, 31, 0.5);
+  margin-top: 4px;
+}
+
+/* Final heart */
+.ending-heart {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 32px;
+  opacity: 0;
+  transform: scale(0);
+}
+
+.ending-heart.reveal {
+  animation: heartBurst 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Album link */
+.album-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 36px;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.album-link.reveal {
+  animation: revealUp 0.8s ease forwards;
+}
+
+.album-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border: 1px solid rgba(184, 68, 78, 0.3);
+  border-radius: 40px;
+  background: linear-gradient(135deg, rgba(184, 68, 78, 0.08), rgba(212, 168, 98, 0.06));
+  color: var(--paper-accent);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.album-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 40px;
+  background: linear-gradient(135deg, rgba(184, 68, 78, 0.15), rgba(212, 168, 98, 0.1));
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.album-btn:hover::before {
+  opacity: 1;
+}
+
+.album-btn:hover {
+  border-color: rgba(184, 68, 78, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(184, 68, 78, 0.12);
+}
+
+.album-btn-icon {
+  font-size: 18px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.album-btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes revealUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heartBurst {
+  0%   { opacity: 0; transform: scale(0) rotate(-10deg); }
+  60%  { opacity: 1; transform: scale(1.25) rotate(5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── MUSIC BUTTON ── */
+.music-btn {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 200;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(232, 93, 111, 0.3);
+  background: rgba(26, 10, 14, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: transform 0.25s, border-color 0.25s;
+  color: var(--fg-dim);
+}
+
+.music-btn:hover {
+  transform: scale(1.1);
+  border-color: var(--accent);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .paper-scroll {
+    padding: 40px 28px 48px;
+  }
+
+  .paper::after {
+    left: 24px;
+  }
+
+  .corner-rose { width: 40px; height: 40px; }
+  .paper-frame { inset: 6px; }
+  .paper-frame::before,
+  .paper-frame::after { width: 16px; height: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .para, .letter-to, .divider, .signature, .ending-heart {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<canvas id="c"></canvas>
+
+<!-- ═══ OPENING: ENVELOPE ═══ -->
+<div class="opening" id="opening" role="button" tabindex="0" aria-label="Nhấn để mở thư">
+  <svg class="envelope-svg" viewBox="0 0 400 300" fill="none">
+    <!-- envelope body -->
+    <rect x="40" y="100" width="320" height="180" rx="6" fill="#c24058" />
+    <rect x="40" y="100" width="320" height="180" rx="6" fill="url(#envGrad)" />
+    <!-- inner lining -->
+    <rect x="48" y="108" width="304" height="164" rx="3" fill="#f5e6d0" opacity="0.15"/>
+    <!-- paper peeking out -->
+    <rect x="80" y="115" width="240" height="140" rx="2" fill="#faf5ef" opacity="0.6"/>
+    <line x1="100" y1="145" x2="280" y2="145" stroke="#3d2b1f" stroke-opacity="0.08" stroke-width="1"/>
+    <line x1="100" y1="165" x2="260" y2="165" stroke="#3d2b1f" stroke-opacity="0.06" stroke-width="1"/>
+    <line x1="100" y1="185" x2="240" y2="185" stroke="#3d2b1f" stroke-opacity="0.05" stroke-width="1"/>
+    <!-- flap -->
+    <g class="envelope-flap">
+      <path d="M40 100 L200 30 L360 100 Z" fill="#a83648"/>
+      <path d="M40 100 L200 30 L360 100 Z" fill="url(#flapGrad)"/>
+    </g>
+    <!-- bottom fold lines -->
+    <path d="M40 280 L200 200 L360 280" stroke="#000" stroke-opacity="0.06" stroke-width="1" fill="none"/>
+    <!-- wax seal -->
+    <circle cx="200" cy="100" r="22" fill="#8b2030"/>
+    <circle cx="200" cy="100" r="19" fill="#a83040"/>
+    <circle class="seal-glow" cx="200" cy="100" r="18" fill="none" stroke="#e85d6f" stroke-width="2" opacity="0.3"/>
+    <!-- heart on seal -->
+    <path d="M200 92 C200 88, 194 86, 192 90 C190 93, 200 100, 200 100 C200 100, 210 93, 208 90 C206 86, 200 88, 200 92Z" fill="#f0c0c8"/>
+    <!-- decorative stamp area -->
+    <rect x="290" y="115" width="50" height="40" rx="2" stroke="#3d2b1f" stroke-opacity="0.06" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+    <defs>
+      <linearGradient id="envGrad" x1="40" y1="100" x2="40" y2="280">
+        <stop offset="0%" stop-color="#d4506a"/>
+        <stop offset="100%" stop-color="#9a2a40"/>
+      </linearGradient>
+      <linearGradient id="flapGrad" x1="200" y1="30" x2="200" y2="100">
+        <stop offset="0%" stop-color="#c84060"/>
+        <stop offset="100%" stop-color="#a03050"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="open-prompt"><span>Nhấn để mở thư...</span></div>
+</div>
+
+<!-- ═══ LETTER ═══ -->
+<div class="letter-screen" id="letterScreen">
+  <div class="paper">
+    <div class="paper-frame"></div>
+
+    <!-- Corner roses -->
+    <div class="corner-rose tl">
+      <svg viewBox="0 0 60 60" fill="none">
+        <path d="M8 52 C8 30, 12 18, 30 8 C22 16, 18 28, 20 36 C24 24, 32 16, 42 12 C34 20, 30 28, 30 34 C36 26, 42 22, 50 20 C42 26, 36 32, 34 38 C38 34, 44 30, 50 30 C44 34, 38 38, 36 42 C38 40, 42 38, 48 38 C42 42, 36 44, 34 48 C34 44, 30 48, 28 52" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.6" style="color: var(--gold)"/>
+        <circle cx="30" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4" style="color: var(--paper-accent)"/>
+      </svg>
+    </div>
+    <div class="corner-rose br">
+      <svg viewBox="0 0 60 60" fill="none">
+        <path d="M8 52 C8 30, 12 18, 30 8 C22 16, 18 28, 20 36 C24 24, 32 16, 42 12 C34 20, 30 28, 30 34 C36 26, 42 22, 50 20 C42 26, 36 32, 34 38 C38 34, 44 30, 50 30 C44 34, 38 38, 36 42 C38 40, 42 38, 48 38 C42 42, 36 44, 34 48 C34 44, 30 48, 28 52" stroke="currentColor" stroke-width="1.2" fill="none" opacity="0.6" style="color: var(--gold)"/>
+        <circle cx="30" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4" style="color: var(--paper-accent)"/>
+      </svg>
+    </div>
+
+    <div class="paper-scroll">
+      <div class="letter-content">
+        <div class="letter-date">Gửi bé Thảo Ly của anh</div>
+
+        <div class="letter-to" data-reveal>Thảo Ly yêu,</div>
+
+        <div class="divider" data-reveal>
+          <span class="divider-heart">♥</span>
+        </div>
+
+        <p class="para" data-reveal>Anh là Minh Sang — là người yêu em hơn 1 năm nay rồi đó. Nhưng mà thật ra thì, anh yêu em từ cái nhìn đầu tiên luôn. Đố em lần đầu tiên là lần nào, hehe.</p>
+
+        <p class="para" data-reveal>Đó là cái lần mà ôn thi học sinh giỏi tỉnh chung với em và các bạn. Còn quyết định tán em thì anh không có nhớ là khi nào nữa. Anh chỉ biết là anh bị thu hút bởi tính cách, ngoại hình và sự chăm chỉ của em. Nói rõ hơn là do <em>tính em hiền, vui tính, hòa đồng, xinh gái, học giỏi.</em></p>
+
+        <p class="para" data-reveal>Trải qua những năm tháng ấy, hai ta có rất nhiều chuyện để ôn lại. Có chuyện vui và có cả chuyện buồn. Anh biết rõ em là một người con gái dễ khóc, nhưng mà lần nào anh cũng làm em buồn. Lần này tới lần khác, anh cũng chỉ biết xin lỗi để qua chuyện. Nói thật ra thì anh không biết cách dỗ em, không biết cách làm em vui, không biết cách làm em cười. Và anh vẫn là một con người siêu nhạt nhẽo, không có tý muối nào.</p>
+
+        <p class="para" data-reveal>Là người yêu của em, anh muốn em phải thật mạnh khỏe, thật hạnh phúc trong mối quan hệ này. Anh muốn em ngủ sớm cho khỏi thâm mắt nè, anh muốn em ăn nhiều cho ú nụ ra nè, anh cũng muốn em hết mụn nè. Tại mỗi lần em chê bản thân em thì anh cũng buồn. Buồn vì em không trân trọng bản thân em.</p>
+
+        <p class="para" data-reveal>Đối với anh thì <em>em mãi là người xinh đẹp nhất,</em> nên không có cần phải tự chê bản thân mình như vậy nữa nha.</p>
+
+        <p class="para" data-reveal>Anh biết rằng anh có nhiều khuyết điểm, có những khuyết điểm mà anh không nhận ra, nhưng mà lại làm em buồn. Nên nếu em cần anh thay đổi khuyết điểm nào, thì hãy nói cho anh biết nha.</p>
+
+        <p class="para" data-reveal>Và những lời trên là những gì anh muốn gửi gắm cho em — người yêu của anh. Cảm ơn em đã đọc ❤️</p>
+
+        <div class="signature" data-reveal>
+          <div class="signature-text">Yêu em nhiều</div>
+          <div class="signature-name">— Minh Sang —</div>
+        </div>
+
+        <div class="ending-heart" data-reveal>❤️</div>
+
+        <div class="album-link" data-reveal>
+          <a href="album.html" class="album-btn">
+            <span class="album-btn-icon">📸</span>
+            <span class="album-btn-text">Xem album kỷ niệm của chúng mình</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="music-btn" id="musicBtn" aria-label="Bật tắt nhạc" title="Nhạc nền">♪</button>
+
+<script>
+(function(){
+'use strict';
+
+/* ── PARTICLES (Canvas) ── */
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+var particles = [];
+var running = false;
+var tick = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+/* Heart path (centered at 0,0) */
+function heartPath(s) {
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.35);
+  ctx.bezierCurveTo(-s * 0.05, -s * 0.65, -s * 0.7, -s * 0.65, -s * 0.7, -s * 0.2);
+  ctx.bezierCurveTo(-s * 0.7, s * 0.2, 0, s * 0.5, 0, s * 0.7);
+  ctx.bezierCurveTo(0, s * 0.5, s * 0.7, s * 0.2, s * 0.7, -s * 0.2);
+  ctx.bezierCurveTo(s * 0.7, -s * 0.65, s * 0.05, -s * 0.65, 0, -s * 0.35);
+  ctx.closePath();
+}
+
+var heartHues = ['#e85d6f', '#f4a0aa', '#c24058', '#d47080', '#f0c0c8'];
+var petalHues = ['#f4a0aa', '#e8809a', '#f0c0c8', '#d47080', '#f5d0d0'];
+
+function spawn() {
+  var r = Math.random();
+  var p = {
+    x: Math.random() * W,
+    y: -15 - Math.random() * 40,
+    vx: (Math.random() - 0.5) * 0.6,
+    vy: 0.4 + Math.random() * 1.0,
+    a: 0.2 + Math.random() * 0.45,
+    rot: Math.random() * 6.28,
+    rv: (Math.random() - 0.5) * 0.03,
+    phase: Math.random() * 6.28,
+    life: 1
+  };
+
+  if (r < 0.3) {
+    p.kind = 'heart';
+    p.sz = 5 + Math.random() * 7;
+    p.clr = heartHues[Math.random() * heartHues.length | 0];
+  } else if (r < 0.65) {
+    p.kind = 'petal';
+    p.sz = 6 + Math.random() * 10;
+    p.clr = petalHues[Math.random() * petalHues.length | 0];
+    p.drift = 0.015 + Math.random() * 0.015;
+  } else {
+    p.kind = 'spark';
+    p.sz = 1.5 + Math.random() * 3;
+    p.vy *= 0.4;
+    p.flicker = 0.04 + Math.random() * 0.04;
+  }
+  particles.push(p);
+}
+
+function draw() {
+  if (!running) return;
+  requestAnimationFrame(draw);
+
+  ctx.clearRect(0, 0, W, H);
+  tick++;
+
+  if (tick % 6 === 0 && particles.length < 100) spawn();
+
+  for (var i = particles.length - 1; i >= 0; i--) {
+    var p = particles[i];
+    p.y += p.vy;
+    p.rot += p.rv;
+    p.phase += (p.drift || 0.01);
+
+    if (p.kind === 'petal') {
+      p.x += Math.sin(p.phase) * 0.9 + p.vx * 0.4;
+    } else {
+      p.x += p.vx + Math.sin(p.phase) * 0.15;
+    }
+
+    // Fade near bottom
+    if (p.y > H * 0.8) {
+      p.life -= 0.015;
+    }
+
+    var alpha = p.a * Math.max(0, p.life);
+    if (p.kind === 'spark') {
+      alpha *= 0.4 + 0.6 * Math.abs(Math.sin(tick * p.flicker + p.phase));
+    }
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.globalAlpha = alpha;
+
+    if (p.kind === 'heart') {
+      ctx.fillStyle = p.clr;
+      heartPath(p.sz);
+      ctx.fill();
+    } else if (p.kind === 'petal') {
+      ctx.fillStyle = p.clr;
+      ctx.beginPath();
+      // Petal: two quadratic curves
+      ctx.moveTo(0, -p.sz);
+      ctx.quadraticCurveTo(p.sz * 0.55, -p.sz * 0.3, 0, p.sz * 0.5);
+      ctx.quadraticCurveTo(-p.sz * 0.55, -p.sz * 0.3, 0, -p.sz);
+      ctx.fill();
+    } else {
+      // Sparkle: glowing dot
+      ctx.fillStyle = '#ffecc8';
+      ctx.shadowColor = '#ffe4b5';
+      ctx.shadowBlur = p.sz * 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.sz, 0, 6.28);
+      ctx.fill();
+      // Cross rays
+      ctx.strokeStyle = 'rgba(255,228,181,0.5)';
+      ctx.lineWidth = 0.5;
+      var ray = p.sz * 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-ray, 0); ctx.lineTo(ray, 0);
+      ctx.moveTo(0, -ray); ctx.lineTo(0, ray);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    if (p.y > H + 30 || p.life <= 0) {
+      particles.splice(i, 1);
+    }
+  }
+}
+
+/* ── OPEN LETTER ── */
+var opening = document.getElementById('opening');
+var letterScreen = document.getElementById('letterScreen');
+var opened = false;
+
+function open() {
+  if (opened) return;
+  opened = true;
+
+  // Flap animation
+  opening.classList.add('opening-anim');
+
+  // Start particles
+  running = true;
+  draw();
+
+  setTimeout(function() {
+    opening.classList.add('hide');
+    letterScreen.classList.add('show');
+
+    // Reveal elements sequentially
+    var els = document.querySelectorAll('[data-reveal]');
+    for (var i = 0; i < els.length; i++) {
+      (function(el, delay) {
+        setTimeout(function() {
+          el.classList.add('reveal');
+        }, delay);
+      })(els[i], 600 + i * 500);
+    }
+  }, 900);
+}
+
+opening.addEventListener('click', open);
+opening.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+});
+
+/* ── AMBIENT MUSIC (Web Audio) ── */
+var musicBtn = document.getElementById('musicBtn');
+var audioCtx = null;
+var playing = false;
+var masterGain = null;
+
+function buildMusic() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.06;
+  masterGain.connect(audioCtx.destination);
+
+  // Reverb-like delay
+  var delay = audioCtx.createDelay(1.0);
+  delay.delayTime.value = 0.4;
+  var fb = audioCtx.createGain();
+  fb.gain.value = 0.3;
+  delay.connect(fb);
+  fb.connect(delay);
+  delay.connect(masterGain);
+
+  // Warm pad: Am7 voicing
+  var freqs = [220.00, 261.63, 329.63, 392.00, 440.00];
+  var gains = [0.3,    0.25,   0.2,    0.15,   0.1];
+
+  freqs.forEach(function(f, idx) {
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    g.gain.value = gains[idx];
+    osc.connect(g);
+    g.connect(masterGain);
+    g.connect(delay);
+    osc.start();
+
+    // Gentle detune drift
+    var lfo = audioCtx.createOscillator();
+    var lfoG = audioCtx.createGain();
+    lfo.frequency.value = 0.15 + idx * 0.05;
+    lfoG.gain.value = 1.5;
+    lfo.connect(lfoG);
+    lfoG.connect(osc.frequency);
+    lfo.start();
+  });
+
+  // Soft high shimmer
+  var shimmer = audioCtx.createOscillator();
+  var shimmerG = audioCtx.createGain();
+  shimmer.type = 'sine';
+  shimmer.frequency.value = 783.99; // G5
+  shimmerG.gain.value = 0.03;
+  shimmer.connect(shimmerG);
+  shimmerG.connect(masterGain);
+  shimmerG.connect(delay);
+  shimmer.start();
+
+  var sLfo = audioCtx.createOscillator();
+  var sLfoG = audioCtx.createGain();
+  sLfo.frequency.value = 0.08;
+  sLfoG.gain.value = 0.02;
+  sLfo.connect(sLfoG);
+  sLfoG.connect(shimmerG.gain);
+  sLfo.start();
+}
+
+function toggleMusic() {
+  if (!playing) {
+    if (!audioCtx) buildMusic();
+    else audioCtx.resume();
+    playing = true;
+    musicBtn.textContent = '♫';
+    musicBtn.style.borderColor = 'rgba(232, 93, 111, 0.6)';
+    musicBtn.style.color = 'var(--accent-soft)';
+  } else {
+    if (audioCtx) audioCtx.suspend();
+    playing = false;
+    musicBtn.textContent = '♪';
+    musicBtn.style.borderColor = '';
+    musicBtn.style.color = '';
+  }
+}
+
+musicBtn.addEventListener('click', toggleMusic);
+
+})();
+</script>
+
+</body>
+</html>

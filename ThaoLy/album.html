@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Album Kỷ Niệm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Great+Vibes&display=swap">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root {
+  --bg: #1a0a0e;
+  --bg2: #2a1018;
+  --fg: #f0e0d6;
+  --fg-dim: #c0a898;
+  --accent: #e85d6f;
+  --accent-glow: rgba(232, 93, 111, 0.4);
+  --accent-soft: #f4a0aa;
+  --gold: #d4a862;
+  --gold-dim: rgba(212, 168, 98, 0.3);
+  --paper-accent: #b8444e;
+
+  --font-script: 'Great Vibes', cursive;
+  --font-display: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'Crimson Pro', 'Georgia', serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ── AMBIENT ── */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ambient::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 500px 400px at 20% 20%, rgba(200, 64, 88, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 500px at 80% 70%, rgba(212, 168, 98, 0.06) 0%, transparent 70%);
+  animation: drift 25s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate(-2%, -1%); }
+  to   { transform: translate(2%, 1%); }
+}
+
+/* ── HEADER ── */
+.album-header {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 60px 24px 40px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-dim);
+  text-decoration: none;
+  margin-bottom: 32px;
+  transition: color 0.3s;
+  letter-spacing: 0.3px;
+}
+
+.back-link:hover {
+  color: var(--accent-soft);
+}
+
+.back-link svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.album-title {
+  font-family: var(--font-script);
+  font-size: clamp(36px, 8vw, 56px);
+  color: var(--accent-soft);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.album-subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(14px, 2.5vw, 16px);
+  color: var(--fg-dim);
+  opacity: 0.7;
+}
+
+/* ── DIVIDER ── */
+.header-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 24px auto 0;
+  width: 180px;
+}
+
+.header-divider::before,
+.header-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.3;
+}
+
+.header-divider span {
+  color: var(--accent);
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+/* ── GALLERY GRID ── */
+.gallery {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px max(20px, env(safe-area-inset-left, 0px)) 80px max(20px, env(safe-area-inset-right, 0px));
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* ── PHOTO CARD ── */
+.photo-card {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg2);
+  border: 1px solid rgba(232, 93, 111, 0.1);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s, border-color 0.4s;
+  cursor: pointer;
+  animation: cardIn 0.6s ease both;
+}
+
+.photo-card:nth-child(1) { animation-delay: 0.1s; }
+.photo-card:nth-child(2) { animation-delay: 0.2s; }
+.photo-card:nth-child(3) { animation-delay: 0.3s; }
+.photo-card:nth-child(4) { animation-delay: 0.4s; }
+.photo-card:nth-child(5) { animation-delay: 0.5s; }
+.photo-card:nth-child(6) { animation-delay: 0.6s; }
+
+.photo-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(232, 93, 111, 0.15);
+  border-color: rgba(232, 93, 111, 0.25);
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg2), rgba(232, 93, 111, 0.05));
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.photo-card:hover .photo-frame img {
+  transform: scale(1.06);
+}
+
+/* Placeholder khi chưa có ảnh */
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--fg-dim);
+  opacity: 0.4;
+}
+
+.photo-placeholder-icon {
+  font-size: 36px;
+}
+
+.photo-placeholder-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Caption */
+.photo-caption {
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--fg-dim);
+  line-height: 1.5;
+  border-top: 1px solid rgba(232, 93, 111, 0.08);
+}
+
+.photo-date {
+  display: block;
+  font-size: 11px;
+  color: var(--fg-dim);
+  opacity: 0.5;
+  margin-top: 6px;
+  font-style: normal;
+  letter-spacing: 0.5px;
+}
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10, 4, 6, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 24px;
+}
+
+.lightbox.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 85vh;
+  max-height: 85dvh;
+  border-radius: 4px;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  object-fit: contain;
+}
+
+.lightbox.open .lightbox-img {
+  transform: scale(1);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top, 0px));
+  right: max(20px, env(safe-area-inset-right, 0px));
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(240, 224, 214, 0.2);
+  border-radius: 50%;
+  background: rgba(26, 10, 14, 0.6);
+  color: var(--fg);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.lightbox-close:hover {
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.lightbox-caption {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--fg-dim);
+  text-align: center;
+  max-width: 400px;
+}
+
+/* ── ADD MORE HINT ── */
+.add-hint {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 24px 60px;
+}
+
+.add-hint p {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-dim);
+  opacity: 0.4;
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.add-hint code {
+  background: rgba(232, 93, 111, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-style: normal;
+  color: var(--accent-soft);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .album-header {
+    padding: 48px 20px 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+
+<header class="album-header">
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Quay lại thư tình
+  </a>
+
+  <h1 class="album-title">Album kỷ niệm</h1>
+  <p class="album-subtitle">Những khoảnh khắc đẹp nhất của chúng mình</p>
+
+  <div class="header-divider"><span>♥</span></div>
+</header>
+
+<div class="gallery" id="gallery">
+
+  <!--
+    ═══════════════════════════════════════════════════
+    HƯỚNG DẪN THÊM ẢNH:
+
+    1. Tạo thư mục "photos" cùng cấp với file này
+    2. Bỏ ảnh vào thư mục "photos"
+    3. Copy mẫu bên dưới, thay tên file ảnh và caption
+
+    MẪU:
+    <div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/ten-anh.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Viết caption ở đây
+        <span class="photo-date">01.01.2025</span>
+      </div>
+    </div>
+    ═══════════════════════════════════════════════════
+  -->
+
+  <!-- Ảnh mẫu 1 — thay bằng ảnh thật của bạn -->
+  <div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/1.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Ảnh hai ta đi cf nè
+        <span class="photo-date">01.10.2026</span>
+      </div>
+    </div>
+
+  <!-- Ảnh mẫu 2 -->
+  <<div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/ten-anh.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Ảnh em cầm bó hoa anh tặng
+        <span class="photo-date">01.10.2026</span>
+      </div>
+    </div>
+
+  <!-- Ảnh mẫu 3 -->
+  <div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/3.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Ảnh anh mang bó hoa tới tặng em
+        <span class="photo-date">01.10.2026</span>
+      </div>
+    </div>
+
+  <!-- Ảnh mẫu 4 -->
+  <div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/4.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Ảnh hai ta chụp photobooth
+        <span class="photo-date">19.05.2026</span>
+      </div>
+    </div>
+
+  <!-- Ảnh mẫu 5 -->
+  <div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/5.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Ảnh em dựa vai anh ngủ bởi 1 ai đó chụp lén
+        <span class="photo-date">19.05.2026</span>
+      </div>
+    </div>
+
+  <!-- Ảnh mẫu 6 -->
+  div class="photo-card" data-caption="Viết caption ở đây">
+      <div class="photo-frame">
+        <img src="photos/6.jpg" alt="Mô tả ảnh" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        Chụp kỷ yếu với em nè
+        <span class="photo-date">05.2025</span>
+      </div>
+    </div>
+
+</div>
+
+<div class="add-hint">
+  <p>
+    Để thêm ảnh: tạo thư mục <code>photos/</code>, bỏ ảnh vào,
+    rồi thay <code>&lt;div class="photo-placeholder"&gt;...&lt;/div&gt;</code>
+    bằng <code>&lt;img src="photos/ten-anh.jpg"&gt;</code>
+  </p>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose" aria-label="Đóng">✕</button>
+  <img class="lightbox-img" id="lbImg" src="" alt="">
+  <div class="lightbox-caption" id="lbCaption"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var lightbox = document.getElementById('lightbox');
+var lbImg = document.getElementById('lbImg');
+var lbCaption = document.getElementById('lbCaption');
+var lbClose = document.getElementById('lbClose');
+
+// Click card → open lightbox (only if card has a real image)
+document.getElementById('gallery').addEventListener('click', function(e) {
+  var card = e.target.closest('.photo-card');
+  if (!card) return;
+
+  var img = card.querySelector('.photo-frame img');
+  if (!img) return; // placeholder, no real image yet
+
+  lbImg.src = img.src;
+  lbImg.alt = img.alt || '';
+  lbCaption.textContent = card.getAttribute('data-caption') || '';
+  lightbox.classList.add('open');
+});
+
+// Close lightbox
+function closeLb() {
+  lightbox.classList.remove('open');
+}
+
+lbClose.addEventListener('click', closeLb);
+lightbox.addEventListener('click', function(e) {
+  if (e.target === lightbox) closeLb();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLb();
+});
+
+})();
+</script>
+
+</body>
+</html>
