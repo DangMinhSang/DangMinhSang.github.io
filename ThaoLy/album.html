@@ -67,7 +67,7 @@ body {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 60px 24px 40px;
+  padding: 60px 24px 30px;
 }
 
 .back-link {
@@ -78,7 +78,7 @@ body {
   font-size: 14px;
   color: var(--fg-dim);
   text-decoration: none;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   transition: color 0.3s;
   letter-spacing: 0.3px;
 }
@@ -99,10 +99,10 @@ body {
 
 .album-title {
   font-family: var(--font-script);
-  font-size: clamp(36px, 8vw, 56px);
+  font-size: clamp(38px, 8vw, 58px);
   color: var(--accent-soft);
   line-height: 1.2;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .album-subtitle {
@@ -111,16 +111,15 @@ body {
   font-weight: 400;
   font-size: clamp(14px, 2.5vw, 16px);
   color: var(--fg-dim);
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
-/* ── DIVIDER ── */
 .header-divider {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  margin: 24px auto 0;
+  margin: 20px auto 0;
   width: 180px;
 }
 
@@ -139,41 +138,235 @@ body {
   opacity: 0.5;
 }
 
+/* ── LOCK SCREEN MODAL ── */
+.lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(26, 10, 14, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease, visibility 0.6s;
+}
+
+.lock-overlay.unlocked {
+  opacity: 0;
+  transform: scale(0.95);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lock-card {
+  width: min(420px, 100%);
+  background: linear-gradient(145deg, rgba(42, 16, 24, 0.95), rgba(26, 10, 14, 0.95));
+  border: 1px solid rgba(232, 93, 111, 0.25);
+  border-radius: 12px;
+  padding: 40px 32px 44px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(232, 93, 111, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.lock-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--gold), transparent);
+}
+
+.lock-icon-wrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: rgba(232, 93, 111, 0.1);
+  border: 1px solid rgba(232, 93, 111, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  animation: pulseLock 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseLock {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232, 93, 111, 0.3); }
+  50% { transform: scale(1.06); box-shadow: 0 0 24px 4px rgba(232, 93, 111, 0.3); }
+}
+
+.lock-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--accent-soft);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.lock-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-dim);
+  opacity: 0.8;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.password-input {
+  width: 100%;
+  padding: 14px 46px 14px 18px;
+  background: rgba(15, 5, 8, 0.7);
+  border: 1px solid rgba(232, 93, 111, 0.25);
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  letter-spacing: 1px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.password-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(232, 93, 111, 0.35);
+  background: rgba(15, 5, 8, 0.9);
+}
+
+.toggle-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--fg-dim);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.toggle-eye:hover {
+  opacity: 1;
+}
+
+.btn-unlock {
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #c24058, #e85d6f);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(232, 93, 111, 0.3);
+}
+
+.btn-unlock:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(232, 93, 111, 0.45);
+}
+
+.btn-unlock:active {
+  transform: translateY(0);
+}
+
+.lock-hint-toggle {
+  margin-top: 18px;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.lock-hint-toggle:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.lock-hint-text {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-dim);
+  background: rgba(212, 168, 98, 0.08);
+  border: 1px dashed rgba(212, 168, 98, 0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: none;
+}
+
+.lock-hint-text.show {
+  display: block;
+}
+
+.lock-error {
+  margin-top: 14px;
+  font-size: 13px;
+  color: #ff7888;
+  font-style: italic;
+  display: none;
+}
+
+.lock-card.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
 /* ── GALLERY GRID ── */
 .gallery {
   position: relative;
   z-index: 1;
   max-width: 960px;
   margin: 0 auto;
-  padding: 32px max(20px, env(safe-area-inset-left, 0px)) 80px max(20px, env(safe-area-inset-right, 0px));
+  padding: 24px max(20px, env(safe-area-inset-left, 0px)) 80px max(20px, env(safe-area-inset-right, 0px));
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 22px;
 }
 
-/* ── PHOTO CARD ── */
 .photo-card {
   position: relative;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--bg2);
-  border: 1px solid rgba(232, 93, 111, 0.1);
+  border: 1px solid rgba(232, 93, 111, 0.15);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s, border-color 0.4s;
   cursor: pointer;
-  animation: cardIn 0.6s ease both;
+  animation: cardIn 0.7s ease both;
 }
-
-.photo-card:nth-child(1) { animation-delay: 0.1s; }
-.photo-card:nth-child(2) { animation-delay: 0.2s; }
-.photo-card:nth-child(3) { animation-delay: 0.3s; }
-.photo-card:nth-child(4) { animation-delay: 0.4s; }
-.photo-card:nth-child(5) { animation-delay: 0.5s; }
-.photo-card:nth-child(6) { animation-delay: 0.6s; }
 
 .photo-card:hover {
   transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 16px 48px rgba(232, 93, 111, 0.15);
-  border-color: rgba(232, 93, 111, 0.25);
+  box-shadow: 0 18px 48px rgba(232, 93, 111, 0.2);
+  border-color: rgba(232, 93, 111, 0.35);
 }
 
 @keyframes cardIn {
@@ -192,7 +385,7 @@ body {
   width: 100%;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--bg2), rgba(232, 93, 111, 0.05));
+  background: #110508;
 }
 
 .photo-frame img {
@@ -200,51 +393,28 @@ body {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  display: block;
 }
 
 .photo-card:hover .photo-frame img {
   transform: scale(1.06);
 }
 
-/* Placeholder khi chưa có ảnh */
-.photo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--fg-dim);
-  opacity: 0.4;
-}
-
-.photo-placeholder-icon {
-  font-size: 36px;
-}
-
-.photo-placeholder-text {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-style: italic;
-}
-
-/* Caption */
 .photo-caption {
   padding: 14px 16px;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 14.5px;
   font-style: italic;
-  color: var(--fg-dim);
+  color: var(--fg);
   line-height: 1.5;
-  border-top: 1px solid rgba(232, 93, 111, 0.08);
+  border-top: 1px solid rgba(232, 93, 111, 0.1);
 }
 
 .photo-date {
   display: block;
   font-size: 11px;
   color: var(--fg-dim);
-  opacity: 0.5;
+  opacity: 0.6;
   margin-top: 6px;
   font-style: normal;
   letter-spacing: 0.5px;
@@ -276,8 +446,8 @@ body {
   max-width: 90vw;
   max-height: 85vh;
   max-height: 85dvh;
-  border-radius: 4px;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+  border-radius: 6px;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.6);
   transform: scale(0.9);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   object-fit: contain;
@@ -318,53 +488,24 @@ body {
   font-family: var(--font-body);
   font-style: italic;
   font-size: 15px;
-  color: var(--fg-dim);
+  color: var(--fg);
   text-align: center;
-  max-width: 400px;
+  max-width: 440px;
+  background: rgba(26, 10, 14, 0.7);
+  padding: 6px 16px;
+  border-radius: 20px;
 }
 
-/* ── ADD MORE HINT ── */
-.add-hint {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 0 24px 60px;
-}
-
-.add-hint p {
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: var(--fg-dim);
-  opacity: 0.4;
-  font-style: italic;
-  line-height: 1.7;
-}
-
-.add-hint code {
-  background: rgba(232, 93, 111, 0.1);
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-style: normal;
-  color: var(--accent-soft);
-}
-
-/* ── RESPONSIVE ── */
 @media (max-width: 600px) {
   .gallery {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
+    gap: 16px;
   }
-
   .album-header {
-    padding: 48px 20px 32px;
+    padding: 44px 20px 24px;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  .lock-card {
+    padding: 32px 22px 36px;
   }
 }
 </style>
@@ -385,104 +526,31 @@ body {
   <div class="header-divider"><span>♥</span></div>
 </header>
 
-<div class="gallery" id="gallery">
+<!-- Lock Screen -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-card" id="lockCard">
+    <div class="lock-icon-wrap">🔒</div>
+    <h2 class="lock-title">Khoảnh khắc bí mật</h2>
+    <p class="lock-desc">Album này được mã hóa bảo mật.<br>Chỉ dành riêng cho bé Thảo Ly 💕</p>
 
-  <!--
-    ═══════════════════════════════════════════════════
-    HƯỚNG DẪN THÊM ẢNH:
+    <form id="lockForm" onsubmit="return false;">
+      <div class="input-group">
+        <input type="password" id="passwordInput" class="password-input" placeholder="Nhập mật khẩu..." autocomplete="current-password" required>
+        <button type="button" class="toggle-eye" id="toggleEye" aria-label="Hiện mật khẩu">👁️</button>
+      </div>
 
-    1. Tạo thư mục "photos" cùng cấp với file này
-    2. Bỏ ảnh vào thư mục "photos"
-    3. Copy mẫu bên dưới, thay tên file ảnh và caption
+      <button type="submit" class="btn-unlock" id="btnUnlock">Mở khóa kỷ niệm ❤️</button>
+    </form>
 
-    MẪU:
-    <div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/ten-anh.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Viết caption ở đây
-        <span class="photo-date">01.01.2025</span>
-      </div>
-    </div>
-    ═══════════════════════════════════════════════════
-  -->
+    <button type="button" class="lock-hint-toggle" id="hintToggle">💡 Gợi ý mật khẩu</button>
+    <div class="lock-hint-text" id="hintText">Biệt danh và con số đặc biệt của em 🤫</div>
 
-  <!-- Ảnh mẫu 1 — thay bằng ảnh thật của bạn -->
-  <div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/1.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Ảnh hai ta đi cf nè
-        <span class="photo-date">01.10.2026</span>
-      </div>
-    </div>
-
-  <!-- Ảnh mẫu 2 -->
-  <<div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/ten-anh.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Ảnh em cầm bó hoa anh tặng
-        <span class="photo-date">01.10.2026</span>
-      </div>
-    </div>
-
-  <!-- Ảnh mẫu 3 -->
-  <div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/3.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Ảnh anh mang bó hoa tới tặng em
-        <span class="photo-date">01.10.2026</span>
-      </div>
-    </div>
-
-  <!-- Ảnh mẫu 4 -->
-  <div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/4.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Ảnh hai ta chụp photobooth
-        <span class="photo-date">19.05.2026</span>
-      </div>
-    </div>
-
-  <!-- Ảnh mẫu 5 -->
-  <div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/5.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Ảnh em dựa vai anh ngủ bởi 1 ai đó chụp lén
-        <span class="photo-date">19.05.2026</span>
-      </div>
-    </div>
-
-  <!-- Ảnh mẫu 6 -->
-  div class="photo-card" data-caption="Viết caption ở đây">
-      <div class="photo-frame">
-        <img src="photos/6.jpg" alt="Mô tả ảnh" loading="lazy">
-      </div>
-      <div class="photo-caption">
-        Chụp kỷ yếu với em nè
-        <span class="photo-date">05.2025</span>
-      </div>
-    </div>
-
+    <div class="lock-error" id="lockError">Mật khẩu chưa đúng rồi nè, thử lại nhé em 💕</div>
+  </div>
 </div>
 
-<div class="add-hint">
-  <p>
-    Để thêm ảnh: tạo thư mục <code>photos/</code>, bỏ ảnh vào,
-    rồi thay <code>&lt;div class="photo-placeholder"&gt;...&lt;/div&gt;</code>
-    bằng <code>&lt;img src="photos/ten-anh.jpg"&gt;</code>
-  </p>
-</div>
+<!-- Photo Gallery -->
+<div class="gallery" id="gallery"></div>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox">
@@ -491,40 +559,168 @@ body {
   <div class="lightbox-caption" id="lbCaption"></div>
 </div>
 
+<!-- Encrypted Data -->
+<script src="gallery-data.js"></script>
+
 <script>
 (function(){
 'use strict';
 
-var lightbox = document.getElementById('lightbox');
-var lbImg = document.getElementById('lbImg');
-var lbCaption = document.getElementById('lbCaption');
-var lbClose = document.getElementById('lbClose');
+const lockOverlay = document.getElementById('lockOverlay');
+const lockCard = document.getElementById('lockCard');
+const lockForm = document.getElementById('lockForm');
+const passwordInput = document.getElementById('passwordInput');
+const toggleEye = document.getElementById('toggleEye');
+const btnUnlock = document.getElementById('btnUnlock');
+const hintToggle = document.getElementById('hintToggle');
+const hintText = document.getElementById('hintText');
+const lockError = document.getElementById('lockError');
+const gallery = document.getElementById('gallery');
 
-// Click card → open lightbox (only if card has a real image)
-document.getElementById('gallery').addEventListener('click', function(e) {
-  var card = e.target.closest('.photo-card');
-  if (!card) return;
+const lightbox = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbCaption = document.getElementById('lbCaption');
+const lbClose = document.getElementById('lbClose');
 
-  var img = card.querySelector('.photo-frame img');
-  if (!img) return; // placeholder, no real image yet
-
-  lbImg.src = img.src;
-  lbImg.alt = img.alt || '';
-  lbCaption.textContent = card.getAttribute('data-caption') || '';
-  lightbox.classList.add('open');
+// Toggle show/hide password
+toggleEye.addEventListener('click', function() {
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    toggleEye.textContent = '🙈';
+  } else {
+    passwordInput.type = 'password';
+    toggleEye.textContent = '👁️';
+  }
 });
 
-// Close lightbox
-function closeLb() {
-  lightbox.classList.remove('open');
+// Toggle hint
+hintToggle.addEventListener('click', function() {
+  hintText.classList.toggle('show');
+});
+
+function base64ToUint8(str) {
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
-lbClose.addEventListener('click', closeLb);
+async function decryptAlbum(password) {
+  if (!window.ENCRYPTED_ALBUM) {
+    throw new Error('Dữ liệu ảnh chưa được tải');
+  }
+
+  const { salt, iv, data } = window.ENCRYPTED_ALBUM;
+  const saltBytes = base64ToUint8(salt);
+  const ivBytes = base64ToUint8(iv);
+  const dataBytes = base64ToUint8(data);
+
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(password.trim()),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: ivBytes },
+    key,
+    dataBytes
+  );
+
+  return JSON.parse(new TextDecoder().decode(decrypted));
+}
+
+function renderGallery(photos) {
+  gallery.innerHTML = '';
+  photos.forEach(function(item, idx) {
+    const card = document.createElement('div');
+    card.className = 'photo-card';
+    card.style.animationDelay = (idx * 0.1) + 's';
+    card.setAttribute('data-caption', item.caption);
+
+    card.innerHTML = `
+      <div class="photo-frame">
+        <img src="${item.src}" alt="${item.caption}" loading="lazy">
+      </div>
+      <div class="photo-caption">
+        ${item.caption}
+        <span class="photo-date">${item.date}</span>
+      </div>
+    `;
+
+    card.addEventListener('click', function() {
+      lbImg.src = item.src;
+      lbImg.alt = item.caption;
+      lbCaption.textContent = item.caption;
+      lightbox.classList.add('open');
+    });
+
+    gallery.appendChild(card);
+  });
+}
+
+async function handleUnlock(pwd) {
+  btnUnlock.disabled = true;
+  btnUnlock.textContent = 'Đang mở khóa kỷ niệm... ✨';
+  lockError.style.display = 'none';
+
+  try {
+    const photos = await decryptAlbum(pwd);
+    // Success!
+    sessionStorage.setItem('album_pwd', pwd);
+    renderGallery(photos);
+
+    lockOverlay.classList.add('unlocked');
+  } catch (err) {
+    // Incorrect password or decryption failure
+    lockCard.classList.remove('shake');
+    void lockCard.offsetWidth; // trigger reflow
+    lockCard.classList.add('shake');
+    lockError.style.display = 'block';
+    passwordInput.value = '';
+    passwordInput.focus();
+  } finally {
+    btnUnlock.disabled = false;
+    btnUnlock.textContent = 'Mở khóa kỷ niệm ❤️';
+  }
+}
+
+lockForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  const pwd = passwordInput.value;
+  if (!pwd) return;
+  handleUnlock(pwd);
+});
+
+// Auto-unlock if password already verified in this session
+const savedPwd = sessionStorage.getItem('album_pwd');
+if (savedPwd) {
+  handleUnlock(savedPwd);
+}
+
+// Lightbox close handlers
+function closeLightbox() {
+  lightbox.classList.remove('open');
+}
+lbClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', function(e) {
-  if (e.target === lightbox) closeLb();
+  if (e.target === lightbox) closeLightbox();
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeLb();
+  if (e.key === 'Escape') closeLightbox();
 });
 
 })();
